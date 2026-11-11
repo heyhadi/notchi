@@ -61,7 +61,9 @@ final class HookServer: @unchecked Sendable {
                 if n <= 0 { break }
                 data.append(chunk, count: n)
             }
-            guard let event = HookEvent.parse(message: data) else { close(fd); return }
+            let event = HookEvent.parse(message: data)
+            Self.log(event, raw: data)
+            guard let event else { close(fd); return }
             let once = Once()
             let respond: @Sendable (Data?) -> Void = { reply in
                 guard once.claim() else { return }
@@ -73,6 +75,28 @@ final class HookServer: @unchecked Sendable {
                     if let handler = self?.onEvent { handler(event, respond) } else { respond(nil) }
                 }
             }
+        }
+    }
+}
+
+extension HookServer {
+    /// ~/Library/Logs/NotchBuddy/events.log: one line per hook call (time, agent, event, session id prefix) so
+    /// "is agent X reaching the notch?" can be answered. No prompts, commands or file contents. Capped at 512 KB.
+    static let logPath = NSHomeDirectory() + "/Library/Logs/NotchBuddy/events.log"
+    private static let logQueue = DispatchQueue(label: "NotchBuddy.log")
+
+    static func log(_ e: HookEvent?, raw: Data) {
+        let header = raw.starts(with: Data("NB1 ".utf8))
+            ? String(decoding: raw.prefix(while: { $0 != UInt8(ascii: "\n") }).prefix(120), as: UTF8.self) : "no header"
+        let line = e.map { "\($0.agent.rawValue) \($0.name) \($0.sessionID.prefix(8))" } ?? "UNPARSED (\(header), \(raw.count) bytes)"
+        let stamp = ISO8601DateFormatter().string(from: Date())
+        logQueue.async {
+            let fm = FileManager.default
+            try? fm.createDirectory(atPath: (logPath as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+            if let size = (try? fm.attributesOfItem(atPath: logPath))?[.size] as? Int, size > 512_000 { try? fm.removeItem(atPath: logPath) }
+            if !fm.fileExists(atPath: logPath) { fm.createFile(atPath: logPath, contents: nil, attributes: [.posixPermissions: 0o600]) }
+            guard let h = FileHandle(forWritingAtPath: logPath) else { return }
+            h.seekToEndOfFile(); h.write(Data("\(stamp) \(line)\n".utf8)); try? h.close()
         }
     }
 }

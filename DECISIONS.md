@@ -34,3 +34,4 @@ Defaults chosen while building without the user; change freely.
 - Cursor: only non-gating hooks (a gating hook that fails or isn't answered blocks Cursor).
 - Every file Notch Buddy writes carries "notch-buddy: managed by Notch Buddy" or its exact hook path; removal only touches those entries. Existing Cline hook scripts are never overwritten.
 - Hook binary prints a per-agent `--default` answer when the app is not running, so no agent breaks if Notch Buddy is closed.
+- **Event log:** `~/Library/Logs/NotchBuddy/events.log` records one line per hook call (time, agent, event, first 8 characters of the session id) to diagnose which agents reach the notch. No prompts, commands or file contents; capped at 512 KB.
