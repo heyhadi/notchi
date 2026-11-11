@@ -15,3 +15,22 @@ Defaults chosen while building without the user; change freely.
 - **One sound per minute is a hard limit**, so a soft "Working" tick can use up the minute and swallow a "Needs you" beep that follows. Kept as specified; set Working to Off if that bothers you.
 - **Other 11 avatars** show as "Soon" in the picker until Phase 4.
 - **Status-menu titles** pick up a language change after restarting the app; the notch panel and Settings switch immediately.
+
+## Multiple agents (added 2026-11-12)
+
+| Agent | How | Notch can approve? | Verified live |
+|---|---|---|---|
+| Claude Code (CLI, VS Code, Desktop) | `~/.claude/settings.json` hooks | Yes (PermissionRequest) | Yes |
+| Codex (CLI + IDE) | `~/.codex/hooks.json` (same shape as Claude) | Yes (PermissionRequest) | No (not installed); trust hooks with `/hooks` |
+| Antigravity (IDE + `agy`) | `~/.gemini/config/hooks.json`, group `notch-buddy` | No: status; risky → `force_ask` | Yes: events reach the app (`agy -p`) |
+| Gemini CLI | `~/.gemini/settings.json` hooks | No: status only | No (not installed) |
+| Cursor | `~/.cursor/hooks.json`, non-gating events only | No: status only | No (not installed) |
+| GitHub Copilot (VS Code agent, CLI) | `~/.copilot/hooks/notch-buddy.json` | No: status; risky → `ask` | No (not installed) |
+| Cline (VS Code) | scripts in `~/Documents/Cline/Hooks/` | No: status only | No (needs VS Code UI) |
+| OpenCode | plugin `~/.config/opencode/plugins/notch-buddy.js` | Yes (`permission.ask`) | Plugin loads and sends events; permission path untested |
+| Kilo Code, Roo Code, Windsurf | — | — | No official hooks / unclear docs: listed as unsupported |
+
+- Approving from the notch only where the agent has a real "permission requested" hook. Elsewhere Notch Buddy never approves; a hook that would have to say "allow" for every tool would quietly replace the agent's own safety prompt.
+- Cursor: only non-gating hooks (a gating hook that fails or isn't answered blocks Cursor).
+- Every file Notch Buddy writes carries "notch-buddy: managed by Notch Buddy" or its exact hook path; removal only touches those entries. Existing Cline hook scripts are never overwritten.
+- Hook binary prints a per-agent `--default` answer when the app is not running, so no agent breaks if Notch Buddy is closed.

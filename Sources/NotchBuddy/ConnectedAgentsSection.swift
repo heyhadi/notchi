@@ -1,66 +1,83 @@
 import SwiftUI
 import NotchBuddyCore
 
-/// Claude Code hook install/remove. Always shows the exact diff of ~/.claude/settings.json first,
-/// writes only after the user presses Apply, and backs the file up before writing.
+/// Connect/disconnect each agent. Always shows the exact diff of the agent's config files first, writes only after
+/// the user presses Apply, re-checks that nothing changed meanwhile, and backs every file up before writing.
 struct ConnectedAgentsSection: View {
     private struct Plan: Identifiable {
         let id = UUID()
+        let agent: AgentKind
         let install: Bool
-        let new: String
+        let changes: [FileChange]
         let diff: String
     }
 
-    @State private var installed = HookSetup.isInstalled
+    @State private var installed: Set<AgentKind> = Set(AgentKind.allCases.filter { AgentSetup.isInstalled($0, hookPath: HookSetup.hookPath) })
     @State private var plan: Plan?
     @State private var message: String?
     @State private var failed = false
 
+    /// Popular agents without an official hook API yet (checked Nov 2026).
+    private let unsupported = [("Kilo Code", "No official hooks yet"), ("Roo Code", "No official hooks yet"),
+                               ("Windsurf", "Hook format not documented clearly yet")]
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Claude Code").font(.system(size: 14, weight: .medium))
-                    Text(L("via hooks")).font(.system(size: 12)).foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text(installed ? L("Connected") : L("Not connected"))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(installed ? Color(hex: 0x1E8E66) : .secondary)
-                Button(installed ? L("Remove…") : L("Connect…")) { prepare(install: !installed) }
-            }
-            ForEach(["Antigravity", "Gemini CLI"], id: \.self) { name in
-                HStack {
-                    Text(name).font(.system(size: 14, weight: .medium))
+            ForEach(AgentKind.allCases, id: \.self) { a in
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(a.displayName).font(.system(size: 14, weight: .medium))
+                        Text(subtitle(a)).font(.system(size: 12)).foregroundStyle(.secondary)
+                    }
                     Spacer()
-                    Text(L("Not supported yet")).font(.system(size: 12)).foregroundStyle(.secondary)
+                    Text(installed.contains(a) ? L("Connected") : L("Not connected"))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(installed.contains(a) ? Color(hex: 0x1E8E66) : .secondary)
+                    Button(installed.contains(a) ? L("Remove…") : L("Connect…")) { prepare(a, install: !installed.contains(a)) }
+                        .accessibilityLabel(installed.contains(a) ? String(format: L("Remove %@"), a.displayName) : String(format: L("Connect %@"), a.displayName))
+                }
+            }
+            ForEach(unsupported, id: \.0) { name, why in
+                HStack {
+                    Text(name).font(.system(size: 14, weight: .medium)).foregroundStyle(.secondary)
+                    Spacer()
+                    Text(L(why)).font(.system(size: 12)).foregroundStyle(.secondary)
                 }
             }
             if let message {
                 Text(message).font(.system(size: 12)).foregroundColor(failed ? Color(hex: 0xD93636) : .secondary)
-                    .textSelection(.enabled)
+                    .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
             }
         }
         .sheet(item: $plan) { p in diffSheet(p) }
     }
 
+    private func subtitle(_ a: AgentKind) -> String {
+        let how = a.approvesInNotch ? L("Status and approvals") : L("Status; risky commands stay with the agent")
+        switch a {
+        case .claudeCode: return how + " · " + L("CLI, VS Code, Desktop")
+        case .cline, .copilot: return how + " · " + L("VS Code")
+        default: return how
+        }
+    }
+
     private func diffSheet(_ p: Plan) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(p.install ? L("Connect Claude Code") : L("Disconnect Claude Code"))
+            Text(String(format: p.install ? L("Connect %@") : L("Disconnect %@"), p.agent.displayName))
                 .font(.system(size: 18, weight: .semibold, design: .rounded))
-            Text(L("This exact change will be made to ~/.claude/settings.json. A backup copy is saved next to it first."))
+            Text(L("These exact changes will be made. Existing files are backed up next to themselves first."))
                 .font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
             ScrollView([.vertical, .horizontal]) {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(p.diff.split(separator: "\n", omittingEmptySubsequences: false).enumerated()), id: \.offset) { _, line in
                         Text(String(line)).font(.system(size: 11, design: .monospaced))
-                            .foregroundColor(line.hasPrefix("+") ? Color(hex: 0x1E8E66) : line.hasPrefix("-") ? Color(hex: 0xD93636) : .primary)
+                            .foregroundColor(line.hasPrefix("###") ? .primary : line.hasPrefix("+") ? Color(hex: 0x1E8E66) : line.hasPrefix("-") ? Color(hex: 0xD93636) : .secondary)
                     }
                 }
                 .textSelection(.enabled)
                 .padding(10)
             }
-            .frame(height: 280)
+            .frame(height: 300)
             .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)))
             HStack {
                 Spacer()
@@ -69,35 +86,50 @@ struct ConnectedAgentsSection: View {
             }
         }
         .padding(20)
-        .frame(width: 560)
+        .frame(width: 620)
     }
 
-    private func prepare(install: Bool) {
+    private func prepare(_ a: AgentKind, install: Bool) {
         do {
-            let (new, diff) = try HookSetup.plan(install: install)
-            if diff.isEmpty { installed = HookSetup.isInstalled; return }
-            plan = Plan(install: install, new: new, diff: diff)
+            let changes = try AgentSetup.plan(a, install: install, hookPath: HookSetup.hookPath)
+            if changes.isEmpty { refresh(); return }
+            plan = Plan(agent: a, install: install, changes: changes, diff: try AgentSetup.diff(changes))
         } catch {
-            show(L("Couldn't read ~/.claude/settings.json: ") + error.localizedDescription, failed: true)
+            show(error.localizedDescription, failed: true)
         }
     }
 
     private func apply(_ p: Plan) {
         plan = nil
         do {
-            // The file may have changed while the sheet was open: never write a diff the user didn't see.
-            let (new, diff) = try HookSetup.plan(install: p.install)
-            guard diff == p.diff else {
-                plan = Plan(install: p.install, new: new, diff: diff)
+            // A file may have changed while the sheet was open: never write a diff the user didn't see.
+            let changes = try AgentSetup.plan(p.agent, install: p.install, hookPath: HookSetup.hookPath)
+            guard changes == p.changes else {
+                plan = Plan(agent: p.agent, install: p.install, changes: changes, diff: try AgentSetup.diff(changes))
                 return
             }
-            let backup = try HookInstaller.write(new)
-            installed = HookSetup.isInstalled
-            show(L("Saved. New Claude Code sessions will use it.") + (backup.map { "\n" + L("Backup: ") + $0 } ?? ""), failed: false)
+            let backups = try AgentSetup.apply(changes)
+            refresh()
+            var text = L("Saved. New sessions will use it.")
+            if p.install, let note = afterInstallNote(p.agent) { text += " " + note }
+            for b in backups { text += "\n" + L("Backup: ") + b }
+            show(text, failed: false)
         } catch {
             show(L("Couldn't update settings: ") + error.localizedDescription, failed: true)
         }
     }
+
+    private func afterInstallNote(_ a: AgentKind) -> String? {
+        switch a {
+        case .codex: L("In Codex, run /hooks once to trust the new hooks.")
+        case .cline: L("In Cline settings, make sure Hooks are enabled.")
+        case .cursor, .copilot, .antigravity: L("Restart the app or extension to load the hooks.")
+        case .openCode: L("Restart OpenCode to load the plugin.")
+        default: nil
+        }
+    }
+
+    private func refresh() { installed = Set(AgentKind.allCases.filter { AgentSetup.isInstalled($0, hookPath: HookSetup.hookPath) }) }
 
     private func show(_ text: String, failed: Bool) {
         message = text

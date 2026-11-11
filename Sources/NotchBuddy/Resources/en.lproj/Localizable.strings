@@ -98,3 +98,19 @@
 "Couldn't update settings: " = "Couldn't update settings: ";
 
 "%@ sound" = "%@ sound";
+
+"CLI, VS Code, Desktop" = "CLI, VS Code, Desktop";
+"Connect %@" = "Connect %@";
+"Disconnect %@" = "Disconnect %@";
+"Remove %@" = "Remove %@";
+"In Cline settings, make sure Hooks are enabled." = "In Cline settings, make sure Hooks are enabled.";
+"In Codex, run /hooks once to trust the new hooks." = "In Codex, run /hooks once to trust the new hooks.";
+"Restart OpenCode to load the plugin." = "Restart OpenCode to load the plugin.";
+"Restart the app or extension to load the hooks." = "Restart the app or extension to load the hooks.";
+"Saved. New sessions will use it." = "Saved. New sessions will use it.";
+"Status and approvals" = "Status and approvals";
+"Status; risky commands stay with the agent" = "Status; risky commands stay with the agent";
+"These exact changes will be made. Existing files are backed up next to themselves first." = "These exact changes will be made. Existing files are backed up next to themselves first.";
+"VS Code" = "VS Code";
+"No official hooks yet" = "No official hooks yet";
+"Hook format not documented clearly yet" = "Hook format not documented clearly yet";

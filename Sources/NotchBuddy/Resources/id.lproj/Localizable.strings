@@ -98,3 +98,19 @@
 "Couldn't update settings: " = "Gagal memperbarui pengaturan: ";
 
 "%@ sound" = "Suara %@";
+
+"CLI, VS Code, Desktop" = "CLI, VS Code, Desktop";
+"Connect %@" = "Hubungkan %@";
+"Disconnect %@" = "Putuskan %@";
+"Remove %@" = "Hapus %@";
+"In Cline settings, make sure Hooks are enabled." = "Di pengaturan Cline, pastikan Hooks aktif.";
+"In Codex, run /hooks once to trust the new hooks." = "Di Codex, jalankan /hooks sekali untuk memercayai hook baru.";
+"Restart OpenCode to load the plugin." = "Mulai ulang OpenCode supaya plugin-nya termuat.";
+"Restart the app or extension to load the hooks." = "Mulai ulang app atau ekstensinya supaya hook termuat.";
+"Saved. New sessions will use it." = "Tersimpan. Sesi baru akan memakainya.";
+"Status and approvals" = "Status dan persetujuan";
+"Status; risky commands stay with the agent" = "Status; perintah berisiko tetap ditangani agennya";
+"These exact changes will be made. Existing files are backed up next to themselves first." = "Perubahan persis ini yang akan dibuat. File yang sudah ada dicadangkan dulu di sebelahnya.";
+"VS Code" = "VS Code";
+"No official hooks yet" = "Belum ada hook resmi";
+"Hook format not documented clearly yet" = "Format hook belum terdokumentasi jelas";

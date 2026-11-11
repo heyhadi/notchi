@@ -12,16 +12,6 @@ enum HookSetup {
             : exe.deletingLastPathComponent().appendingPathComponent("notchbuddy-hook").path
     }
 
-    static func current() -> String { (try? String(contentsOfFile: HookInstaller.settingsPath, encoding: .utf8)) ?? "" }
-    static var isInstalled: Bool { HookInstaller.isInstalled(current(), hookPath: hookPath) }
-
-    /// (new file content, unified diff) for installing or removing.
-    static func plan(install: Bool) throws -> (String, String) {
-        let old = current()
-        let new = install ? try HookInstaller.installed(old, hookPath: hookPath) : try HookInstaller.uninstalled(old, hookPath: hookPath)
-        return (new, try HookInstaller.diff(old: old, new: new))
-    }
-
     /// `--diff|--connect|--disconnect <agent>` (also the older `--hook-diff|--install-hook|--uninstall-hook` for Claude Code).
     /// NB_HOME redirects every write to a test folder.
     static func runCLI(_ args: [String]) -> Never {

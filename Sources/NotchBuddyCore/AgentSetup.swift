@@ -13,6 +13,8 @@ public struct FileChange: Equatable, Sendable {
 public enum AgentSetup {
     /// Marker in every file and command Notch Buddy writes, so removal never touches the user's own hooks.
     static let marker = "notch-buddy"
+    /// Text in every file Notch Buddy owns (the folder name "notch-buddy" alone is not proof).
+    static let managed = "notch-buddy: managed by Notch Buddy"
 
     public static func configPaths(_ a: AgentKind, home: String = NSHomeDirectory()) -> [String] {
         switch a {
@@ -76,7 +78,7 @@ public enum AgentSetup {
 
         case .cline:
             for (event, path) in zip(clineEvents, paths) {
-                if let existing = read(path), !existing.contains(marker) {
+                if let existing = read(path), !existing.contains(managed) {
                     throw NSError(domain: "AgentSetup", code: 1, userInfo: [NSLocalizedDescriptionKey:
                         "You already have a Cline hook at \(path). Notch Buddy won't overwrite it."])
                 }
@@ -91,7 +93,12 @@ public enum AgentSetup {
     public static func isInstalled(_ a: AgentKind, hookPath: String, home: String = NSHomeDirectory()) -> Bool {
         configPaths(a, home: home).allSatisfy { p in
             guard let s = try? String(contentsOfFile: p, encoding: .utf8) else { return false }
-            return s.contains(marker) || s.contains(q(hookPath))
+            switch a {
+            case .claudeCode: return HookInstaller.isInstalled(s, hookPath: hookPath)
+            case .codex, .geminiCLI, .cursor: return s.contains(q(hookPath))
+            case .antigravity: return ((try? JSONSerialization.jsonObject(with: Data(s.utf8))) as? [String: Any])?[marker] != nil
+            case .copilot, .openCode, .cline: return s.contains(managed)
+            }
         }
     }
 
