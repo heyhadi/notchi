@@ -155,3 +155,6 @@ or copy the backup file back over `~/.claude/settings.json`.
 ## Notes
 - The hook path points into `~/notch-buddy/build/`. If you move the app (e.g. to /Applications), uninstall, move, then install again.
 - Commands you already allow in `permissions.allow` never trigger a permission request, so they never show in the notch.
+
+**Updated 2026-11-12 with your OK:** `Stop` now runs `notchbuddy-hook --wait 590` with timeout 600 so the notch can hold a
+finished turn while you reply (backup: `~/.claude/settings.json.notchbuddy-backup-2026-11-11T18-50-40Z`).
