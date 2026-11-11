@@ -127,3 +127,8 @@
 "Will be sent when %@ finishes this turn" = "Akan dikirim saat %@ menyelesaikan giliran ini";
 "Your message goes in when %@ finishes this turn" = "Pesanmu masuk saat %@ menyelesaikan giliran ini";
 "Update…" = "Perbarui…";
+
+"%@ asks: %@" = "%@ bertanya: %@";
+"Question" = "Pertanyaan";
+"Other answer…" = "Jawaban lain…";
+"Send answer" = "Kirim jawaban";

@@ -38,6 +38,13 @@ enum Snapshot {
             m.mode = .expanded
             add("notch-\(name)", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        do { // question card
+            let m = NotchModel()
+            let json = #"{"session_id":"q","cwd":"/Users/me/form-keeper","hook_event_name":"PermissionRequest","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database should I use for the cache?","header":"Cache","options":[{"label":"SQLite","description":"Single file, no server"},{"label":"Redis","description":"Fast, needs a running server"},{"label":"In memory","description":"Simplest, lost on restart"}],"multiSelect":false}]}}"#
+            if let e = HookEvent(json: Data(json.utf8)) { m.handle(e) { _ in } }
+            m.mode = .expanded
+            add("notch-question", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
+        }
         do { // chat box on a held session
             let m = NotchModel()
             m.handle(HookEvent(name: "UserPromptSubmit", sessionID: "c", cwd: NSHomeDirectory() + "/form-keeper")) { _ in }

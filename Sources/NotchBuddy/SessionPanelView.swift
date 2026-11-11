@@ -8,7 +8,12 @@ struct SessionPanelView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if let req = model.pending.first {
-                ApprovalCard(req: req) { model.decide(req.id, $0) }
+                if let questions = req.event.questions {
+                    QuestionCard(req: req, questions: questions,
+                                 answer: { model.answer(req.id, $0) }, toTerminal: { model.decide(req.id, nil) })
+                } else {
+                    ApprovalCard(req: req) { model.decide(req.id, $0) }
+                }
             }
             if model.sessions.isEmpty {
                 Text(L("No active sessions"))
@@ -77,6 +82,97 @@ private struct SessionRow: View {
         default:
             return stateName(session.state)
         }
+    }
+}
+
+/// An agent's question with choices. One single-choice question sends on click; otherwise pick, then Send.
+private struct QuestionCard: View {
+    let req: PendingRequest
+    let questions: [AgentQuestion]
+    let answer: ([String: String]) -> Void
+    let toTerminal: () -> Void
+    @State private var picked: [String: Set<String>] = [:]
+    @State private var other: [String: String] = [:]
+
+    private var oneClick: Bool { questions.count == 1 && !questions[0].multiSelect }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("\(req.event.agentLabel) · \(req.event.project)").font(.system(size: 14, weight: .medium)).foregroundColor(.white)
+                Spacer()
+                Text(L("Question")).font(.system(size: 12, weight: .medium)).foregroundColor(Color(hex: 0x3D2600))
+                    .padding(.horizontal, 10).padding(.vertical, 3).background(Capsule().fill(Color(hex: 0xFFB020)))
+            }
+            ForEach(questions, id: \.question) { q in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(q.question).font(.system(size: 15, weight: .semibold, design: .rounded)).foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                    ForEach(q.options, id: \.label) { o in
+                        let on = picked[q.question]?.contains(o.label) == true
+                        Button { tap(q, o.label) } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(o.label).font(.system(size: 13, weight: .medium))
+                                if !o.description.isEmpty && o.description != o.label {
+                                    Text(o.description).font(.system(size: 11)).opacity(0.75).fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .foregroundColor(on ? Color(hex: 0x3D2600) : .white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(on ? Color(hex: 0xFFB020) : Color(hex: 0x2A2A30)))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(on ? .isSelected : [])
+                    }
+                    TextField(L("Other answer…"), text: Binding(get: { other[q.question] ?? "" }, set: { other[q.question] = $0 }))
+                        .textFieldStyle(.plain).font(.system(size: 13)).foregroundColor(.white)
+                        .padding(.horizontal, 12).frame(minHeight: 32)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(hex: 0x0B0B0D)))
+                        .onSubmit { if oneClick { send() } }
+                }
+            }
+            HStack(spacing: 8) {
+                if !oneClick || !(other[questions[0].question] ?? "").isEmpty {
+                    Button(action: send) {
+                        Text(L("Send answer")).font(.system(size: 14, weight: .medium)).foregroundColor(Color(hex: 0x3D2600))
+                            .padding(.horizontal, 16).frame(minHeight: 36)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(hex: complete ? 0xFFB020 : 0x6B5A2E)))
+                    }
+                    .buttonStyle(.plain).disabled(!complete)
+                }
+                Spacer()
+                Button(action: toTerminal) {
+                    Text(L("Answer in terminal")).font(.system(size: 14)).foregroundColor(Color(hex: 0xA9A8B0)).frame(minHeight: 36)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color(hex: 0x1E1D23)))
+    }
+
+    private func value(_ q: AgentQuestion) -> String? {
+        let typed = (other[q.question] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !typed.isEmpty { return typed }
+        let labels = q.options.map(\.label).filter { picked[q.question]?.contains($0) == true } // keep option order
+        return labels.isEmpty ? nil : labels.joined(separator: ", ")
+    }
+
+    private var complete: Bool { questions.allSatisfy { value($0) != nil } }
+
+    private func tap(_ q: AgentQuestion, _ label: String) {
+        var set = picked[q.question] ?? []
+        if q.multiSelect { if set.contains(label) { set.remove(label) } else { set.insert(label) } } else { set = [label] }
+        picked[q.question] = set
+        other[q.question] = nil
+        if oneClick { send() }
+    }
+
+    private func send() {
+        guard complete else { return }
+        answer(Dictionary(uniqueKeysWithValues: questions.compactMap { q in value(q).map { (q.question, $0) } }))
     }
 }
 

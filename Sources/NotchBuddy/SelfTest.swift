@@ -45,14 +45,28 @@ enum SelfTest {
                 model.setChatOpen(key, false)
                 send(ev("Stop")) { out in
                     check(out.isEmpty, "closed chat: Stop not held, no output")
-                    print(failures == 0 ? "SELFTEST PASSED" : "SELFTEST FAILED (\(failures))")
-                    exit(failures == 0 ? 0 : 1)
+                    question()
                 }
             }
             after(0.8) {
                 check(model.chats[key]?.held != nil && model.chats[key]?.lastReply == "what next?", "open chat holds the finished turn")
                 model.sendChat(key, "reply now")
             }
+        }
+    }
+
+    /// AskUserQuestion: the card's answer is filled into updatedInput.answers.
+    static func question() {
+        let q = #","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which fruit?","header":"Fruit","options":[{"label":"Apple","description":""},{"label":"Banana","description":""}],"multiSelect":false}]}"#
+        send(ev("PermissionRequest", q)) { out in
+            check(out.contains(#""answers":{"Which fruit?":"Banana"}"#) && out.contains(#""behavior":"allow""#), "question answered from the card")
+            print(failures == 0 ? "SELFTEST PASSED" : "SELFTEST FAILED (\(failures))")
+            exit(failures == 0 ? 0 : 1)
+        }
+        after(0.8) {
+            check(model.pending.first?.event.questions?.first?.options.count == 2 && model.peekText?.contains("Which fruit?") == true,
+                  "question card pending, peek shows the question")
+            if let id = model.pending.first?.id { model.answer(id, ["Which fruit?": "Banana"]) }
         }
     }
 

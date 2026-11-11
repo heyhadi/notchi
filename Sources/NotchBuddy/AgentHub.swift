@@ -102,6 +102,15 @@ extension NotchModel {
         refresh(after: nil)
     }
 
+    /// The user picked answers on a question card (question text → label or free text).
+    func answer(_ id: PendingRequest.ID, _ answers: [String: String]) {
+        guard let i = pending.firstIndex(where: { $0.id == id }) else { return }
+        let req = pending.remove(at: i)
+        req.respond?(req.event.agent.answerOutput(for: req.event, answers: answers))
+        store.resolvePermission(sessionID: SessionStore.key(req.event))
+        refresh(after: nil)
+    }
+
     private func releasePending(key: String) {
         pending.removeAll { req in
             guard SessionStore.key(req.event) == key else { return false }
@@ -130,6 +139,8 @@ extension NotchModel {
 
     private func peek(for e: HookEvent) -> String? {
         switch e.name {
+        case "PermissionRequest" where e.questions != nil:
+            return String(format: L("%@ asks: %@"), e.agentLabel, e.questions?.first?.question ?? "")
         case "PermissionRequest", "Notification":
             return String(format: L("%@ needs approval"), "\(e.agentLabel) · \(e.project)")
         case "Stop":

@@ -127,3 +127,8 @@
 "Will be sent when %@ finishes this turn" = "Will be sent when %@ finishes this turn";
 "Your message goes in when %@ finishes this turn" = "Your message goes in when %@ finishes this turn";
 "Update…" = "Update…";
+
+"%@ asks: %@" = "%@ asks: %@";
+"Question" = "Question";
+"Other answer…" = "Other answer…";
+"Send answer" = "Send answer";
