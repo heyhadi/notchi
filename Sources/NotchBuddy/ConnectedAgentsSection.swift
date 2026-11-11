@@ -62,6 +62,7 @@ struct ConnectedAgentsSection: View {
         switch a {
         case .claudeCode: return how + " · " + L("CLI, VS Code, Desktop")
         case .cline, .copilot: return how + " · " + L("VS Code")
+        case .antigravity: return how + " · " + L("agy (CLI). The IDE doesn't run hooks yet")
         default: return how
         }
     }
