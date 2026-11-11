@@ -5,6 +5,8 @@
   **chat** (reply from the notch, delivered when Claude finishes its turn), risky commands (sudo, curl|sh, …) always
   go back to the terminal. All four were checked in a real session in `~/nb-playground`.
 - Cmd+C/V/X/A/Z work in the notch text boxes.
+- **All 12 avatars** are in: Settings → Avatar, pick any (the notch switches right away). Each shows the six states.
+- The chat box now shows "You: …" for the last message you sent. The double message last night looked like a re-send, not a bug.
 
 ## Agents
 | Agent | State |
