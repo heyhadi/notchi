@@ -75,5 +75,7 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertEqual(st.topState(at: t), .error)
         st.apply(ev("Notification", "b", type: "permission_prompt"), at: t)
         XCTAssertEqual(st.current(at: t).map(\.state), [.needsYou, .error, .done])
+        st.apply(ev("Stop", "c"), at: t)
+        XCTAssertEqual(st.sessions["claude-code:c"]?.state, .error, "Stop after a failure keeps Error")
     }
 }

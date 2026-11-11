@@ -40,7 +40,7 @@ public struct SessionStore: Sendable {
             // Only prompts that block on the user; idle reminders would nag.
             guard ["permission_prompt", "elicitation_dialog"].contains(e.notificationType ?? "") else { break }
             s.state = .needsYou; s.message = e.message
-        case "Stop": s.state = .done; s.message = e.message
+        case "Stop" where s.state != .error: s.state = .done; s.message = e.message // an idle right after a failure keeps the error
         default: break
         }
         sessions[key] = s

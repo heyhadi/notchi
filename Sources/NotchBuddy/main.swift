@@ -130,7 +130,7 @@ MainActor.assumeIsolated {
         SelfTest.run(hook: CommandLine.arguments[i + 1])
     }
     let args = CommandLine.arguments
-    if args.contains("--hook-diff") || args.contains("--install-hook") || args.contains("--uninstall-hook") {
+    if args.contains(where: { ["--hook-diff", "--install-hook", "--uninstall-hook", "--diff", "--connect", "--disconnect"].contains($0) }) {
         HookSetup.runCLI(args)
     }
     let delegate = AppDelegate()

@@ -92,7 +92,7 @@ extension HookEvent {
             e = cline(o, event: event)
         }
         e?.agent = agent
-        e?.surface = surfaceLabel(kv["entry"] ?? "")
+        if agent == .claudeCode { e?.surface = surfaceLabel(kv["entry"] ?? "") } // other agents inherit a stray env var
         return e
     }
 
@@ -110,7 +110,7 @@ extension HookEvent {
     // https://antigravity.google/docs/hooks — camelCase, conversationId, toolCall {name, args}
     private static func antigravity(_ o: [String: Any], event: String?) -> HookEvent? {
         guard let sid = o["conversationId"] as? String, let event else { return nil }
-        let cwd = (o["workspacePaths"] as? [String])?.first ?? ""
+        let cwd = o["cwd"] as? String ?? (o["workspacePaths"] as? [String])?.first ?? ""
         let call = o["toolCall"] as? [String: Any]
         let err = (o["error"] as? String).flatMap { $0.isEmpty ? nil : $0 }
         let name: String
