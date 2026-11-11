@@ -14,11 +14,22 @@ let waitSeconds = arg("--wait").flatMap(Int.init)
     ?? (agent == "claude-code" && input.range(of: Data(#""PermissionRequest""#.utf8)) != nil ? 590 : 2)
 
 let fd = socket(AF_UNIX, SOCK_STREAM, 0)
+/// Records hooks that ran but couldn't reach the app (not running, or blocked by an agent's sandbox), so a silent
+/// agent can be told apart from one that never runs the hook. Metadata only: time, agent, event, error.
+func noteFailure(_ why: String) {
+    let path = NSHomeDirectory() + "/Library/Logs/NotchBuddy/hook-failures.log"
+    try? FileManager.default.createDirectory(atPath: (path as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+    if let size = (try? FileManager.default.attributesOfItem(atPath: path))?[.size] as? Int, size > 256_000 { try? FileManager.default.removeItem(atPath: path) }
+    let line = "\(ISO8601DateFormatter().string(from: Date())) \(agent) \(arg("--event") ?? "-") \(why)\n"
+    if let h = FileHandle(forWritingAtPath: path) { h.seekToEndOfFile(); h.write(Data(line.utf8)); try? h.close() }
+    else { FileManager.default.createFile(atPath: path, contents: Data(line.utf8), attributes: [.posixPermissions: 0o600]) }
+}
+
 func finish(_ reply: Data) -> Never {
     FileHandle.standardOutput.write(reply.isEmpty ? Data((arg("--default") ?? "").utf8) : reply)
     exit(0)
 }
-guard fd >= 0 else { finish(Data()) }
+guard fd >= 0 else { noteFailure("socket errno=\(errno)"); finish(Data()) }
 var on: Int32 = 1
 setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &on, socklen_t(MemoryLayout<Int32>.size))
 var rcv = timeval(tv_sec: waitSeconds, tv_usec: 0), snd = timeval(tv_sec: 2, tv_usec: 0)
@@ -36,6 +47,7 @@ let ok = withUnsafeMutableBytes(of: &addr.sun_path) { buf -> Bool in
 let connected = ok && withUnsafePointer(to: &addr) {
     $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { connect(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) == 0 }
 }
+if !connected { noteFailure("connect errno=\(errno)") }
 guard connected else { finish(Data()) }
 
 // Where a Claude Code session runs (cli, claude-vscode, claude-desktop…), so the notch can label it.
