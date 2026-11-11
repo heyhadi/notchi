@@ -116,6 +116,10 @@ MainActor.assumeIsolated {
     if let i = CommandLine.arguments.firstIndex(of: "--selftest"), i + 1 < CommandLine.arguments.count {
         SelfTest.run(hook: CommandLine.arguments[i + 1])
     }
+    let args = CommandLine.arguments
+    if args.contains("--hook-diff") || args.contains("--install-hook") || args.contains("--uninstall-hook") {
+        HookSetup.runCLI(args)
+    }
     let delegate = AppDelegate()
     NSApplication.shared.delegate = delegate
     NSApplication.shared.run()
