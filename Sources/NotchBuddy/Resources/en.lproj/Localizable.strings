@@ -1,1 +1,19 @@
 "Notch Buddy" = "Notch Buddy";
+"Debug: force state" = "Debug: force state";
+"Automatic" = "Automatic";
+"Sleeping" = "Sleeping";
+"Thinking" = "Thinking";
+"Working" = "Working";
+"Needs you" = "Needs you";
+"Done" = "Done";
+"Error" = "Error";
+"Quit Notch Buddy" = "Quit Notch Buddy";
+
+"Thinking…" = "Thinking…";
+"Working…" = "Working…";
+"Done!" = "Done!";
+"Something went wrong" = "Something went wrong";
+
+"Review" = "Review";
+"No active sessions" = "No active sessions";
+"All data stays on this Mac" = "All data stays on this Mac";

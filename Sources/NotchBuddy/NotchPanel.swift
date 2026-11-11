@@ -1,0 +1,98 @@
+import AppKit
+import SwiftUI
+
+public final class NotchPanel: NSPanel {
+    public let model: NotchModel
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
+
+    public override var canBecomeKey: Bool { true }
+    public override var canBecomeMain: Bool { false }
+
+    public init(model: NotchModel) {
+        self.model = model
+        let initialRect = CGRect(x: 0, y: 0, width: 640, height: 520)
+        super.init(
+            contentRect: initialRect,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+
+        self.level = .statusBar
+        self.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
+        self.backgroundColor = .clear
+        self.isOpaque = false
+        self.hasShadow = false
+        self.ignoresMouseEvents = true
+
+        let hostingView = NSHostingView(rootView: NotchView(model: model))
+        hostingView.frame = initialRect
+        hostingView.autoresizingMask = [.width, .height]
+        self.contentView = hostingView
+
+        updatePanelFrame()
+        setupEventMonitors()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(screenParametersChanged),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
+    }
+
+    deinit {
+        if let g = globalMonitor {
+            NSEvent.removeMonitor(g)
+        }
+        if let l = localMonitor {
+            NSEvent.removeMonitor(l)
+        }
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    public var currentContentRect: CGRect {
+        let g = model.geometry
+        let shapeSize = model.currentSize
+        let width = shapeSize.width > 0 ? shapeSize.width : 200
+        let height = shapeSize.height > 0 ? shapeSize.height : 32
+        let x = g.centerX - width / 2.0
+        let y = g.screenFrame.maxY - height
+        return CGRect(x: x, y: y, width: width, height: height)
+    }
+
+    public func updatePanelFrame() {
+        let g = NotchGeometry.compute()
+        let panelWidth: CGFloat = 640
+        let panelHeight: CGFloat = 520
+        let x = g.centerX - panelWidth / 2.0
+        let y = g.screenFrame.maxY - panelHeight
+        let panelFrame = CGRect(x: x, y: y, width: panelWidth, height: panelHeight)
+        setFrame(panelFrame, display: true)
+    }
+
+    private func setupEventMonitors() {
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] _ in
+            self?.updateMouseHitTesting()
+        }
+
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] event in
+            self?.updateMouseHitTesting()
+            return event
+        }
+    }
+
+    private func updateMouseHitTesting() {
+        let mouseLoc = NSEvent.mouseLocation
+        let isInside = currentContentRect.contains(mouseLoc)
+        let shouldIgnore = !isInside
+        if self.ignoresMouseEvents != shouldIgnore {
+            self.ignoresMouseEvents = shouldIgnore
+        }
+    }
+
+    @objc private func screenParametersChanged() {
+        updatePanelFrame()
+    }
+}

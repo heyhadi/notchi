@@ -1,1 +1,19 @@
 "Notch Buddy" = "Notch Buddy";
+"Debug: force state" = "Debug: paksa status";
+"Automatic" = "Otomatis";
+"Sleeping" = "Tidur";
+"Thinking" = "Berpikir";
+"Working" = "Bekerja";
+"Needs you" = "Perlu bantuanmu";
+"Done" = "Selesai";
+"Error" = "Kesalahan";
+"Quit Notch Buddy" = "Keluar dari Notch Buddy";
+
+"Thinking…" = "Sedang berpikir…";
+"Working…" = "Sedang bekerja…";
+"Done!" = "Selesai!";
+"Something went wrong" = "Terjadi kesalahan";
+
+"Review" = "Tinjau";
+"No active sessions" = "Tidak ada sesi aktif";
+"All data stays on this Mac" = "Semua data tetap ada di Mac ini";
