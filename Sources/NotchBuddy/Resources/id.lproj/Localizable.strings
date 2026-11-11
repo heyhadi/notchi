@@ -17,3 +17,22 @@
 "Review" = "Tinjau";
 "No active sessions" = "Tidak ada sesi aktif";
 "All data stays on this Mac" = "Semua data tetap ada di Mac ini";
+
+"%@ needs approval" = "%@ minta persetujuan";
+"%d agents running" = "%d agen berjalan";
+"%d needs you" = "%d perlu kamu";
+"%d steps" = "%d langkah";
+"1 agent running" = "1 agen berjalan";
+"All quiet" = "Semua tenang";
+"Allow once" = "Izinkan sekali";
+"Answer in terminal" = "Jawab di terminal";
+"Denied from Notch Buddy" = "Ditolak dari Notch Buddy";
+"Deny" = "Tolak";
+"Dismiss" = "Tutup";
+"Done %d min ago" = "Selesai %d menit lalu";
+"Done just now" = "Baru saja selesai";
+"Done · %d steps" = "Selesai · %d langkah";
+"Needs approval" = "Perlu persetujuan";
+"Risky commands can only be approved in the terminal." = "Perintah berisiko hanya bisa disetujui di terminal.";
+"Risky" = "Berisiko";
+"Wants to use %@ in %@:" = "Mau memakai %@ di %@:";

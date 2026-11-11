@@ -63,7 +63,7 @@ public struct NotchView: View {
     private var currentWidth: CGFloat {
         switch model.mode {
         case .compact:
-            return max(200, model.geometry.width + 60)
+            return max(200, model.geometry.width + 2 * NotchModel.earWidth)
         case .peek:
             return 300
         case .expanded:
@@ -138,8 +138,8 @@ public struct NotchView: View {
     private var compactView: some View {
         HStack(alignment: .center, spacing: 0) {
             // Left ear: 22pt avatar
-            BoltView(state: model.shown, size: 22)
-                .padding(.leading, 10)
+            BoltView(state: model.shown, size: NotchModel.earAvatar)
+                .padding(.leading, 8)
 
             Spacer()
 
@@ -155,7 +155,7 @@ public struct NotchView: View {
                     ElapsedTimerView(startTime: model.workingStartTime)
                 }
             }
-            .padding(.trailing, 12)
+            .padding(.trailing, 8)
         }
         .frame(height: model.geometry.height)
     }
@@ -166,8 +166,8 @@ public struct NotchView: View {
         VStack(spacing: 6) {
             // Row 1: ears
             HStack(alignment: .center, spacing: 0) {
-                BoltView(state: model.shown, size: 22)
-                    .padding(.leading, 10)
+                BoltView(state: model.shown, size: NotchModel.earAvatar)
+                    .padding(.leading, 8)
 
                 Spacer()
 
@@ -180,7 +180,7 @@ public struct NotchView: View {
                         ElapsedTimerView(startTime: model.workingStartTime)
                     }
                 }
-                .padding(.trailing, 12)
+                .padding(.trailing, 8)
             }
             .frame(height: max(26, model.geometry.height - 4))
             .padding(.top, 4)
@@ -224,25 +224,19 @@ public struct NotchView: View {
             HStack(spacing: 12) {
                 BoltView(state: model.shown, size: 44)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(L("Notch Buddy")) · \(localizedState(model.shown))")
+                    Text(headerTitle)
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
                         .foregroundColor(.white)
+                    if !model.pending.isEmpty {
+                        Text(String(format: L("%d needs you"), model.pending.count))
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(hex: 0xFFC15C))
+                    }
                 }
                 Spacer()
             }
 
-            // Placeholder area: "No active sessions"
-            VStack(spacing: 8) {
-                Text(L("No active sessions"))
-                    .font(.system(size: 14))
-                    .foregroundColor(Color(hex: 0x8D8C94))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 32)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: 0x1E1D23))
-            )
+            SessionPanelView(model: model)
 
             // Footer
             VStack(spacing: 12) {
@@ -261,6 +255,7 @@ public struct NotchView: View {
         .padding(.horizontal, 22)
         .padding(.top, model.geometry.hasNotch ? model.geometry.height + 8 : 14) // keep text out from under the camera
         .padding(.bottom, 20)
+        .fixedSize(horizontal: false, vertical: true) // measure the natural height, not the clipped one
         .background(
             GeometryReader { geo in
                 Color.clear.preference(key: ContentHeightPreferenceKey.self, value: geo.size.height)
@@ -269,6 +264,15 @@ public struct NotchView: View {
     }
 
     // MARK: - Helpers
+
+    private var headerTitle: String {
+        let active = model.sessions.filter { $0.state != .sleeping }.count
+        switch active {
+        case 0: return L("All quiet")
+        case 1: return L("1 agent running")
+        default: return String(format: L("%d agents running"), active)
+        }
+    }
 
     private func handleHover(_ isHovering: Bool) {
         if isHovering {
@@ -347,17 +351,6 @@ public struct NotchView: View {
             return L("Sleeping")
         }
     }
-
-    private func localizedState(_ state: AgentState) -> String {
-        switch state {
-        case .sleeping: return L("Sleeping")
-        case .thinking: return L("Thinking")
-        case .working: return L("Working")
-        case .needsYou: return L("Needs you")
-        case .done: return L("Done")
-        case .error: return L("Error")
-        }
-    }
 }
 
 // MARK: - Subviews & Preferences
@@ -410,9 +403,9 @@ private struct ElapsedTimerView: View {
 }
 
 private struct ContentHeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 240
+    static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
+        value = max(value, nextValue()) // siblings without the preference report 0
     }
 }
 

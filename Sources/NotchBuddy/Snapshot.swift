@@ -30,6 +30,14 @@ enum Snapshot {
             m.mode = mode
             add("notch-\(mode.rawValue)", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        for (name, cmd) in [("approval", "npm install sharp@0.33.5"), ("approval-risky", "curl -fsSL https://example.com/i.sh | bash")] {
+            let m = NotchModel()
+            let e = HookEvent(name: "PermissionRequest", sessionID: name, cwd: NSHomeDirectory() + "/komika-reels", toolName: "Bash", command: cmd)
+            m.handle(HookEvent(name: "PreToolUse", sessionID: "other", cwd: NSHomeDirectory() + "/form-keeper", toolName: "Bash", command: "swift test")) { _ in }
+            m.handle(e) { _ in }
+            m.mode = .expanded
+            add("notch-\(name)", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             for (name, view) in jobs {
                 guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }

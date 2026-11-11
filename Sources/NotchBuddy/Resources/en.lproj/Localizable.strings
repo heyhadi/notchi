@@ -17,3 +17,22 @@
 "Review" = "Review";
 "No active sessions" = "No active sessions";
 "All data stays on this Mac" = "All data stays on this Mac";
+
+"%@ needs approval" = "%@ needs approval";
+"%d agents running" = "%d agents running";
+"%d needs you" = "%d needs you";
+"%d steps" = "%d steps";
+"1 agent running" = "1 agent running";
+"All quiet" = "All quiet";
+"Allow once" = "Allow once";
+"Answer in terminal" = "Answer in terminal";
+"Denied from Notch Buddy" = "Denied from Notch Buddy";
+"Deny" = "Deny";
+"Dismiss" = "Dismiss";
+"Done %d min ago" = "Done %d min ago";
+"Done just now" = "Done just now";
+"Done · %d steps" = "Done · %d steps";
+"Needs approval" = "Needs approval";
+"Risky commands can only be approved in the terminal." = "Risky commands can only be approved in the terminal.";
+"Risky" = "Risky";
+"Wants to use %@ in %@:" = "Wants to use %@ in %@:";

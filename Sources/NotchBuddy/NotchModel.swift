@@ -50,7 +50,14 @@ public final class NotchModel: ObservableObject {
         }
     }
 
+    /// Visible width beside the camera on each side, and the avatar size in that ear.
+    static let earWidth: CGFloat = 52
+    static let earAvatar: CGFloat = 30
     @Published public var currentSize: CGSize = .zero
+    // Phase 2: live agent data (see AgentHub.swift)
+    @Published var sessions: [AgentSession] = []
+    @Published var pending: [PendingRequest] = []
+    var store = SessionStore()
     @Published public var workingStartTime: Date?
 
     private var doneReturnTask: Task<Void, Never>?
@@ -81,7 +88,7 @@ public final class NotchModel: ObservableObject {
     public func updateCurrentSize(contentHeight: CGFloat? = nil) {
         switch mode {
         case .compact:
-            currentSize = CGSize(width: max(200, geometry.width + 60), height: geometry.height)
+            currentSize = CGSize(width: max(200, geometry.width + 2 * Self.earWidth), height: geometry.height)
         case .peek:
             currentSize = CGSize(width: 300, height: 68)
         case .expanded:

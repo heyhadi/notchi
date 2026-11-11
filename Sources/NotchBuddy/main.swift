@@ -7,6 +7,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var notchPanel: NotchPanel?
     private let model = NotchModel()
     private var debugSubmenu: NSMenu?
+    private let hookServer = HookServer()
+    private var refreshTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -15,6 +17,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let panel = NotchPanel(model: model)
         self.notchPanel = panel
         panel.orderFrontRegardless()
+
+        hookServer.onEvent = { [model] event, respond in model.handle(event, respond: respond) }
+        do { try hookServer.start() } catch { NSLog("Notch Buddy: hook socket failed: \(error)") }
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [model] _ in
+            MainActor.assumeIsolated { model.refresh(after: nil) }
+        }
     }
 
     private func setupStatusItem() {
@@ -37,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         for state in AgentState.allCases {
             let stateItem = NSMenuItem(
-                title: localizedStateName(state),
+                title: stateName(state),
                 action: #selector(selectState(_:)),
                 keyEquivalent: ""
             )
@@ -98,23 +106,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func quitApp() {
         NSApp.terminate(nil)
     }
-
-    private func localizedStateName(_ state: AgentState) -> String {
-        switch state {
-        case .sleeping: return L("Sleeping")
-        case .thinking: return L("Thinking")
-        case .working: return L("Working")
-        case .needsYou: return L("Needs you")
-        case .done: return L("Done")
-        case .error: return L("Error")
-        }
-    }
 }
 
 MainActor.assumeIsolated {
     if let i = CommandLine.arguments.firstIndex(of: "--snapshot"), i + 1 < CommandLine.arguments.count {
         Snapshot.run(to: CommandLine.arguments[i + 1])
         exit(0)
+    }
+    if let i = CommandLine.arguments.firstIndex(of: "--selftest"), i + 1 < CommandLine.arguments.count {
+        SelfTest.run(hook: CommandLine.arguments[i + 1])
     }
     let delegate = AppDelegate()
     NSApplication.shared.delegate = delegate
