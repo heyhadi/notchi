@@ -22,7 +22,7 @@ Defaults chosen while building without the user; change freely.
 |---|---|---|---|
 | Claude Code (CLI, VS Code, Desktop) | `~/.claude/settings.json` hooks | Yes (PermissionRequest) | Yes |
 | Codex (CLI + IDE) | `~/.codex/hooks.json` (same shape as Claude) | Yes (PermissionRequest) | No (not installed); trust hooks with `/hooks` |
-| Antigravity (IDE + `agy`) | `~/.gemini/config/hooks.json`, group `notch-buddy` | No: status; risky → `force_ask` | Yes: events reach the app (`agy -p`) |
+| Antigravity (IDE + `agy`) | `~/.gemini/config/hooks.json`, group `notch-buddy` | No: status; risky → `force_ask` | `agy`: global hooks file read, events and chat replies (Stop `continue`) work. IDE: restart needed after connecting; not yet confirmed |
 | Gemini CLI | `~/.gemini/settings.json` hooks | No: status only | No (not installed) |
 | Cursor | `~/.cursor/hooks.json`, non-gating events only | No: status only | No (not installed) |
 | GitHub Copilot (VS Code agent, CLI) | `~/.copilot/hooks/notch-buddy.json` | No: status; risky → `ask` | No (not installed) |
