@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avatar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: {{size}}px; height: {{size}}px; display: flex">
+<sc-if value="{{is.bolt}}" hint-placeholder-val="{{true}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Bolt, robot">
+<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="fl">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle cx="60" cy="10" r="6" fill="#FFB020"/>
+<rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/>
+<rect x="52" y="88" width="16" height="9" rx="3" fill="#1E8E66"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<g class="bk"><ellipse cx="48" cy="51" rx="6" ry="8" fill="#9BF2D0"/><ellipse cx="72" cy="51" rx="6" ry="8" fill="#9BF2D0"/><circle cx="50" cy="47.5" r="2" fill="#fff"/><circle cx="74" cy="47.5" r="2" fill="#fff"/></g>
+<path d="M54 62 Q60 67 66 62" fill="none" stroke="#9BF2D0" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="39" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/><ellipse cx="81" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.mochi}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Mochi, cat">
+<ellipse cx="60" cy="113" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>
+<path class="sw" d="M90 100 Q114 94 104 68" fill="none" stroke="#F7C3A3" stroke-width="9" stroke-linecap="round"/>
+<g class="sq">
+<path d="M28 56 L34 20 L56 40 Z" fill="#FFD6BD"/><path d="M92 56 L86 20 L64 40 Z" fill="#FFD6BD"/>
+<path d="M35 44 L38 29 L48 39 Z" fill="#FF9EB5"/><path d="M85 44 L82 29 L72 39 Z" fill="#FF9EB5"/>
+<ellipse cx="60" cy="74" rx="40" ry="35" fill="#FFD6BD"/>
+<ellipse cx="60" cy="90" rx="22" ry="14" fill="#FFF3EA"/>
+<g class="bk"><ellipse cx="46" cy="66" rx="5" ry="6.5" fill="#1B1B1F"/><ellipse cx="74" cy="66" rx="5" ry="6.5" fill="#1B1B1F"/><circle cx="47.8" cy="63.5" r="1.8" fill="#fff"/><circle cx="75.8" cy="63.5" r="1.8" fill="#fff"/></g>
+<path d="M58 72 L62 72 L60 74.5 Z" fill="#FF7A9A"/>
+<path d="M55 76 Q57.5 79 60 76 Q62.5 79 65 76" fill="none" stroke="#1B1B1F" stroke-width="2" stroke-linecap="round"/>
+<path d="M22 72 L33 74 M22 79 L33 78 M98 72 L87 74 M98 79 L87 78" stroke="#C98F6E" stroke-width="1.6" stroke-linecap="round"/>
+<ellipse cx="38" cy="76" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/><ellipse cx="82" cy="76" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.goo}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Goo, slime">
+<ellipse cx="60" cy="110" rx="36" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="sq">
+<path d="M20 102 C20 60 36 30 60 30 C84 30 100 60 100 102 Q90 110 80 102 Q70 112 60 102 Q50 112 40 102 Q30 110 20 102 Z" fill="#5AB8FF"/>
+<ellipse cx="42" cy="48" rx="8" ry="5" fill="#fff" opacity=".6"/>
+<circle cx="80" cy="44" r="2.5" fill="#fff" opacity=".6"/>
+<g class="bk"><ellipse cx="48" cy="68" rx="5" ry="6.5" fill="#1B1B1F"/><ellipse cx="72" cy="68" rx="5" ry="6.5" fill="#1B1B1F"/><circle cx="49.8" cy="65.5" r="1.8" fill="#fff"/><circle cx="73.8" cy="65.5" r="1.8" fill="#fff"/></g>
+<ellipse cx="60" cy="81" rx="4" ry="3" fill="#1B1B1F"/>
+<ellipse cx="37" cy="79" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/><ellipse cx="83" cy="79" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.boo}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Boo, ghost">
+<ellipse cx="60" cy="114" rx="22" ry="3.5" fill="#1B1B1F" opacity=".08"/>
+<g class="fl">
+<path d="M28 98 V56 A32 32 0 0 1 92 56 V98 Q84 90 76 98 Q68 106 60 98 Q52 90 44 98 Q36 106 28 98 Z" fill="#FFFFFF" stroke="#CFC6F2" stroke-width="2"/>
+<ellipse class="sw" cx="24" cy="70" rx="6" ry="9" fill="#FFFFFF" stroke="#CFC6F2" stroke-width="2"/>
+<g class="bk"><ellipse cx="48" cy="60" rx="5" ry="6.5" fill="#1B1B1F"/><ellipse cx="72" cy="60" rx="5" ry="6.5" fill="#1B1B1F"/><circle cx="49.8" cy="57.5" r="1.8" fill="#fff"/><circle cx="73.8" cy="57.5" r="1.8" fill="#fff"/></g>
+<path d="M55 72 Q60 77 65 72" fill="none" stroke="#1B1B1F" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="38" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".7"/><ellipse cx="82" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".7"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.tofu}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Tofu, cube">
+<ellipse cx="60" cy="108" rx="34" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="sq">
+<rect x="24" y="36" width="72" height="68" rx="20" fill="#FFE58A"/>
+<rect x="34" y="43" width="30" height="7" rx="3.5" fill="#FFFFFF" opacity=".6"/>
+<path d="M98 30 Q104 40 98 45 Q92 40 98 30 Z" fill="#5AB8FF"/>
+<g class="bk"><ellipse cx="47" cy="68" rx="5" ry="6.5" fill="#1B1B1F"/><ellipse cx="73" cy="68" rx="5" ry="6.5" fill="#1B1B1F"/><circle cx="48.8" cy="65.5" r="1.8" fill="#fff"/><circle cx="74.8" cy="65.5" r="1.8" fill="#fff"/></g>
+<path d="M53 80 Q56.5 84 60 80 Q63.5 84 67 80" fill="none" stroke="#1B1B1F" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="36" cy="80" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/><ellipse cx="84" cy="80" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.sprout}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Sprout, plant">
+<ellipse cx="60" cy="110" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="sw">
+<path d="M60 68 V42" stroke="#3F9E45" stroke-width="4" stroke-linecap="round"/>
+<path d="M60 50 C46 50 36 38 38 26 C51 26 60 36 60 50 Z" fill="#6DD36A"/>
+<path d="M60 44 C73 44 84 33 82 20 C69 20 60 30 60 44 Z" fill="#4CC24A"/>
+</g>
+<path d="M34 74 H86 L80 106 H40 Z" fill="#E8875A"/>
+<rect x="30" y="66" width="60" height="12" rx="6" fill="#F29C6F"/>
+<g class="bk"><ellipse cx="50" cy="88" rx="4.5" ry="6" fill="#1B1B1F"/><ellipse cx="70" cy="88" rx="4.5" ry="6" fill="#1B1B1F"/><circle cx="51.6" cy="85.6" r="1.6" fill="#fff"/><circle cx="71.6" cy="85.6" r="1.6" fill="#fff"/></g>
+<path d="M56 97 Q60 101 64 97" fill="none" stroke="#1B1B1F" stroke-width="2.2" stroke-linecap="round"/>
+<ellipse cx="42" cy="96" rx="4" ry="2.5" fill="#FF8FB1" opacity=".9"/><ellipse cx="78" cy="96" rx="4" ry="2.5" fill="#FF8FB1" opacity=".9"/>
+</svg>
+</sc-if>
+<sc-if value="{{is.ember}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Ember, flame">
+<ellipse cx="60" cy="112" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="fk">
+<path d="M60 16 C70 34 92 46 90 74 C88 96 74 106 60 106 C46 106 32 96 30 76 C29 60 40 52 44 40 C48 50 52 54 56 54 C54 40 54 30 60 16 Z" fill="#FF7A45"/>
+<path d="M60 52 C66 62 77 68 76 82 C75 94 67 101 60 101 C53 101 45 94 44 84 C44 74 54 68 60 52 Z" fill="#FFC145"/>
+<g class="bk"><ellipse cx="51" cy="80" rx="4.5" ry="6" fill="#1B1B1F"/><ellipse cx="69" cy="80" rx="4.5" ry="6" fill="#1B1B1F"/><circle cx="52.6" cy="77.6" r="1.6" fill="#fff"/><circle cx="70.6" cy="77.6" r="1.6" fill="#fff"/></g>
+<path d="M56 90 Q60 94 64 90" fill="none" stroke="#1B1B1F" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.nimbus}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Nimbus, cloud">
+<g class="fl">
+<path d="M30 86 A16 16 0 0 1 32 54 A22 22 0 0 1 72 44 A18 18 0 0 1 98 64 A12 12 0 0 1 92 86 Z" fill="#FFFFFF" stroke="#BFDDED" stroke-width="2"/>
+<g class="bk"><ellipse cx="52" cy="68" rx="4.5" ry="6" fill="#1B1B1F"/><ellipse cx="72" cy="68" rx="4.5" ry="6" fill="#1B1B1F"/><circle cx="53.6" cy="65.6" r="1.6" fill="#fff"/><circle cx="73.6" cy="65.6" r="1.6" fill="#fff"/></g>
+<path d="M58 77 Q62 81 66 77" fill="none" stroke="#1B1B1F" stroke-width="2.2" stroke-linecap="round"/>
+<ellipse cx="43" cy="76" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".8"/><ellipse cx="81" cy="76" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".8"/>
+</g>
+<path d="M48 96 Q52 104 48 108 Q44 104 48 96 Z" fill="#5AB8FF"/>
+<path d="M74 98 Q78 106 74 110 Q70 106 74 98 Z" fill="#5AB8FF"/>
+</svg>
+</sc-if>
+<sc-if value="{{is.inky}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Inky, octopus">
+<ellipse cx="60" cy="113" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="sw">
+<path d="M36 78 Q30 98 40 106" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/>
+<path d="M52 82 Q48 102 56 108" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/>
+<path d="M68 82 Q72 102 64 108" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/>
+<path d="M84 78 Q90 98 80 106" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/>
+</g>
+<g class="fl">
+<ellipse cx="60" cy="58" rx="34" ry="32" fill="#A78BFA"/>
+<circle cx="44" cy="40" r="4" fill="#C4B1FF"/><circle cx="77" cy="36" r="3" fill="#C4B1FF"/>
+<g class="bk"><ellipse cx="48" cy="60" rx="5" ry="6.5" fill="#1B1B1F"/><ellipse cx="72" cy="60" rx="5" ry="6.5" fill="#1B1B1F"/><circle cx="49.8" cy="57.5" r="1.8" fill="#fff"/><circle cx="73.8" cy="57.5" r="1.8" fill="#fff"/></g>
+<ellipse cx="60" cy="73" rx="3" ry="3.5" fill="#1B1B1F"/>
+<ellipse cx="37" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/><ellipse cx="83" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.bun}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Bun, bunny">
+<ellipse cx="60" cy="112" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="sq">
+<ellipse cx="46" cy="32" rx="9" ry="24" fill="#FFFFFF" stroke="#F4C7D6" stroke-width="2"/>
+<ellipse cx="46" cy="34" rx="4" ry="16" fill="#FFB8CC"/>
+<g class="sw">
+<ellipse cx="76" cy="32" rx="9" ry="24" fill="#FFFFFF" stroke="#F4C7D6" stroke-width="2"/>
+<ellipse cx="76" cy="34" rx="4" ry="16" fill="#FFB8CC"/>
+</g>
+<ellipse cx="60" cy="80" rx="36" ry="30" fill="#FFFFFF" stroke="#F4C7D6" stroke-width="2"/>
+<g class="bk"><ellipse cx="48" cy="76" rx="5" ry="6.5" fill="#1B1B1F"/><ellipse cx="72" cy="76" rx="5" ry="6.5" fill="#1B1B1F"/><circle cx="49.8" cy="73.5" r="1.8" fill="#fff"/><circle cx="73.8" cy="73.5" r="1.8" fill="#fff"/></g>
+<ellipse cx="60" cy="84" rx="3" ry="2" fill="#FF7A9A"/>
+<path d="M56 88 Q58 90.5 60 88 Q62 90.5 64 88" fill="none" stroke="#1B1B1F" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="38" cy="86" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/><ellipse cx="82" cy="86" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.byte}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Byte, 8-bit pixel" shape-rendering="crispEdges">
+<rect x="36" y="106" width="48" height="4" fill="#1B1B1F" opacity=".1"/>
+<g class="fl">
+<path fill="#5B6CFF" d="M32 30h8v8h-8z M80 30h8v8h-8z M40 38h8v8h-8z M72 38h8v8h-8z M32 46h56v8h-56z M24 54h16v8h-16z M48 54h24v8h-24z M80 54h16v8h-16z M16 62h88v8h-88z M16 70h8v8h-8z M32 70h56v8h-56z M96 70h8v8h-8z M16 78h8v8h-8z M32 78h8v8h-8z M80 78h8v8h-8z M96 78h8v8h-8z M40 86h16v8h-16z M64 86h16v8h-16z"/>
+<g class="bk"><rect x="40" y="54" width="8" height="8" fill="#1B1B1F"/><rect x="72" y="54" width="8" height="8" fill="#1B1B1F"/></g>
+<rect x="32" y="70" width="8" height="8" fill="#FF8FB1"/><rect x="80" y="70" width="8" height="8" fill="#FF8FB1"/>
+</g>
+</svg>
+</sc-if>
+<sc-if value="{{is.quack}}" hint-placeholder-val="{{false}}">
+<svg class="nb" viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="Quack, rubber duck">
+<ellipse cx="62" cy="110" rx="34" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="sq">
+<path d="M94 72 L110 58 L104 84 Z" fill="#FFD84D"/>
+<ellipse cx="62" cy="82" rx="38" ry="25" fill="#FFD84D"/>
+<circle cx="50" cy="50" r="24" fill="#FFD84D"/>
+<ellipse class="sw" cx="74" cy="82" rx="16" ry="10" fill="#F5C21B"/>
+<path d="M14 54 Q24 45 33 51 Q24 60 14 54 Z" fill="#FF9A3C"/>
+<g class="bk"><ellipse cx="42" cy="46" rx="4.5" ry="6" fill="#1B1B1F"/><ellipse cx="58" cy="46" rx="4.5" ry="6" fill="#1B1B1F"/><circle cx="43.6" cy="43.6" r="1.6" fill="#fff"/><circle cx="59.6" cy="43.6" r="1.6" fill="#fff"/></g>
+<ellipse cx="38" cy="57" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".9"/><ellipse cx="64" cy="57" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".9"/>
+</g>
+</svg>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["bolt","mochi","goo","boo","tofu","sprout","ember","nimbus","inky","bun","byte","quack"],"default":"bolt"},"size":{"editor":"int","min":16,"max":400,"default":200},"$preview":{"width":200,"height":200}}'>
+class Component extends DCLogic {
+renderVals() {
+const k = this.props.kind ?? 'bolt';
+const is = {};
+['bolt','mochi','goo','boo','tofu','sprout','ember','nimbus','inky','bun','byte','quack'].forEach((n) => { is[n] = n === k; });
+return { size: this.props.size ?? 200, is };
+}
+}
+</script>
+</body>
+</html>

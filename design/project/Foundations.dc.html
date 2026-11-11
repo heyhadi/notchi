@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual foundations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes nbFloat{50%{transform:translateY(-5px)}}
+@keyframes nbBlink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes nbSway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes nbSquish{50%{transform:scale(1.06,.94)}}
+@keyframes nbFlick{0%,100%{transform:scale(1,1) rotate(-2deg)}50%{transform:scale(.95,1.06) rotate(2deg)}}
+.nb *{transform-box:fill-box;transform-origin:center}
+.nb .fl{animation:nbFloat 2.6s ease-in-out infinite}
+.nb .bk{animation:nbBlink 4s infinite}
+.nb .sw{animation:nbSway 2.2s ease-in-out infinite;transform-origin:50% 100%}
+.nb .sq{animation:nbSquish 1.8s ease-in-out infinite;transform-origin:50% 100%}
+.nb .fk{animation:nbFlick .9s ease-in-out infinite;transform-origin:50% 100%}
+@media (prefers-reduced-motion:reduce){.nb *{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 56px 72px; background: #F6F4EF; font-family: Inter, system-ui, sans-serif; color: #1B1B1F; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 15px; font-weight: 500; color: #1E8E66">Visual foundations</p>
+<h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 48px">Color, type, motion, size</h1>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 26px">Color</h2>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 56px; border-radius: 14px; background: #B9B4C9"></div><span style="font-size: 13px; font-weight: 500">Sleeping</span><span style="font-size: 12px; color: #5E5D66; font-family: 'JetBrains Mono', monospace">#B9B4C9</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 56px; border-radius: 14px; background: #A78BFA"></div><span style="font-size: 13px; font-weight: 500">Thinking</span><span style="font-size: 12px; color: #5E5D66; font-family: 'JetBrains Mono', monospace">#A78BFA</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 56px; border-radius: 14px; background: #3DDC97"></div><span style="font-size: 13px; font-weight: 500">Working</span><span style="font-size: 12px; color: #5E5D66; font-family: 'JetBrains Mono', monospace">#3DDC97</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 56px; border-radius: 14px; background: #FFB020"></div><span style="font-size: 13px; font-weight: 500">Needs you</span><span style="font-size: 12px; color: #5E5D66; font-family: 'JetBrains Mono', monospace">#FFB020</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 56px; border-radius: 14px; background: #5AB8FF"></div><span style="font-size: 13px; font-weight: 500">Done</span><span style="font-size: 12px; color: #5E5D66; font-family: 'JetBrains Mono', monospace">#5AB8FF</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 56px; border-radius: 14px; background: #FF6B6B"></div><span style="font-size: 13px; font-weight: 500">Error</span><span style="font-size: 12px; color: #5E5D66; font-family: 'JetBrains Mono', monospace">#FF6B6B</span></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 32px; height: 32px; border-radius: 10px; background: #000000; flex: none"></span><span style="font-size: 13px">Notch<br><span style="color: #5E5D66">#000000</span></span></div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 32px; height: 32px; border-radius: 10px; background: #1B1B1F; flex: none"></span><span style="font-size: 13px">Ink<br><span style="color: #5E5D66">#1B1B1F</span></span></div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 32px; height: 32px; border-radius: 10px; background: #F6F4EF; border: 1px solid #E2DED5; flex: none"></span><span style="font-size: 13px">Paper<br><span style="color: #5E5D66">#F6F4EF</span></span></div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 32px; height: 32px; border-radius: 10px; background: #FF8FB1; flex: none"></span><span style="font-size: 13px">Cheeks<br><span style="color: #5E5D66">#FF8FB1</span></span></div>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">State colors are only for status, never decoration. Against the notch black, they are all bright and high-contrast. Text on orange or blue always uses a dark shade from the same family.</p>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 26px">Type</h2>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 40px; line-height: 1.1">Mochi needs you</span><span style="font-size: 13px; color: #5E5D66">Fredoka 600 · headings, character names, big numbers</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 18px">Claude Code · form-keeper is running tests</span><span style="font-size: 13px; color: #5E5D66">Inter 400/500 · all UI text, 12–15 pt in the notch</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 16px">npm install sharp@0.33.5 · 2:14</span><span style="font-size: 13px; color: #5E5D66">JetBrains Mono · commands, paths, timers</span></div>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">The tone is casual and short: "Done!", "Needs you", "2 tests failed". No jargon when a plain word works.</p>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 26px">Motion</h2>
+<div style="display: grid; grid-template-columns: 120px 1fr 1fr; gap: 10px 16px; font-size: 14px; align-items: baseline">
+<span style="font-weight: 500">Spring</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">550 ms · (.34, 1.56, .64, 1)</span><span style="color: #5E5D66">Notch widens, panel drops</span>
+<span style="font-weight: 500">Breathe</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">4 s · ease-in-out</span><span style="color: #5E5D66">Sleeping, idle</span>
+<span style="font-weight: 500">Blink</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">120 ms · random 3–5 s</span><span style="color: #5E5D66">Always on, so it feels alive</span>
+<span style="font-weight: 500">Startle</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">180 ms · ease-out</span><span style="color: #5E5D66">Every state change</span>
+<span style="font-weight: 500">Squash</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">1 s · 1.08 / 0.92</span><span style="color: #5E5D66">Done jump, landing</span>
+<span style="font-weight: 500">Step</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">280 ms per step</span><span style="color: #5E5D66">Roaming the desktop</span>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">Every transition passes through a brief "startle" pose first, so a state change feels like a reaction, not a cut between images. When Reduce Motion is on, all motion becomes a fade.</p>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 26px">Size and construction</h2>
+<div style="display: flex; align-items: flex-end; gap: 28px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Avatar" kind="mochi" size="{{22}}" hint-size="22px,22px"></dc-import><span style="font-size: 12px; color: #5E5D66">Notch 22</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Avatar" kind="mochi" size="{{44}}" hint-size="44px,44px"></dc-import><span style="font-size: 12px; color: #5E5D66">Panel 44</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Avatar" kind="mochi" size="{{64}}" hint-size="64px,64px"></dc-import><span style="font-size: 12px; color: #5E5D66">Roaming 64</span></div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px"><dc-import name="Avatar" kind="mochi" size="{{110}}" hint-size="110px,110px"></dc-import><span style="font-size: 12px; color: #5E5D66">Settings 110</span></div>
+</div>
+<ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.6; color: #3A3940">
+<li>Head is at least 60% of body height. The silhouette must read at 22 pt.</li>
+<li>Two oval eyes with a white dot, spaced about one eye-width apart.</li>
+<li>Pink cheeks are always there. Flat fill, no thick outline, no gradient.</li>
+<li>While roaming, the robot must never cover buttons or text, and it hides right away during fullscreen or screen share.</li>
+<li>Sound plays at most once a minute, and can be turned off.</li>
+</ul>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

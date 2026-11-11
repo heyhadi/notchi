@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notch UI</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes nbFloat{50%{transform:translateY(-5px)}}
+@keyframes nbBlink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes nbSway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes nbSquish{50%{transform:scale(1.06,.94)}}
+@keyframes nbFlick{0%,100%{transform:scale(1,1) rotate(-2deg)}50%{transform:scale(.95,1.06) rotate(2deg)}}
+@keyframes nbPulse{50%{opacity:.35}}
+.nb *{transform-box:fill-box;transform-origin:center}
+.nb .fl{animation:nbFloat 2.6s ease-in-out infinite}
+.nb .bk{animation:nbBlink 4s infinite}
+.nb .sw{animation:nbSway 2.2s ease-in-out infinite;transform-origin:50% 100%}
+.nb .sq{animation:nbSquish 1.8s ease-in-out infinite;transform-origin:50% 100%}
+.nb .fk{animation:nbFlick .9s ease-in-out infinite;transform-origin:50% 100%}
+.pulse{animation:nbPulse 1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.nb *,.pulse{animation:none!important}}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1440px; height: 980px; box-sizing: border-box; padding: 56px 72px; background: #F6F4EF; font-family: Inter, system-ui, sans-serif; color: #1B1B1F; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 15px; font-weight: 500; color: #1E8E66">Notch UI</p>
+<h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 48px">From peek to full panel</h1>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="height: 130px; border-radius: 16px; background: #D9D3C7; position: relative; overflow: hidden">
+<div style="height: 26px; background: #EEEAE2; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; color: #3A3940"><span>Finder</span><span>9:41</span></div>
+<div style="position: absolute; top: 0; left: 50%; margin-left: -100px; width: 200px; height: 32px; background: #000000; border-radius: 0 0 14px 14px; display: flex; align-items: center; padding: 0 10px; box-sizing: border-box">
+<dc-import name="Avatar" kind="bolt" size="{{22}}" hint-size="22px,22px"></dc-import>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; font-weight: 500">Sleeping · 200×32</p>
+<p style="margin: 0; font-size: 14px; color: #5E5D66">Avatar in the left ear. Barely visible.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="height: 130px; border-radius: 16px; background: #D9D3C7; position: relative; overflow: hidden">
+<div style="height: 26px; background: #EEEAE2; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; color: #3A3940"><span>Finder</span><span>9:41</span></div>
+<div style="position: absolute; top: 0; left: 50%; margin-left: -130px; width: 260px; height: 32px; background: #000000; border-radius: 0 0 14px 14px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 10px; box-sizing: border-box">
+<dc-import name="Avatar" kind="bolt" size="{{22}}" hint-size="22px,22px"></dc-import>
+<span style="display: flex; align-items: center; gap: 6px; color: #FFFFFF; font-size: 12px; font-family: 'JetBrains Mono', monospace"><span class="pulse" style="width: 7px; height: 7px; border-radius: 50%; background: #3DDC97"></span>2:14</span>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; font-weight: 500">Working · 260×32</p>
+<p style="margin: 0; font-size: 14px; color: #5E5D66">Right ear: state dot and duration.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="height: 130px; border-radius: 16px; background: #D9D3C7; position: relative; overflow: hidden">
+<div style="height: 26px; background: #EEEAE2; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; color: #3A3940"><span>Finder</span><span>9:41</span></div>
+<div style="position: absolute; top: 0; left: 50%; margin-left: -150px; width: 300px; height: 68px; background: #000000; border-radius: 0 0 22px 22px; display: flex; flex-direction: column; padding: 5px 12px 10px 10px; box-sizing: border-box; gap: 6px">
+<div style="display: flex; justify-content: space-between; align-items: center"><dc-import name="Avatar" kind="bolt" size="{{22}}" hint-size="22px,22px"></dc-import><span class="pulse" style="width: 7px; height: 7px; border-radius: 50%; background: #FFB020"></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; color: #FFFFFF; font-size: 12px"><span>Antigravity needs approval</span><span style="background: #FFB020; color: #3D2600; border-radius: 99px; padding: 2px 9px; font-weight: 500">Review</span></div>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; font-weight: 500">Needs you · 300×68</p>
+<p style="margin: 0; font-size: 14px; color: #5E5D66">Drops into a "peek", text below the camera.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="height: 130px; border-radius: 16px; background: #D9D3C7; position: relative; overflow: hidden">
+<div style="height: 26px; background: #EEEAE2; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 12px; color: #3A3940"><span>Finder</span><span>9:41</span></div>
+<div style="position: absolute; top: 0; left: 50%; margin-left: -140px; width: 280px; height: 68px; background: #000000; border-radius: 0 0 22px 22px; display: flex; flex-direction: column; padding: 5px 12px 10px 10px; box-sizing: border-box; gap: 6px">
+<div style="display: flex; justify-content: space-between; align-items: center"><dc-import name="Avatar" kind="bolt" size="{{22}}" hint-size="22px,22px"></dc-import><span style="width: 7px; height: 7px; border-radius: 50%; background: #5AB8FF"></span></div>
+<div style="display: flex; justify-content: space-between; align-items: center; color: #FFFFFF; font-size: 12px"><span>Done · 3 files changed</span><span style="color: #5AB8FF">4 min</span></div>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; font-weight: 500">Done · 280×68</p>
+<p style="margin: 0; font-size: 14px; color: #5E5D66">Shows for 4 seconds, then shrinks back.</p>
+</div>
+</div>
+
+<div style="display: flex; gap: 40px; align-items: flex-start">
+<div style="width: 760px; height: 560px; flex: none; border-radius: 20px; background: #D9D3C7; position: relative; overflow: hidden">
+<div style="height: 26px; background: #EEEAE2; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12px; color: #3A3940"><span>Finder</span><span>9:41</span></div>
+<div style="position: absolute; top: 0; left: 80px; width: 600px; background: #000000; border-radius: 0 0 32px 32px; padding: 14px 22px 22px; box-sizing: border-box; color: #FFFFFF; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 12px">
+<dc-import name="Avatar" kind="bolt" size="{{44}}" hint-size="44px,44px"></dc-import>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px">3 agents running</span>
+<span style="font-size: 13px; color: #FFC15C">1 needs you</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end">
+<span style="font-size: 12px; color: #A9A8B0">412k tokens today</span>
+<div style="width: 120px; height: 5px; border-radius: 3px; background: #2A2A30"><div style="width: 62%; height: 5px; border-radius: 3px; background: #FF7A45"></div></div>
+</div>
+</div>
+<div style="background: #1E1D23; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<span style="font-size: 14px; font-weight: 500">Antigravity · komika-reels</span>
+<span style="background: #FFB020; color: #3D2600; border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 500">Needs approval</span>
+</div>
+<span style="font-size: 13px; color: #A9A8B0">Wants to run this command in ~/komika-reels:</span>
+<code style="display: block; background: #0B0B0D; border-radius: 12px; padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #9BF2D0">npm install sharp@0.33.5</code>
+<div style="display: flex; gap: 8px">
+<button style="background: #FFB020; color: #3D2600; border: none; border-radius: 12px; padding: 10px 16px; font-size: 14px; font-weight: 500; min-height: 44px">Allow once</button>
+<button style="background: transparent; color: #FFFFFF; border: 1px solid #3A3940; border-radius: 12px; padding: 10px 16px; font-size: 14px; min-height: 44px">Deny</button>
+<button style="background: transparent; color: #A9A8B0; border: none; border-radius: 12px; padding: 10px 12px; font-size: 14px; min-height: 44px">Open terminal</button>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 4px 4px 0">
+<span class="pulse" style="width: 9px; height: 9px; border-radius: 50%; background: #3DDC97; flex: none"></span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 14px"><span>Claude Code · form-keeper</span><span style="color: #A9A8B0; font-size: 13px">14 of 32 tests</span></div>
+<div style="height: 4px; border-radius: 2px; background: #2A2A30"><div style="width: 44%; height: 4px; border-radius: 2px; background: #3DDC97"></div></div>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 0 4px">
+<span style="width: 9px; height: 9px; border-radius: 50%; background: #5AB8FF; flex: none"></span>
+<div style="flex: 1; display: flex; justify-content: space-between; font-size: 14px"><span>Claude · chat "notch app idea"</span><span style="color: #A9A8B0; font-size: 13px">Done 1 min ago</span></div>
+</div>
+<div style="border-top: 1px solid #2A2A30; padding-top: 12px; display: flex; justify-content: space-between; font-size: 12px; color: #8D8C94">
+<span>All data stays on this Mac</span><span>⌘⇧B opens panel</span>
+</div>
+</div>
+</div>
+
+<div style="flex: 1; display: flex; flex-direction: column; gap: 18px">
+<h2 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 28px">Ground rules</h2>
+<div><p style="margin: 0 0 4px; font-size: 15px; font-weight: 500">Avatar on the left ear, status on the right</p><p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">The middle stays empty because of the camera. Text only appears when the notch drops into a peek.</p></div>
+<div><p style="margin: 0 0 4px; font-size: 15px; font-weight: 500">Open and close</p><p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">Hover 300 ms or click to open. Move the mouse away for 600 ms to close. 550 ms spring animation, panel content fades in 200 ms later.</p></div>
+<div><p style="margin: 0 0 4px; font-size: 15px; font-weight: 500">One notch, many agents</p><p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">The notch always shows the most important state: needs you, then error, done, working, thinking, sleeping.</p></div>
+<div><p style="margin: 0 0 4px; font-size: 15px; font-weight: 500">Safe approvals</p><p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">Commands always show in full. Risky commands like <code style="font-family: 'JetBrains Mono', monospace; font-size: 13px">sudo</code>, <code style="font-family: 'JetBrains Mono', monospace; font-size: 13px">rm -rf</code>, or <code style="font-family: 'JetBrains Mono', monospace; font-size: 13px">curl | sh</code> get a red label and can only be approved from the terminal.</p></div>
+<div><p style="margin: 0 0 4px; font-size: 15px; font-weight: 500">Macs without a notch</p><p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5E5D66">Uses a 200×32 black pill at the top center of the screen, with exactly the same behavior.</p></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

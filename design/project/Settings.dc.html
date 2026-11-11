@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notch Buddy settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes nbFloat{50%{transform:translateY(-5px)}}
+@keyframes nbBlink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes nbSway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes nbSquish{50%{transform:scale(1.06,.94)}}
+@keyframes nbFlick{0%,100%{transform:scale(1,1) rotate(-2deg)}50%{transform:scale(.95,1.06) rotate(2deg)}}
+.nb *{transform-box:fill-box;transform-origin:center}
+.nb .fl{animation:nbFloat 2.6s ease-in-out infinite}
+.nb .bk{animation:nbBlink 4s infinite}
+.nb .sw{animation:nbSway 2.2s ease-in-out infinite;transform-origin:50% 100%}
+.nb .sq{animation:nbSquish 1.8s ease-in-out infinite;transform-origin:50% 100%}
+.nb .fk{animation:nbFlick .9s ease-in-out infinite;transform-origin:50% 100%}
+@media (prefers-reduced-motion:reduce){.nb *{animation:none!important}}
+button{font:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 960px; height: 900px; box-sizing: border-box; padding: 24px; background: #D9D3C7; font-family: Inter, system-ui, sans-serif; color: #1B1B1F">
+<div style="height: 852px; background: #FFFFFF; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column">
+<div style="height: 44px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid #ECE9E2">
+<span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span>
+<span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span>
+<span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span>
+<span style="flex: 1; text-align: center; font-size: 13px; font-weight: 500; margin-right: 52px">Notch Buddy</span>
+</div>
+<div style="flex: 1; display: flex; min-height: 0">
+<nav style="width: 190px; flex: none; background: #F6F4EF; padding: 16px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
+<a href="#" style="background: #1B1B1F; color: #FFFFFF; border-radius: 10px; padding: 9px 12px; text-decoration: none">Avatar</a>
+<a href="#" style="color: #1B1B1F; border-radius: 10px; padding: 9px 12px; text-decoration: none">Agent</a>
+<a href="#" style="color: #1B1B1F; border-radius: 10px; padding: 9px 12px; text-decoration: none">Behavior</a>
+<a href="#" style="color: #1B1B1F; border-radius: 10px; padding: 9px 12px; text-decoration: none">Sound</a>
+<a href="#" style="color: #1B1B1F; border-radius: 10px; padding: 9px 12px; text-decoration: none">Privacy</a>
+</nav>
+<div style="flex: 1; min-width: 0; padding: 24px 28px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 28px">Pick your buddy</h1>
+<p style="margin: 0; font-size: 14px; color: #5E5D66">Every avatar has the same states. Switch anytime.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{avatars}}" as="a" hint-placeholder-count="12">
+<button aria-pressed="{{a.pressed}}" style="background: {{a.bg}}; border: {{a.border}}; border-radius: 16px; padding: 8px 4px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: #1B1B1F">
+<dc-import name="Avatar" kind="{{a.kind}}" size="{{60}}" hint-size="60px,60px"></dc-import>
+<span style="font-size: 13px; font-weight: 500">{{a.name}}</span>
+</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600">Behavior</h2>
+<label style="display: flex; align-items: center; gap: 10px; font-size: 14px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #1E8E66">Allowed to roam the desktop</label>
+<label style="display: flex; align-items: center; gap: 10px; font-size: 14px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #1E8E66">Hide during fullscreen or screen share</label>
+<label style="display: flex; align-items: center; gap: 10px; font-size: 14px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #1E8E66">One avatar per agent</label>
+<label style="display: flex; align-items: center; gap: 10px; font-size: 14px">Language <select style="font: inherit; font-size: 14px; padding: 4px 8px; border-radius: 8px; border: 1px solid #D6D2C9"><option>English</option><option>Bahasa Indonesia</option></select></label>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600">Connected agents</h2>
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3DDC97"></span><span style="flex: 1">Claude Code</span><span style="font-size: 13px; color: #5E5D66">via hooks</span></div>
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3DDC97"></span><span style="flex: 1">Antigravity</span><span style="font-size: 13px; color: #5E5D66">reads logs</span></div>
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #B9B4C9"></span><span style="flex: 1">Gemini CLI</span><button style="background: transparent; border: 1px solid #D6D2C9; border-radius: 10px; padding: 6px 12px; font-size: 13px; color: #1B1B1F">Connect</button></div>
+<p style="margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #5E5D66">All data stays on this Mac. Nothing is sent to the internet.</p>
+</div>
+<div style="border-top: 1px solid #ECE9E2; padding-top: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600">Sound effects</h2>
+<label style="display: flex; align-items: center; gap: 10px; font-size: 14px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #1E8E66">Sounds on</label>
+</div>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{sounds}}" as="s" hint-placeholder-count="6">
+<div style="background: #F6F4EF; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{s.color}}"></span>{{s.state}}</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 4px"><span style="font-size: 13px; color: #5E5D66">{{s.sound}}</span><button aria-label="{{s.label}}" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: #FFFFFF; display: flex; align-items: center; justify-content: center; color: #1B1B1F; padding: 0"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 2 L10 6 L3 10 Z" fill="currentColor"></path></svg></button></div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; font-size: 14px">
+<label style="display: flex; align-items: center; gap: 10px">Volume <input type="range" min="0" max="100" value="40" style="width: 120px; accent-color: #1E8E66"></label>
+<label style="display: flex; align-items: center; gap: 10px">Sound pack <select style="font: inherit; font-size: 14px; padding: 4px 8px; border-radius: 8px; border: 1px solid #D6D2C9"><option>Soft</option><option>Retro 8-bit</option><option>Chirpy</option></select></label>
+<label style="display: flex; align-items: center; gap: 10px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #1E8E66">Mute during Focus, meetings and screen share</label>
+</div>
+<p style="margin: 0; font-size: 13px; color: #5E5D66">At most one sound per minute, so it never gets annoying.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":960,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+const picked = 'bolt';
+const list = [['bolt','Bolt'],['mochi','Mochi'],['goo','Goo'],['boo','Boo'],['tofu','Tofu'],['sprout','Sprout'],['ember','Ember'],['nimbus','Nimbus'],['inky','Inky'],['bun','Bun'],['byte','Byte'],['quack','Quack']];
+return {
+sounds: [
+{ state: 'Sleeping', color: '#B9B4C9', sound: 'Off', label: 'Preview Sleeping sound' },
+{ state: 'Thinking', color: '#A78BFA', sound: 'Off', label: 'Preview Thinking sound' },
+{ state: 'Working', color: '#3DDC97', sound: 'Soft tick', label: 'Preview Working sound' },
+{ state: 'Needs you', color: '#FFB020', sound: 'Beep-beep', label: 'Preview Needs you sound' },
+{ state: 'Done', color: '#5AB8FF', sound: 'Ding', label: 'Preview Done sound' },
+{ state: 'Error', color: '#FF6B6B', sound: 'Bwomp', label: 'Preview Error sound' }
+],
+avatars: list.map(([kind, name]) => ({
+kind, name,
+pressed: kind === picked ? 'true' : 'false',
+bg: kind === picked ? '#DDF7EC' : '#F6F4EF',
+border: kind === picked ? '2px solid #1E8E66' : '2px solid transparent'
+}))
+};
+}
+}
+</script>
+</body>
+</html>

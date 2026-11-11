@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>States and expressions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+@keyframes nbFloat{50%{transform:translateY(-5px)}}
+@keyframes nbBlink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes nbSquish{0%,100%{transform:scale(1.08,.92)}40%{transform:translateY(-12px) scale(.94,1.08)}60%{transform:translateY(-12px) scale(1)}}
+@keyframes nbHop{0%,100%{transform:translateY(0)}30%{transform:translateY(-10px) rotate(-4deg)}60%{transform:translateY(0) rotate(4deg)}}
+@keyframes nbWob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes nbBob{50%{transform:translateY(-3px)}}
+@keyframes nbBulb{50%{opacity:.25}}
+@keyframes nbUp{0%{transform:translate(0,0);opacity:0}25%{opacity:1}100%{transform:translate(6px,-16px);opacity:0}}
+@keyframes nbSpin{to{transform:rotate(360deg)}}
+@keyframes nbPop{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+@keyframes nbBurst{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--x),var(--y)) rotate(180deg);opacity:0}}
+@keyframes nbDots{0%,100%{opacity:.25}50%{opacity:1}}
+.nb *{transform-box:fill-box;transform-origin:center}
+.nb .slow{animation:nbFloat 4s ease-in-out infinite}
+.nb .fl{animation:nbFloat 2.6s ease-in-out infinite}
+.nb .bk{animation:nbBlink 4s infinite}
+.nb .bob{animation:nbBob .5s ease-in-out infinite}
+.nb .hop{animation:nbHop .9s ease-in-out infinite}
+.nb .jump{animation:nbSquish 1s cubic-bezier(.3,0,.4,1) infinite;transform-origin:50% 100%}
+.nb .wob{animation:nbWob 1.2s ease-in-out infinite;transform-origin:50% 100%}
+.nb .bulb{animation:nbBulb .6s steps(1) infinite}
+.nb .up{animation:nbUp 2.7s ease-out infinite}
+.nb .spin{animation:nbSpin 1s linear infinite}
+.nb .pop{animation:nbPop .9s ease-in-out infinite}
+.nb .burst{animation:nbBurst 1s ease-out infinite}
+.nb .dot{animation:nbDots 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.nb *{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 760px; box-sizing: border-box; padding: 56px 72px; background: #F6F4EF; font-family: Inter, system-ui, sans-serif; color: #1B1B1F; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 15px; font-weight: 500; color: #1E8E66">States and expressions · example with Bolt</p>
+<h1 style="margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 48px">6 states, one language</h1>
+</div>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #5E5D66; max-width: 560px">State color shows up on the antenna, the notch underline, and the session dot. Eye shape also differs per state, so the status stays readable even if you can't tell colors apart.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px">
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 170px; border-radius: 18px; background: #F0EEF5; display: flex; align-items: center; justify-content: center">
+<svg class="nb" viewBox="0 0 120 120" width="140" height="140" role="img" aria-label="Bolt sleeping">
+<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="slow">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle cx="60" cy="10" r="6" fill="#B9B4C9"/>
+<rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<path d="M42 52 Q48 57 54 52" fill="none" stroke="#9BF2D0" stroke-width="3" stroke-linecap="round"/>
+<path d="M66 52 Q72 57 78 52" fill="none" stroke="#9BF2D0" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="60" cy="63" rx="2.5" ry="2" fill="#9BF2D0"/>
+<ellipse cx="39" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/><ellipse cx="81" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/>
+</g>
+<g fill="#7C7690" font-family="Fredoka, sans-serif" font-weight="600">
+<text class="up" x="92" y="30" font-size="12">z</text>
+<text class="up" style="animation-delay: .9s" x="98" y="22" font-size="14">z</text>
+<text class="up" style="animation-delay: 1.8s" x="104" y="14" font-size="16">Z</text>
+</g>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #B9B4C9"></span><h2 style="margin: 0; font-family: Fredoka, sans-serif; font-size: 24px; font-weight: 600">Sleeping</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Trigger</p><p style="margin: 0">No active session for 2 minutes</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Motion</p><p style="margin: 0">Slow 4-second breathing, eyes shut, zzz</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Sound</p><p style="margin: 0">None</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Notch</p><p style="margin: 0">Normal size, robot peeks out below</p></div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 170px; border-radius: 18px; background: #EFE9FF; display: flex; align-items: center; justify-content: center">
+<svg class="nb" viewBox="0 0 120 120" width="140" height="140" role="img" aria-label="Bolt thinking">
+<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="fl">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle class="bulb" cx="60" cy="10" r="6" fill="#A78BFA"/>
+<rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<g class="bk"><ellipse cx="51" cy="47" rx="5" ry="6.5" fill="#9BF2D0"/><ellipse cx="75" cy="47" rx="5" ry="6.5" fill="#9BF2D0"/></g>
+<path d="M55 63 H65" stroke="#9BF2D0" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="39" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/><ellipse cx="81" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/>
+</g>
+<circle cx="94" cy="26" r="2.5" fill="#FFFFFF" stroke="#D9CFFF" stroke-width="1.5"/>
+<rect x="84" y="2" width="34" height="18" rx="9" fill="#FFFFFF" stroke="#D9CFFF" stroke-width="1.5"/>
+<circle class="dot" cx="93" cy="11" r="2.5" fill="#A78BFA"/>
+<circle class="dot" style="animation-delay: .2s" cx="101" cy="11" r="2.5" fill="#A78BFA"/>
+<circle class="dot" style="animation-delay: .4s" cx="109" cy="11" r="2.5" fill="#A78BFA"/>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #A78BFA"></span><h2 style="margin: 0; font-family: Fredoka, sans-serif; font-size: 24px; font-weight: 600">Thinking</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Trigger</p><p style="margin: 0">Prompt sent, no tool call yet</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Motion</p><p style="margin: 0">Eyes glance up, dots in a bubble</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Sound</p><p style="margin: 0">None</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Notch</p><p style="margin: 0">Widens a little: "Thinking…"</p></div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 170px; border-radius: 18px; background: #DDF7EC; display: flex; align-items: center; justify-content: center">
+<svg class="nb" viewBox="0 0 120 120" width="140" height="140" role="img" aria-label="Bolt working">
+<ellipse cx="60" cy="113" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="bob">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle class="bulb" cx="60" cy="10" r="6" fill="#3DDC97"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<g class="bk"><ellipse cx="48" cy="54" rx="5.5" ry="6.5" fill="#9BF2D0"/><ellipse cx="72" cy="54" rx="5.5" ry="6.5" fill="#9BF2D0"/></g>
+<path d="M55 64 Q60 66 65 64" fill="none" stroke="#9BF2D0" stroke-width="3" stroke-linecap="round"/>
+</g>
+<rect x="28" y="88" width="64" height="20" rx="5" fill="#2A2A30"/>
+<rect x="35" y="93" width="22" height="3" rx="1.5" fill="#3DDC97"/>
+<rect x="35" y="100" width="34" height="3" rx="1.5" fill="#5E5D66"/>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #3DDC97"></span><h2 style="margin: 0; font-family: Fredoka, sans-serif; font-size: 24px; font-weight: 600">Working</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Trigger</p><p style="margin: 0">Hook <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px">PreToolUse</code> / <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px">PostToolUse</code></p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Motion</p><p style="margin: 0">Typing on a laptop, body sways every 0.5 s</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Sound</p><p style="margin: 0">None</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Notch</p><p style="margin: 0">Widens: tool name, file, and progress</p></div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 170px; border-radius: 18px; background: #FFF1D6; display: flex; align-items: center; justify-content: center">
+<svg class="nb" viewBox="0 0 120 120" width="140" height="140" role="img" aria-label="Bolt needs you">
+<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="hop">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle class="bulb" cx="60" cy="10" r="6" fill="#FFB020"/>
+<rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<circle cx="48" cy="50" r="8" fill="#9BF2D0"/><circle cx="72" cy="50" r="8" fill="#9BF2D0"/>
+<circle cx="50.5" cy="46.5" r="2.5" fill="#fff"/><circle cx="74.5" cy="46.5" r="2.5" fill="#fff"/>
+<ellipse cx="60" cy="64" rx="3.5" ry="4" fill="#9BF2D0"/>
+<ellipse cx="39" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/><ellipse cx="81" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/>
+</g>
+<g class="pop"><circle cx="102" cy="20" r="12" fill="#FFB020"/><text x="102" y="26" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="17" fill="#3D2600">!</text></g>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FFB020"></span><h2 style="margin: 0; font-family: Fredoka, sans-serif; font-size: 24px; font-weight: 600">Needs you</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Trigger</p><p style="margin: 0">Hook <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px">Notification</code> / <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px">PermissionRequest</code></p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Motion</p><p style="margin: 0">Hopping, wide eyes, pulsing exclamation mark</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Sound</p><p style="margin: 0">Soft "Beep-beep", at most once a minute</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Notch</p><p style="margin: 0">Orange, "Review" button</p></div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 170px; border-radius: 18px; background: #E3F0FF; display: flex; align-items: center; justify-content: center">
+<svg class="nb" viewBox="0 0 120 120" width="140" height="140" role="img" aria-label="Bolt done">
+<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="jump">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle cx="60" cy="10" r="6" fill="#5AB8FF"/>
+<rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<path d="M42 54 Q48 45 54 54" fill="none" stroke="#9BF2D0" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M66 54 Q72 45 78 54" fill="none" stroke="#9BF2D0" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M53 60 Q60 70 67 60 Z" fill="#FF8FB1"/>
+<ellipse cx="39" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/><ellipse cx="81" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/>
+</g>
+<rect class="burst" x="18" y="36" width="5" height="8" rx="1" fill="#FFB020" style="--x: -12px; --y: -22px"/>
+<rect class="burst" x="98" y="34" width="5" height="8" rx="1" fill="#FF8FB1" style="--x: 12px; --y: -24px"/>
+<rect class="burst" x="28" y="16" width="5" height="8" rx="1" fill="#5AB8FF" style="--x: -8px; --y: -20px; animation-delay: .2s"/>
+<rect class="burst" x="88" y="14" width="5" height="8" rx="1" fill="#3DDC97" style="--x: 8px; --y: -22px; animation-delay: .2s"/>
+<rect class="burst" x="74" y="4" width="5" height="8" rx="1" fill="#A78BFA" style="--x: 4px; --y: -18px; animation-delay: .4s"/>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #5AB8FF"></span><h2 style="margin: 0; font-family: Fredoka, sans-serif; font-size: 24px; font-weight: 600">Done</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Trigger</p><p style="margin: 0">Hook <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px">Stop</code></p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Motion</p><p style="margin: 0">Jumps with squash and stretch, one burst of confetti</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Sound</p><p style="margin: 0">"Ding"</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Notch</p><p style="margin: 0">Blue, 4-second summary, then back to sleep</p></div>
+</div>
+</div>
+
+<div style="background: #FFFFFF; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="height: 170px; border-radius: 18px; background: #FFE5E5; display: flex; align-items: center; justify-content: center">
+<svg class="nb" viewBox="0 0 120 120" width="140" height="140" role="img" aria-label="Bolt error">
+<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>
+<g class="wob">
+<line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/>
+<circle class="bulb" cx="60" cy="10" r="6" fill="#FF6B6B"/>
+<rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/>
+<rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/>
+<rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/>
+<rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/>
+<circle class="spin" cx="48" cy="51" r="6" fill="none" stroke="#FF9B9B" stroke-width="2.5" stroke-dasharray="20 6"/>
+<circle class="spin" cx="72" cy="51" r="6" fill="none" stroke="#FF9B9B" stroke-width="2.5" stroke-dasharray="20 6"/>
+<path d="M52 64 Q56 61 60 64 Q64 67 68 64" fill="none" stroke="#FF9B9B" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<g fill="#B4B2A9">
+<circle class="up" cx="86" cy="20" r="5"/>
+<circle class="up" style="animation-delay: .7s" cx="94" cy="14" r="4"/>
+<circle class="up" style="animation-delay: 1.4s" cx="80" cy="12" r="3.5"/>
+</g>
+</svg>
+</div>
+<div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF6B6B"></span><h2 style="margin: 0; font-family: Fredoka, sans-serif; font-size: 24px; font-weight: 600">Error</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.4">
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Trigger</p><p style="margin: 0">Tool failed or exit code is not 0</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Motion</p><p style="margin: 0">Spiral eyes, dizzy wobble, puffs of smoke</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Sound</p><p style="margin: 0">Soft "Bwomp"</p></div>
+<div><p style="margin: 0; font-size: 12px; color: #5E5D66">Notch</p><p style="margin: 0">Red, one-line error message</p></div>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
