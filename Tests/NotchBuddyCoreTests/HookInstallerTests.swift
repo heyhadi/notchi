@@ -1,52 +1,59 @@
 import XCTest
 @testable import NotchBuddyCore
 
-final class HookInstallerTests: XCTestCase {
-    let path = "/Applications/Notch Buddy.app/Contents/Helpers/notchbuddy-hook"
+/// Claude Code's settings.json, including upgrading the config installed on 2026-11-12 (Stop had a 5 s timeout).
+final class ClaudeSetupTests: XCTestCase {
+    let hook = "/Users/me/notch-buddy/build/NotchBuddy.app/Contents/Helpers/notchbuddy-hook"
+    var home = ""
 
-    func testInstallIsIdempotentAndUninstallRestores() throws {
-        let original = """
-        {
-          "permissions": {
-            "allow": ["Bash(ls)"]
-          },
-          "hooks": {
-            "Stop": [{"hooks": [{"type": "command", "command": "say done"}]}]
-          },
-          "theme": "dark"
+    override func setUpWithError() throws {
+        home = FileManager.default.temporaryDirectory.appendingPathComponent("nb-claude-\(UUID().uuidString)").path
+        try FileManager.default.createDirectory(atPath: home + "/.claude", withIntermediateDirectories: true)
+    }
+    override func tearDownWithError() throws { try? FileManager.default.removeItem(atPath: home) }
+
+    func hooks(_ s: String) throws -> [String: [[String: Any]]] {
+        let o = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(s.utf8)) as? [String: Any])
+        return try XCTUnwrap(o["hooks"] as? [String: [[String: Any]]])
+    }
+
+    func testUpgradeFromFirstInstallOnlyChangesStop() throws {
+        let q = "'\(hook)'"
+        let events = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure",
+                      "PermissionRequest", "Notification", "Stop", "StopFailure", "SessionEnd"]
+        var old: [String: Any] = ["theme": "dark", "permissions": ["allow": ["Bash(ls)"]]]
+        var h: [String: Any] = [:]
+        for e in events { h[e] = [["hooks": [["type": "command", "command": q, "timeout": e == "PermissionRequest" ? 600 : 5]]]] }
+        h["Stop"] = [["hooks": [["type": "command", "command": "say done"]]], ["hooks": [["type": "command", "command": q, "timeout": 5]]]]
+        old["hooks"] = h
+        let oldText = String(decoding: try JSONSerialization.data(withJSONObject: old, options: [.prettyPrinted, .sortedKeys]), as: UTF8.self)
+        try oldText.write(toFile: home + "/.claude/settings.json", atomically: true, encoding: .utf8)
+
+        XCTAssertTrue(AgentSetup.isInstalled(.claudeCode, hookPath: hook, home: home))
+        let changes = try AgentSetup.plan(.claudeCode, install: true, hookPath: hook, home: home)
+        XCTAssertEqual(changes.count, 1)
+        let new = try XCTUnwrap(changes.first?.new)
+        let before = try hooks(oldText), after = try hooks(new)
+        for e in events where e != "Stop" {
+            XCTAssertEqual(NSArray(array: before[e]!), NSArray(array: after[e]!), "\(e) unchanged")
         }
-        """
-        let once = try HookInstaller.installed(original, hookPath: path)
-        let twice = try HookInstaller.installed(once, hookPath: path)
-        XCTAssertEqual(once, twice)
-        XCTAssertTrue(HookInstaller.isInstalled(once, hookPath: path))
+        let stop = try XCTUnwrap(after["Stop"])
+        XCTAssertEqual(stop.count, 2, "user's own Stop hook kept, ours replaced not duplicated")
+        XCTAssertEqual((stop[0]["hooks"] as? [[String: Any]])?.first?["command"] as? String, "say done")
+        let ours = try XCTUnwrap((stop[1]["hooks"] as? [[String: Any]])?.first)
+        XCTAssertEqual(ours["command"] as? String, q + " --wait 590")
+        XCTAssertEqual(ours["timeout"] as? Int, 600)
 
-        let obj = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(once.utf8)) as? [String: Any])
-        let hooks = try XCTUnwrap(obj["hooks"] as? [String: [[String: Any]]])
-        XCTAssertEqual(Set(hooks.keys), Set(HookInstaller.events))
-        XCTAssertEqual(hooks["Stop"]?.count, 2, "keeps the user's own Stop hook")
-        let pr = try XCTUnwrap((hooks["PermissionRequest"]?.first?["hooks"] as? [[String: Any]])?.first)
-        XCTAssertEqual(pr["timeout"] as? Int, 600)
-        XCTAssertEqual(pr["command"] as? String, "'\(path)'")
-        XCTAssertNotNil(obj["permissions"])
-
-        let removed = try HookInstaller.uninstalled(once, hookPath: path)
-        let back = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(removed.utf8)) as? NSDictionary)
-        let orig = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(original.utf8)) as? NSDictionary)
-        XCTAssertEqual(back, orig)
-        XCTAssertFalse(HookInstaller.isInstalled(removed, hookPath: path))
+        _ = try AgentSetup.apply(changes)
+        XCTAssertEqual(try AgentSetup.plan(.claudeCode, install: true, hookPath: hook, home: home), [], "idempotent after upgrade")
+        _ = try AgentSetup.apply(try AgentSetup.plan(.claudeCode, install: false, hookPath: hook, home: home))
+        let removed = try String(contentsOfFile: home + "/.claude/settings.json", encoding: .utf8)
+        XCTAssertFalse(removed.contains(q))
+        XCTAssertTrue(removed.contains("say done"))
     }
 
-    func testEmptySettingsAndDiff() throws {
-        let new = try HookInstaller.installed("", hookPath: path)
-        XCTAssertTrue(new.contains("PermissionRequest"))
-        let removed = try HookInstaller.uninstalled(new, hookPath: path)
-        XCTAssertEqual(removed.trimmingCharacters(in: .whitespacesAndNewlines), "{}")
-        let d = try HookInstaller.diff(old: "{}\n", new: new)
-        XCTAssertTrue(d.contains("+") && d.contains("settings.json (after)"))
-    }
-
-    func testRejectsInvalidJSON() {
-        XCTAssertThrowsError(try HookInstaller.installed("{ not json", hookPath: path))
+    func testRejectsInvalidJSON() throws {
+        try "{ not json".write(toFile: home + "/.claude/settings.json", atomically: true, encoding: .utf8)
+        XCTAssertThrowsError(try AgentSetup.plan(.claudeCode, install: true, hookPath: hook, home: home))
     }
 }

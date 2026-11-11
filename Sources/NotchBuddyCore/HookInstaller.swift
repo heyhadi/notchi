@@ -3,38 +3,7 @@ import Foundation
 /// Adds/removes Notch Buddy's hook in ~/.claude/settings.json. Uses the system /usr/bin/jq so the
 /// user's key order and formatting survive and the diff they approve is minimal.
 public enum HookInstaller {
-    public static let events = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure",
-                                "PermissionRequest", "Notification", "Stop", "StopFailure", "SessionEnd"]
     public static let settingsPath = NSHomeDirectory() + "/.claude/settings.json"
-
-    /// Shell command string Claude Code runs; single-quoted so paths with spaces work.
-    public static func command(hookPath: String) -> String { "'" + hookPath.replacingOccurrences(of: "'", with: "'\\''") + "'" }
-
-    private static let installFilter = """
-    reduce $events[] as $e (.;
-      if any(.hooks[$e][]?.hooks[]?; .command == $cmd) then .
-      else .hooks[$e] += [{"hooks": [{"type": "command", "command": $cmd, "timeout": (if $e == "PermissionRequest" then 600 else 5 end)}]}]
-      end)
-    """
-    private static let uninstallFilter = """
-    if .hooks then
-      .hooks |= (with_entries(.value |= (map(.hooks |= map(select(.command != $cmd))) | map(select(.hooks | length > 0))))
-                 | with_entries(select(.value | length > 0)))
-      | if .hooks == {} then del(.hooks) else . end
-    else . end
-    """
-
-    public static func installed(_ settings: String, hookPath: String) throws -> String {
-        try jq(installFilter, settings, hookPath: hookPath)
-    }
-
-    public static func uninstalled(_ settings: String, hookPath: String) throws -> String {
-        try jq(uninstallFilter, settings, hookPath: hookPath)
-    }
-
-    public static func isInstalled(_ settings: String, hookPath: String) -> Bool {
-        settings.contains(command(hookPath: hookPath))
-    }
 
     /// Unified diff of the change, for the user to read before confirming.
     public static func diff(old: String, new: String) throws -> String {
@@ -74,13 +43,6 @@ public enum HookInstaller {
     static func jq(_ filter: String, _ input: String, args: [String]) throws -> String {
         let src = input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "{}" : input
         return try run("/usr/bin/jq", ["--indent", "2"] + args + [filter], stdin: src)
-    }
-
-    private static func jq(_ filter: String, _ input: String, hookPath: String) throws -> String {
-        let src = input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "{}" : input
-        let eventsJSON = String(decoding: try JSONSerialization.data(withJSONObject: events), as: UTF8.self)
-        return try run("/usr/bin/jq", ["--indent", "2", "--arg", "cmd", command(hookPath: hookPath), "--argjson", "events", eventsJSON, filter],
-                       stdin: src)
     }
 
     static func run(_ tool: String, _ args: [String], stdin: String? = nil, okCodes: Set<Int32> = [0]) throws -> String {

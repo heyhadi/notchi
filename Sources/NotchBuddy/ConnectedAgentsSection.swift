@@ -13,6 +13,7 @@ struct ConnectedAgentsSection: View {
     }
 
     @State private var installed: Set<AgentKind> = Set(AgentKind.allCases.filter { AgentSetup.isInstalled($0, hookPath: HookSetup.hookPath) })
+    @State private var outdated: Set<AgentKind> = []
     @State private var plan: Plan?
     @State private var message: String?
     @State private var failed = false
@@ -33,6 +34,9 @@ struct ConnectedAgentsSection: View {
                     Text(installed.contains(a) ? L("Connected") : L("Not connected"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(installed.contains(a) ? Color(hex: 0x1E8E66) : .secondary)
+                    if outdated.contains(a) {
+                        Button(L("Update…")) { prepare(a, install: true) }
+                    }
                     Button(installed.contains(a) ? L("Remove…") : L("Connect…")) { prepare(a, install: !installed.contains(a)) }
                         .accessibilityLabel(installed.contains(a) ? String(format: L("Remove %@"), a.displayName) : String(format: L("Connect %@"), a.displayName))
                 }
@@ -50,6 +54,7 @@ struct ConnectedAgentsSection: View {
             }
         }
         .sheet(item: $plan) { p in diffSheet(p) }
+        .onAppear(perform: refresh)
     }
 
     private func subtitle(_ a: AgentKind) -> String {
@@ -129,7 +134,11 @@ struct ConnectedAgentsSection: View {
         }
     }
 
-    private func refresh() { installed = Set(AgentKind.allCases.filter { AgentSetup.isInstalled($0, hookPath: HookSetup.hookPath) }) }
+    private func refresh() {
+        installed = Set(AgentKind.allCases.filter { AgentSetup.isInstalled($0, hookPath: HookSetup.hookPath) })
+        // Connected, but our entries differ from what this version writes (e.g. Stop now waits for chat replies).
+        outdated = installed.filter { !((try? AgentSetup.plan($0, install: true, hookPath: HookSetup.hookPath)) ?? []).isEmpty }
+    }
 
     private func show(_ text: String, failed: Bool) {
         message = text

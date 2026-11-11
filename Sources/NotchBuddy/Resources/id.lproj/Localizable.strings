@@ -114,3 +114,16 @@
 "VS Code" = "VS Code";
 "No official hooks yet" = "Belum ada hook resmi";
 "Hook format not documented clearly yet" = "Format hook belum terdokumentasi jelas";
+
+"%@ already finished. Your message goes in at the end of its next turn, or turn on \"Wait for my reply\" in Settings." = "%@ sudah selesai. Pesanmu masuk di akhir giliran berikutnya, atau nyalakan \"Tunggu balasanku\" di Pengaturan.";
+"%@ is waiting for your reply" = "%@ menunggu balasanmu";
+"Chat with %@" = "Chat dengan %@";
+"Close chat with %@" = "Tutup chat dengan %@";
+"Finished agents wait up to 10 minutes so you can answer from the notch. Their window shows a running hook meanwhile; press Esc there to skip." = "Agen yang selesai menunggu hingga 10 menit supaya bisa kamu balas dari notch. Selama itu jendelanya menampilkan hook yang berjalan; tekan Esc di sana untuk melewati.";
+"Message %@…" = "Pesan ke %@…";
+"Send" = "Kirim";
+"Sent" = "Terkirim";
+"Wait for my reply after each turn" = "Tunggu balasanku setelah tiap giliran";
+"Will be sent when %@ finishes this turn" = "Akan dikirim saat %@ menyelesaikan giliran ini";
+"Your message goes in when %@ finishes this turn" = "Pesanmu masuk saat %@ menyelesaikan giliran ini";
+"Update…" = "Perbarui…";

@@ -18,7 +18,29 @@ struct SessionPanelView: View {
                     .padding(.vertical, 24)
                     .background(RoundedRectangle(cornerRadius: 16).fill(Color(hex: 0x1E1D23)))
             }
-            ForEach(model.sessions.prefix(5)) { SessionRow(session: $0) }
+            ForEach(model.sessions.prefix(5)) { session in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top, spacing: 8) {
+                        SessionRow(session: session)
+                        if session.agent.supportsChat {
+                            let open = model.chats[session.id]?.open == true
+                            Button { model.setChatOpen(session.id, !open) } label: {
+                                Image(systemName: open ? "bubble.left.fill" : "bubble.left")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(model.chats[session.id]?.held != nil ? Color(hex: 0xFFB020)
+                                                     : open ? Color(hex: 0x9BF2D0) : Color(hex: 0xA9A8B0))
+                                    .frame(width: 28, height: 28)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(String(format: open ? L("Close chat with %@") : L("Chat with %@"), session.agentLabel))
+                        }
+                    }
+                    if model.chats[session.id]?.open == true {
+                        ChatBox(model: model, session: session)
+                    }
+                }
+            }
         }
     }
 }
@@ -55,6 +77,68 @@ private struct SessionRow: View {
         default:
             return stateName(session.state)
         }
+    }
+}
+
+/// Reply to one agent session. Enter or the send button sends.
+private struct ChatBox: View {
+    @ObservedObject var model: NotchModel
+    let session: AgentSession
+    @State private var draft = ""
+    @FocusState private var focused: Bool
+
+    private var chat: ChatState { model.chats[session.id] ?? ChatState() }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if chat.held != nil, let reply = chat.lastReply, !reply.isEmpty {
+                ScrollView {
+                    Text(reply).font(.system(size: 12)).foregroundColor(Color(hex: 0xD9D8DE))
+                        .frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                }
+                .frame(maxHeight: 90)
+            }
+            HStack(spacing: 8) {
+                TextField(String(format: L("Message %@…"), session.agentLabel), text: $draft)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13))
+                    .foregroundColor(.white)
+                    .focused($focused)
+                    .onSubmit(send)
+                    .padding(.horizontal, 12).frame(minHeight: 34)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(hex: 0x0B0B0D)))
+                Button(action: send) {
+                    Image(systemName: "paperplane.fill").font(.system(size: 13))
+                        .foregroundColor(Color(hex: 0x3D2600))
+                        .frame(width: 34, height: 34)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color(hex: draft.isEmpty ? 0x6B5A2E : 0xFFB020)))
+                }
+                .buttonStyle(.plain)
+                .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
+                .accessibilityLabel(L("Send"))
+            }
+            Text(status).font(.system(size: 11)).foregroundColor(Color(hex: 0x8D8C94))
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color(hex: 0x1E1D23)))
+        .onAppear { focused = true }
+    }
+
+    private var status: String {
+        let name = session.agentLabel
+        if let sent = chat.sentAt, Date().timeIntervalSince(sent) < 5 { return L("Sent") }
+        if chat.held != nil { return String(format: L("%@ is waiting for your reply"), name) }
+        if !chat.queued.isEmpty { return String(format: L("Will be sent when %@ finishes this turn"), name) }
+        switch session.state {
+        case .working, .thinking, .needsYou: return String(format: L("Your message goes in when %@ finishes this turn"), name)
+        default: return String(format: L("%@ already finished. Your message goes in at the end of its next turn, or turn on \"Wait for my reply\" in Settings."), name)
+        }
+    }
+
+    private func send() {
+        guard !draft.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        model.sendChat(session.id, draft)
+        draft = ""
     }
 }
 

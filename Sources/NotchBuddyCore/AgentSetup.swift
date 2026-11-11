@@ -52,13 +52,11 @@ public enum AgentSetup {
         }
 
         switch a {
-        case .claudeCode:
-            let old = read(paths[0]) ?? ""
-            add(paths[0], install ? try HookInstaller.installed(old, hookPath: hook) : try HookInstaller.uninstalled(old, hookPath: hook))
-
-        case .codex, .geminiCLI, .cursor:
+        case .claudeCode, .codex, .geminiCLI, .cursor:
             let spec = jsonSpec(a, hook: hook)
-            let filter = a == .cursor ? (install ? flatInstall : flatUninstall) : (install ? nestedInstall : nestedUninstall)
+            // Install = remove our old entries, then add current ones, so upgrades replace instead of duplicating.
+            let filter = a == .cursor ? (install ? flatUninstall + " | " + flatInstall : flatUninstall)
+                                      : (install ? nestedUninstall + " | " + nestedInstall : nestedUninstall)
             let specJSON = String(decoding: try JSONSerialization.data(withJSONObject: spec, options: [.sortedKeys]), as: UTF8.self)
             let new = try HookInstaller.jq(filter, read(paths[0]) ?? "", args: ["--argjson", "spec", specJSON, "--arg", "prefix", q(hook)])
             // Removing everything from a file we created leaves "{}"; fine to keep.
@@ -94,8 +92,7 @@ public enum AgentSetup {
         configPaths(a, home: home).allSatisfy { p in
             guard let s = try? String(contentsOfFile: p, encoding: .utf8) else { return false }
             switch a {
-            case .claudeCode: return HookInstaller.isInstalled(s, hookPath: hookPath)
-            case .codex, .geminiCLI, .cursor: return s.contains(q(hookPath))
+            case .claudeCode, .codex, .geminiCLI, .cursor: return s.replacingOccurrences(of: "\\/", with: "/").contains(q(hookPath))
             case .antigravity: return ((try? JSONSerialization.jsonObject(with: Data(s.utf8))) as? [String: Any])?[marker] != nil
             case .copilot, .openCode, .cline: return s.contains(managed)
             }
@@ -133,11 +130,20 @@ public enum AgentSetup {
     /// event → hook group (Claude-style nested) or handler (Cursor-style flat).
     static func jsonSpec(_ a: AgentKind, hook: String) -> [String: Any] {
         switch a {
+        case .claudeCode:
+            // Plain command (older installs used it; the binary detects PermissionRequest itself). Stop waits so the
+            // notch can hold a finished session while you type a reply.
+            let events = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure",
+                          "PermissionRequest", "Notification", "Stop", "StopFailure", "SessionEnd"]
+            return Dictionary(uniqueKeysWithValues: events.map { e in
+                let long = e == "PermissionRequest" || e == "Stop"
+                return (e, ["hooks": [["type": "command", "command": q(hook) + (e == "Stop" ? " --wait 590" : ""), "timeout": long ? 600 : 5]]])
+            })
         case .codex:
             let events = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PermissionRequest", "Stop", "SessionEnd"]
             return Dictionary(uniqueKeysWithValues: events.map { e in
-                let perm = e == "PermissionRequest"
-                return (e, ["hooks": [["type": "command", "command": command(hook, a, event: e, wait: perm ? 590 : nil), "timeout": perm ? 600 : 5]]])
+                let long = e == "PermissionRequest" || e == "Stop"
+                return (e, ["hooks": [["type": "command", "command": command(hook, a, event: e, wait: long ? 590 : nil), "timeout": long ? 600 : 5]]])
             })
         case .geminiCLI:
             let events = ["SessionStart", "SessionEnd", "BeforeAgent", "AfterAgent", "BeforeTool", "AfterTool", "Notification"]
@@ -177,7 +183,8 @@ public enum AgentSetup {
     // https://antigravity.google/docs/hooks: named groups; tool events use matcher + hooks[], others a handler list.
     static func antigravityGroup(_ hook: String) -> [String: Any] {
         func h(_ e: String, _ fallback: String) -> [String: Any] {
-            ["type": "command", "command": command(hook, .antigravity, event: e, fallback: fallback), "timeout": 10]
+            let stop = e == "Stop" // waits so the notch can hold a finished session for a reply
+            return ["type": "command", "command": command(hook, .antigravity, event: e, wait: stop ? 590 : nil, fallback: fallback), "timeout": stop ? 600 : 10]
         }
         return [
             "SessionStart": [h("SessionStart", "{}")],
@@ -220,7 +227,7 @@ public enum AgentSetup {
       })
     }
 
-    export const NotchBuddy = async ({ directory }) => {
+    export const NotchBuddy = async ({ directory, client }) => {
       const ev = (sessionID, name, extra = {}) => ({ session_id: sessionID ?? "opencode", cwd: directory, hook_event_name: name, ...extra })
       return {
         "chat.message": async (input) => { await send(ev(input.sessionID, "UserPromptSubmit")) },
@@ -241,7 +248,16 @@ public enum AgentSetup {
         },
         event: async ({ event }) => {
           const sid = event.properties?.sessionID
-          if (event.type === "session.idle") await send(ev(sid, "Stop"))
+          if (event.type === "session.idle" && sid) {
+            // Not awaited: the app may hold this until you reply in the notch, then we send your reply as a prompt.
+            send(ev(sid, "Stop"), 590000).then(async (reply) => {
+              try {
+                const r = JSON.parse(reply)
+                if (typeof r.prompt === "string" && r.prompt)
+                  await client.session.prompt({ path: { id: sid }, body: { parts: [{ type: "text", text: r.prompt }] } })
+              } catch {}
+            })
+          }
           else if (event.type === "session.error") await send(ev(sid, "StopFailure", { error: String(event.properties?.error?.name ?? "error") }))
         },
       }

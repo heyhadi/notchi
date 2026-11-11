@@ -12,6 +12,16 @@ struct PendingRequest: Identifiable {
     var isRisky: Bool { !risks.isEmpty }
 }
 
+/// Chat with one session from the notch. Replies go out through the agent's Stop hook (see AgentKind.chatOutput).
+struct ChatState {
+    var open = false
+    var queued: [String] = []                        // typed while the agent was busy; sent when its turn ends
+    var held: (@Sendable (Data?) -> Void)?           // a finished turn we're holding until you reply
+    var heldSince: Date?
+    var lastReply: String?                           // what the agent said when it stopped
+    var sentAt: Date?
+}
+
 extension NotchModel {
     /// Entry point for every hook event. `respond` must be called once (nil = no decision).
     func handle(_ e: HookEvent, respond: @escaping @Sendable (Data?) -> Void) {
@@ -31,6 +41,22 @@ extension NotchModel {
             respond(risks.isEmpty ? nil : e.agent.forceAskOutput(reasons: risks))
             if risks.isEmpty { releasePending(key: SessionStore.key(e)) }
             else { pending.append(PendingRequest(event: e, risks: risks, respond: nil)) }
+        case "Stop" where e.agent.supportsChat:
+            let key = SessionStore.key(e)
+            releasePending(key: key)
+            var c = chats[key] ?? ChatState()
+            c.lastReply = e.message ?? c.lastReply
+            if !c.queued.isEmpty {
+                respond(e.agent.chatOutput(c.queued.joined(separator: "\n\n")))
+                c.queued = []; c.sentAt = Date()
+                store.markThinking(key: key)
+            } else if c.open || UserDefaults.standard.bool(forKey: Prefs.holdForReply) {
+                c.held?(nil) // never two holds for one session
+                c.held = respond; c.heldSince = Date()
+            } else {
+                respond(nil)
+            }
+            if chats[key] != nil || c.held != nil { chats[key] = c }
         case "PermissionRequest", "Notification":
             respond(nil)
         default:
@@ -40,6 +66,32 @@ extension NotchModel {
         }
         refresh(after: e)
     }
+
+    /// Send a chat message to a session: right away if its finished turn is being held, else when its turn ends.
+    func sendChat(_ key: String, _ text: String) {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, let agent = store.sessions[key]?.agent else { return }
+        var c = chats[key] ?? ChatState()
+        if let held = c.held {
+            held(agent.chatOutput(text))
+            c.held = nil; c.heldSince = nil; c.sentAt = Date()
+            store.markThinking(key: key)
+        } else {
+            c.queued.append(text)
+        }
+        chats[key] = c
+        refresh(after: nil)
+    }
+
+    func setChatOpen(_ key: String, _ open: Bool) {
+        var c = chats[key] ?? ChatState()
+        c.open = open
+        if !open { c.held?(nil); c.held = nil; c.heldSince = nil } // closing lets the agent finish normally
+        chats[key] = c
+        if open { onWantsKeyboard?() }
+    }
+
+    var isChatting: Bool { chats.values.contains { $0.open } }
 
     /// The user clicked Allow once / Deny / Answer in terminal on a card.
     func decide(_ id: PendingRequest.ID, _ decision: PermissionDecision?) {
@@ -65,6 +117,11 @@ extension NotchModel {
             guard Date().timeIntervalSince(req.received) > 600 else { return false }
             req.respond?(nil)
             return true
+        }
+        // Hooks give up after 590 s; drop holds nobody can answer anymore, and chats of ended sessions.
+        for (k, c) in chats {
+            if let since = c.heldSince, Date().timeIntervalSince(since) > 585 { chats[k]?.held?(nil); chats[k]?.held = nil; chats[k]?.heldSince = nil }
+            if store.sessions[k] == nil { c.held?(nil); chats[k] = nil }
         }
         sessions = store.current()
         state = pending.isEmpty ? store.topState() : .needsYou

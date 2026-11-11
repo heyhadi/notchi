@@ -56,6 +56,13 @@ public struct SessionStore: Sendable {
         sessions[sessionID] = s
     }
 
+    /// The user replied from the notch; the agent is about to continue.
+    public mutating func markThinking(key: String, at now: Date = Date()) {
+        guard var s = sessions[key] else { return }
+        s.state = .thinking; s.steps = 0; s.message = nil; s.updated = now
+        sessions[key] = s
+    }
+
     public func current(at now: Date = Date()) -> [AgentSession] {
         sessions.values.map { s in
             var s = s

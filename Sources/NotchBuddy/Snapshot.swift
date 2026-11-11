@@ -38,6 +38,14 @@ enum Snapshot {
             m.mode = .expanded
             add("notch-\(name)", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        do { // chat box on a held session
+            let m = NotchModel()
+            m.handle(HookEvent(name: "UserPromptSubmit", sessionID: "c", cwd: NSHomeDirectory() + "/form-keeper")) { _ in }
+            m.setChatOpen("claude-code:c", true)
+            m.handle(HookEvent(name: "Stop", sessionID: "c", cwd: NSHomeDirectory() + "/form-keeper", message: "All 32 tests pass. Want me to open a PR?")) { _ in }
+            m.mode = .expanded
+            add("notch-chat", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
+        }
         for tab in SettingsView.SettingsTab.allCases {
             add("settings-\(tab.rawValue)", CGSize(width: 640, height: 560), SettingsView(selectedTab: tab))
         }

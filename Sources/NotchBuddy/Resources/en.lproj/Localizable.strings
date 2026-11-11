@@ -114,3 +114,16 @@
 "VS Code" = "VS Code";
 "No official hooks yet" = "No official hooks yet";
 "Hook format not documented clearly yet" = "Hook format not documented clearly yet";
+
+"%@ already finished. Your message goes in at the end of its next turn, or turn on \"Wait for my reply\" in Settings." = "%@ already finished. Your message goes in at the end of its next turn, or turn on \"Wait for my reply\" in Settings.";
+"%@ is waiting for your reply" = "%@ is waiting for your reply";
+"Chat with %@" = "Chat with %@";
+"Close chat with %@" = "Close chat with %@";
+"Finished agents wait up to 10 minutes so you can answer from the notch. Their window shows a running hook meanwhile; press Esc there to skip." = "Finished agents wait up to 10 minutes so you can answer from the notch. Their window shows a running hook meanwhile; press Esc there to skip.";
+"Message %@…" = "Message %@…";
+"Send" = "Send";
+"Sent" = "Sent";
+"Wait for my reply after each turn" = "Wait for my reply after each turn";
+"Will be sent when %@ finishes this turn" = "Will be sent when %@ finishes this turn";
+"Your message goes in when %@ finishes this turn" = "Your message goes in when %@ finishes this turn";
+"Update…" = "Update…";

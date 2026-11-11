@@ -304,7 +304,7 @@ public struct NotchView: View {
             hoverTask?.cancel()
             hoverTask = nil
 
-            if model.mode == .expanded {
+            if model.mode == .expanded && !model.isChatting { // keep the panel open while a chat box is open
                 leaveTask = Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 600_000_000)
                     guard !Task.isCancelled else { return }

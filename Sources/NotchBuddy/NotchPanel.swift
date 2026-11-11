@@ -33,6 +33,7 @@ public final class NotchPanel: NSPanel {
 
         updatePanelFrame()
         setupEventMonitors()
+        model.onWantsKeyboard = { [weak self] in self?.makeKey() } // non-activating: typing works without stealing focus from other apps' windows
 
         NotificationCenter.default.addObserver(
             self,

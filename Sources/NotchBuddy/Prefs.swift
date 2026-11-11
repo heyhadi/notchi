@@ -6,6 +6,7 @@ enum Prefs {
     static let language = "language"            // "en" | "id"
     static let avatar = "avatar"                // "bolt" (others in a later phase)
     static let openOnHover = "openOnHover"      // Bool, default true
+    static let holdForReply = "holdForReply"    // Bool, default false: hold every finished turn so you can reply from the notch
     static let soundsOn = "soundsOn"            // Bool, default false (sounds are opt-in)
     static let volume = "volume"                // Double 0...1, default 0.6
     static let soundPack = "soundPack"          // "soft" | "retro" | "chirpy"
@@ -13,7 +14,7 @@ enum Prefs {
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
     static func register() {
-        var d: [String: Any] = [language: "en", avatar: "bolt", openOnHover: true, soundsOn: false,
+        var d: [String: Any] = [language: "en", avatar: "bolt", openOnHover: true, holdForReply: false, soundsOn: false,
                                 volume: 0.6, soundPack: "soft", muteWhenBusy: true]
         for s in AgentState.allCases { d[sound(for: s)] = SoundName.default(for: s).rawValue }
         UserDefaults.standard.register(defaults: d)

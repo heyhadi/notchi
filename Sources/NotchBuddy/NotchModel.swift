@@ -57,6 +57,8 @@ public final class NotchModel: ObservableObject {
     // Phase 2: live agent data (see AgentHub.swift)
     @Published var sessions: [AgentSession] = []
     @Published var pending: [PendingRequest] = []
+    @Published var chats: [String: ChatState] = [:]   // by SessionStore key
+    var onWantsKeyboard: (() -> Void)?                 // the panel makes itself key so the chat box can take typing
     var store = SessionStore()
     @Published public var workingStartTime: Date?
 

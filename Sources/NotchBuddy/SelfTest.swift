@@ -33,6 +33,29 @@ enum SelfTest {
         #"{"session_id":"selftest","cwd":"/tmp/demo","hook_event_name":"\#(name)"\#(extra)}"#
     }
 
+    /// Chat: a queued message goes out at the next Stop; an open chat holds Stop until you reply.
+    static func chat() {
+        let key = "claude-code:selftest"
+        model.sendChat(key, "queued hello")
+        send(ev("Stop", #","last_assistant_message":"done again""#)) { out in
+            check(out.contains(#""decision":"block""#) && out.contains("queued hello"), "queued chat delivered at Stop")
+            model.setChatOpen(key, true)
+            send(ev("Stop", #","last_assistant_message":"what next?""#)) { out in
+                check(out.contains("reply now"), "held Stop answered with the typed reply")
+                model.setChatOpen(key, false)
+                send(ev("Stop")) { out in
+                    check(out.isEmpty, "closed chat: Stop not held, no output")
+                    print(failures == 0 ? "SELFTEST PASSED" : "SELFTEST FAILED (\(failures))")
+                    exit(failures == 0 ? 0 : 1)
+                }
+            }
+            after(0.8) {
+                check(model.chats[key]?.held != nil && model.chats[key]?.lastReply == "what next?", "open chat holds the finished turn")
+                model.sendChat(key, "reply now")
+            }
+        }
+    }
+
     static func run(hook: String) -> Never {
         self.hook = hook
         server.onEvent = { e, respond in model.handle(e, respond: respond) }
@@ -60,8 +83,7 @@ enum SelfTest {
                             check(model.pending.isEmpty, "later progress clears the card")
                             send(ev("Stop", #","last_assistant_message":"ok""#)) { _ in
                                 check(model.state == .done, "stop → done")
-                                print(failures == 0 ? "SELFTEST PASSED" : "SELFTEST FAILED (\(failures))")
-                                exit(failures == 0 ? 0 : 1)
+                                chat()
                             }
                         }
                     }

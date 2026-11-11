@@ -6,6 +6,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.language) private var language = "en"
     @AppStorage(Prefs.avatar) private var avatar = "bolt"
     @AppStorage(Prefs.openOnHover) private var openOnHover = true
+    @AppStorage(Prefs.holdForReply) private var holdForReply = false
     @AppStorage(Prefs.soundsOn) private var soundsOn = false
     @AppStorage(Prefs.volume) private var volume = 0.6
     @AppStorage(Prefs.soundPack) private var soundPack = "soft"
@@ -242,6 +243,22 @@ struct SettingsView: View {
                     Text(L("Open panel on hover"))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Color(hex: 0x1B1B1F))
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                Toggle(isOn: $holdForReply) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("Wait for my reply after each turn"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(L("Finished agents wait up to 10 minutes so you can answer from the notch. Their window shows a running hook meanwhile; press Esc there to skip."))
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: 0x5E5D66))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 .toggleStyle(.switch)
                 .tint(Color(hex: 0x1E8E66))

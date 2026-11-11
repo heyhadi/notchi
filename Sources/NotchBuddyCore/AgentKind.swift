@@ -41,6 +41,21 @@ public enum AgentKind: String, CaseIterable, Sendable, Codable {
         }
     }
 
+    /// Agents you can reply to from the notch. Messages are delivered at the end of a turn (Stop hook): that's the
+    /// one place the agent treats injected text as coming from the user (mid-turn context is treated as tool output).
+    public var supportsChat: Bool { [.claudeCode, .codex, .antigravity, .openCode].contains(self) }
+
+    /// Stop-hook answer that makes the agent continue with the user's message.
+    public func chatOutput(_ text: String) -> Data? {
+        let framed = "Message from the user, sent from Notch Buddy:\n\n" + text
+        switch self {
+        case .claudeCode, .codex: return json(["decision": "block", "reason": framed])
+        case .antigravity: return json(["decision": "continue", "reason": framed])
+        case .openCode: return json(["prompt": text]) // the plugin sends it as a real prompt
+        default: return nil
+        }
+    }
+
     /// For a risky command: force the agent's own prompt where the hook format allows it (nil = leave the agent alone).
     public func forceAskOutput(reasons: [String]) -> Data? {
         let reason = "Notch Buddy: " + reasons.joined(separator: ", ") + ". Approve this yourself."
