@@ -61,7 +61,7 @@ final class HookServer: @unchecked Sendable {
                 if n <= 0 { break }
                 data.append(chunk, count: n)
             }
-            guard let event = HookEvent(json: data) else { close(fd); return }
+            guard let event = HookEvent.parse(message: data) else { close(fd); return }
             let once = Once()
             let respond: @Sendable (Data?) -> Void = { reply in
                 guard once.claim() else { return }

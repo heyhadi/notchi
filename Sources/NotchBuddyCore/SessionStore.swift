@@ -3,7 +3,7 @@ import Foundation
 /// One Claude Code session as the notch sees it.
 public struct AgentSession: Identifiable, Sendable, Equatable {
     public let id: String
-    public var agent = "Claude Code"
+    public var agent: AgentKind = .claudeCode
     public var project: String
     public var cwd: String
     public var state: AgentState = .sleeping
@@ -22,8 +22,9 @@ public struct SessionStore: Sendable {
     public init() {}
 
     public mutating func apply(_ e: HookEvent, at now: Date = Date()) {
-        if e.name == "SessionEnd" { sessions[e.sessionID] = nil; return }
-        var s = sessions[e.sessionID] ?? AgentSession(id: e.sessionID, project: e.project, cwd: e.cwd, updated: now)
+        let key = Self.key(e)
+        if e.name == "SessionEnd" { sessions[key] = nil; return }
+        var s = sessions[key] ?? AgentSession(id: key, agent: e.agent, project: e.project, cwd: e.cwd, updated: now)
         if !e.cwd.isEmpty { s.cwd = e.cwd; s.project = e.project }
         s.updated = now
         switch e.name {
@@ -40,8 +41,11 @@ public struct SessionStore: Sendable {
         case "Stop": s.state = .done; s.message = e.message
         default: break
         }
-        sessions[e.sessionID] = s
+        sessions[key] = s
     }
+
+    /// Session ids are only unique per agent.
+    public static func key(_ e: HookEvent) -> String { "\(e.agent.rawValue):\(e.sessionID)" }
 
     /// The user answered a pending request in the notch; the tool will run (or not) next.
     public mutating func resolvePermission(sessionID: String, at now: Date = Date()) {

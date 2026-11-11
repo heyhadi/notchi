@@ -1,11 +1,16 @@
-// Claude Code hook: forwards the stdin JSON to Notch Buddy over its Unix socket and prints the reply.
-// Never blocks Claude when the app is not running: no socket → exit 0 with no output (normal flow).
+// Agent hook: forwards the stdin JSON to Notch Buddy over its Unix socket and prints the reply.
+// Usage: notchbuddy-hook [--agent <id>] [--wait <seconds>]   (no --agent = Claude Code)
+// Never blocks the agent when the app is not running: no socket → exit 0 with no output (normal flow).
 import Foundation
 
+let args = CommandLine.arguments
+func arg(_ name: String) -> String? { args.firstIndex(of: name).flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil } }
+let agent = arg("--agent") ?? "claude-code"
 let input = FileHandle.standardInput.readDataToEndOfFile()
 let path = NSHomeDirectory() + "/Library/Application Support/NotchBuddy/hook.sock"
-// Only a PermissionRequest waits for the user; keep under the 600 s hook timeout set in settings.json.
-let waitSeconds = input.range(of: Data(#""PermissionRequest""#.utf8)) != nil ? 590 : 2
+// Only events that wait for the user (Claude's PermissionRequest, or --wait) block; stay under the agent's hook timeout.
+let waitSeconds = arg("--wait").flatMap(Int.init)
+    ?? (agent == "claude-code" && input.range(of: Data(#""PermissionRequest""#.utf8)) != nil ? 590 : 2)
 
 let fd = socket(AF_UNIX, SOCK_STREAM, 0)
 guard fd >= 0 else { exit(0) }
@@ -28,7 +33,8 @@ let connected = ok && withUnsafePointer(to: &addr) {
 }
 guard connected else { exit(0) }
 
-_ = input.withUnsafeBytes { buf -> Bool in
+let message = Data("NB1 agent=\(agent)\n".utf8) + input
+_ = message.withUnsafeBytes { buf -> Bool in
     var off = 0
     while off < buf.count {
         let n = write(fd, buf.baseAddress! + off, buf.count - off)

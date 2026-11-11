@@ -2,6 +2,7 @@ import Foundation
 
 /// One Claude Code hook payload (stdin JSON of the hook), reduced to what the app shows.
 public struct HookEvent: Sendable, Equatable {
+    public var agent: AgentKind = .claudeCode
     public var name: String
     public var sessionID: String
     public var cwd: String

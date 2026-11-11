@@ -31,7 +31,7 @@ private struct SessionRow: View {
             Circle().fill(Color(hex: session.state.colorHex)).frame(width: 9, height: 9).padding(.top, 5)
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("\(session.agent) · \(session.project)").font(.system(size: 14)).foregroundColor(.white)
+                    Text("\(session.agent.displayName) · \(session.project)").font(.system(size: 14)).foregroundColor(.white)
                     Spacer()
                     Text(detail).font(.system(size: 13)).foregroundColor(Color(hex: 0xA9A8B0))
                 }
@@ -68,7 +68,7 @@ private struct ApprovalCard: View {
         let e = req.event
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Claude Code · \(e.project)").font(.system(size: 14, weight: .medium)).foregroundColor(.white)
+                Text("\(e.agent.displayName) · \(e.project)").font(.system(size: 14, weight: .medium)).foregroundColor(.white)
                 Spacer()
                 Text(req.isRisky ? L("Risky") : L("Needs approval"))
                     .font(.system(size: 12, weight: .medium))

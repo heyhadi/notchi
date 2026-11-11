@@ -30,7 +30,7 @@ extension NotchModel {
         default:
             respond(nil)
             // Any further progress means the request was answered elsewhere (terminal) or abandoned.
-            releasePending(sessionID: e.sessionID)
+            releasePending(key: SessionStore.key(e))
         }
         refresh(after: e)
     }
@@ -40,13 +40,13 @@ extension NotchModel {
         guard let i = pending.firstIndex(where: { $0.id == id }) else { return }
         let req = pending.remove(at: i)
         req.respond?(decision?.hookOutput)
-        if decision != nil { store.resolvePermission(sessionID: req.event.sessionID) }
+        if decision != nil { store.resolvePermission(sessionID: SessionStore.key(req.event)) }
         refresh(after: nil)
     }
 
-    private func releasePending(sessionID: String) {
+    private func releasePending(key: String) {
         pending.removeAll { req in
-            guard req.event.sessionID == sessionID else { return false }
+            guard SessionStore.key(req.event) == key else { return false }
             req.respond?(nil)
             return true
         }
@@ -68,9 +68,9 @@ extension NotchModel {
     private func peek(for e: HookEvent) -> String? {
         switch e.name {
         case "PermissionRequest", "Notification":
-            return String(format: L("%@ needs approval"), "Claude Code · \(e.project)")
+            return String(format: L("%@ needs approval"), "\(e.agent.displayName) · \(e.project)")
         case "Stop":
-            let steps = store.sessions[e.sessionID]?.steps ?? 0
+            let steps = store.sessions[SessionStore.key(e)]?.steps ?? 0
             return String(format: L("Done · %d steps"), steps)
         case "PostToolUseFailure", "StopFailure":
             return e.message.flatMap { $0.split(separator: "\n").first.map(String.init) } ?? L("Something went wrong")

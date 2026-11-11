@@ -26,6 +26,13 @@ final class HookEventTests: XCTestCase {
         XCTAssertNil(HookEvent(json: Data(#"[1,2]"#.utf8)))
     }
 
+    func testMessageHeader() throws {
+        let body = #"{"session_id":"a","cwd":"/x","hook_event_name":"Stop"}"#
+        XCTAssertEqual(HookEvent.parse(message: Data(body.utf8))?.agent, .claudeCode, "no header = Claude Code")
+        XCTAssertEqual(HookEvent.parse(message: Data(("NB1 agent=claude-code\n" + body).utf8))?.name, "Stop")
+        XCTAssertNil(HookEvent.parse(message: Data(("NB1 agent=evil\n" + body).utf8)), "unknown agent rejected")
+    }
+
     func testDecisionOutput() throws {
         let allow = try XCTUnwrap(JSONSerialization.jsonObject(with: PermissionDecision.allow.hookOutput) as? [String: Any])
         let hso = try XCTUnwrap(allow["hookSpecificOutput"] as? [String: Any])
@@ -48,7 +55,7 @@ final class SessionStoreTests: XCTestCase {
         st.apply(ev("PreToolUse"), at: t); XCTAssertEqual(st.topState(at: t), .working)
         st.apply(ev("PostToolUse"), at: t); XCTAssertEqual(st.current(at: t).first?.steps, 1)
         st.apply(ev("PermissionRequest"), at: t); XCTAssertEqual(st.topState(at: t), .needsYou)
-        st.resolvePermission(sessionID: "s1", at: t); XCTAssertEqual(st.topState(at: t), .working)
+        st.resolvePermission(sessionID: "claude-code:s1", at: t); XCTAssertEqual(st.topState(at: t), .working)
         st.apply(ev("Stop"), at: t); XCTAssertEqual(st.topState(at: t), .done)
         XCTAssertEqual(st.topState(at: t.addingTimeInterval(121)), .sleeping)
         st.apply(ev("SessionEnd"), at: t); XCTAssertTrue(st.current(at: t).isEmpty)
