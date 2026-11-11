@@ -36,3 +36,65 @@
 "Risky commands can only be approved in the terminal." = "Perintah berisiko hanya bisa disetujui di terminal.";
 "Risky" = "Berisiko";
 "Wants to use %@ in %@:" = "Mau memakai %@ di %@:";
+
+"Off" = "Mati";
+"Soft tick" = "Tik lembut";
+"Beep-beep" = "Bip-bip";
+"Ding" = "Ding";
+"Bwomp" = "Bwomp";
+
+"Settings…" = "Pengaturan…";
+"Settings" = "Pengaturan";
+"Notch Buddy Settings" = "Pengaturan Notch Buddy";
+
+"Avatar" = "Avatar";
+"Agents" = "Agen";
+"Behavior" = "Perilaku";
+"Sound" = "Suara";
+"Privacy" = "Privasi";
+
+"Pick your buddy" = "Pilih temanmu";
+"Every avatar has the same states. Switch anytime." = "Semua avatar punya status yang sama. Ganti kapan saja.";
+"Soon" = "Segera";
+
+"Connected agents" = "Agen terhubung";
+"All data stays on this Mac. Nothing is sent to the internet." = "Semua data tetap ada di Mac ini. Tidak ada yang dikirim ke internet.";
+
+"Open panel on hover" = "Buka panel saat kursor melintas";
+"Allowed to roam the desktop" = "Boleh jalan-jalan di desktop";
+"Coming later" = "Akan datang";
+"One avatar per agent" = "Satu avatar per agen";
+"Language" = "Bahasa";
+
+"Sound effects" = "Efek suara";
+"Sounds on" = "Suara aktif";
+"Preview %@ sound" = "Putar contoh suara %@";
+"Volume" = "Volume";
+"Sound pack" = "Paket suara";
+"Soft" = "Lembut";
+"Retro 8-bit" = "Retro 8-bit";
+"Chirpy" = "Ceria";
+"Mute during calls and meetings" = "Senyapkan saat panggilan dan rapat";
+"At most one sound per minute, so it never gets annoying." = "Maksimal satu suara per menit, jadi tidak mengganggu.";
+
+"Everything stays on this Mac. No network, no analytics, no transcript upload." = "Semua tetap ada di Mac ini. Tanpa jaringan, tanpa analitik, tanpa unggah transkrip.";
+"Claude Code events arrive through a local socket only you can open." = "Aktivitas Claude Code masuk lewat soket lokal yang hanya bisa kamu buka.";
+
+"via hooks" = "lewat hook";
+"Connected" = "Terhubung";
+"Not connected" = "Belum terhubung";
+"Remove…" = "Hapus…";
+"Connect…" = "Hubungkan…";
+"Not supported yet" = "Belum didukung";
+"Connect Claude Code" = "Hubungkan Claude Code";
+"Disconnect Claude Code" = "Putuskan Claude Code";
+"This exact change will be made to ~/.claude/settings.json. A backup copy is saved next to it first." = "Perubahan ini akan diterapkan ke ~/.claude/settings.json. Salinan cadangan disimpan lebih dulu.";
+"Cancel" = "Batal";
+"Connect" = "Hubungkan";
+"Disconnect" = "Putuskan";
+"Couldn't read ~/.claude/settings.json: " = "Gagal membaca ~/.claude/settings.json: ";
+"Saved. New Claude Code sessions will use it." = "Tersimpan. Sesi Claude Code baru akan memakainya.";
+"Backup: " = "Cadangan: ";
+"Couldn't update settings: " = "Gagal memperbarui pengaturan: ";
+
+"%@ sound" = "Suara %@";

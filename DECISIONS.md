@@ -10,3 +10,8 @@ Defaults chosen while building without the user; change freely.
 - **Progress:** Claude Code does not report "14 of 32 tests"; the panel shows the number of tool steps since the last prompt instead.
 - **Risky commands:** flagged red and never approvable from the notch. The app answers the hook immediately with *no decision*, so Claude Code's own terminal prompt handles it. Patterns cover more than the brief (eval, xattr quarantine removal, keychain reads, crontab, shell rc edits, Claude settings edits, disk erase); a false positive only costs a trip to the terminal.
 - **Settings.json editing:** via the system `/usr/bin/jq` so the user's key order and formatting survive and the diff stays small; timestamped backup next to the file before every write.
+- **Sounds:** off by default (opt-in). All synthesized in code with AVAudioEngine, no sound files.
+- **"Mute during Focus, meetings and screen share"** became **"Mute during calls and meetings"**: it mutes while the microphone is in use (CoreAudio, no permission). Reading Focus status needs a permission prompt and screen-share detection has no reliable public API without Screen Recording, so both are left out.
+- **One sound per minute is a hard limit**, so a soft "Working" tick can use up the minute and swallow a "Needs you" beep that follows. Kept as specified; set Working to Off if that bothers you.
+- **Other 11 avatars** show as "Soon" in the picker until Phase 4.
+- **Status-menu titles** pick up a language change after restarting the app; the notch panel and Settings switch immediately.

@@ -42,6 +42,7 @@ public struct NotchShape: Shape {
 
 public struct NotchView: View {
     @ObservedObject public var model: NotchModel
+    @AppStorage(Prefs.language) private var language = "en" // re-render strings when the language changes
 
     @State private var hoverTask: Task<Void, Never>?
     @State private var leaveTask: Task<Void, Never>?
@@ -249,6 +250,15 @@ public struct NotchView: View {
                         .font(.system(size: 12))
                         .foregroundColor(Color(hex: 0x8D8C94))
                     Spacer()
+                    Button(action: {
+                        SettingsWindow.show()
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(hex: 0x8D8C94))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(L("Settings"))
                 }
             }
         }
@@ -278,6 +288,8 @@ public struct NotchView: View {
         if isHovering {
             leaveTask?.cancel()
             leaveTask = nil
+
+            guard UserDefaults.standard.bool(forKey: Prefs.openOnHover) else { return }
 
             if model.mode != .expanded {
                 hoverTask = Task { @MainActor in

@@ -36,3 +36,65 @@
 "Risky commands can only be approved in the terminal." = "Risky commands can only be approved in the terminal.";
 "Risky" = "Risky";
 "Wants to use %@ in %@:" = "Wants to use %@ in %@:";
+
+"Off" = "Off";
+"Soft tick" = "Soft tick";
+"Beep-beep" = "Beep-beep";
+"Ding" = "Ding";
+"Bwomp" = "Bwomp";
+
+"Settings…" = "Settings…";
+"Settings" = "Settings";
+"Notch Buddy Settings" = "Notch Buddy Settings";
+
+"Avatar" = "Avatar";
+"Agents" = "Agents";
+"Behavior" = "Behavior";
+"Sound" = "Sound";
+"Privacy" = "Privacy";
+
+"Pick your buddy" = "Pick your buddy";
+"Every avatar has the same states. Switch anytime." = "Every avatar has the same states. Switch anytime.";
+"Soon" = "Soon";
+
+"Connected agents" = "Connected agents";
+"All data stays on this Mac. Nothing is sent to the internet." = "All data stays on this Mac. Nothing is sent to the internet.";
+
+"Open panel on hover" = "Open panel on hover";
+"Allowed to roam the desktop" = "Allowed to roam the desktop";
+"Coming later" = "Coming later";
+"One avatar per agent" = "One avatar per agent";
+"Language" = "Language";
+
+"Sound effects" = "Sound effects";
+"Sounds on" = "Sounds on";
+"Preview %@ sound" = "Preview %@ sound";
+"Volume" = "Volume";
+"Sound pack" = "Sound pack";
+"Soft" = "Soft";
+"Retro 8-bit" = "Retro 8-bit";
+"Chirpy" = "Chirpy";
+"Mute during calls and meetings" = "Mute during calls and meetings";
+"At most one sound per minute, so it never gets annoying." = "At most one sound per minute, so it never gets annoying.";
+
+"Everything stays on this Mac. No network, no analytics, no transcript upload." = "Everything stays on this Mac. No network, no analytics, no transcript upload.";
+"Claude Code events arrive through a local socket only you can open." = "Claude Code events arrive through a local socket only you can open.";
+
+"via hooks" = "via hooks";
+"Connected" = "Connected";
+"Not connected" = "Not connected";
+"Remove…" = "Remove…";
+"Connect…" = "Connect…";
+"Not supported yet" = "Not supported yet";
+"Connect Claude Code" = "Connect Claude Code";
+"Disconnect Claude Code" = "Disconnect Claude Code";
+"This exact change will be made to ~/.claude/settings.json. A backup copy is saved next to it first." = "This exact change will be made to ~/.claude/settings.json. A backup copy is saved next to it first.";
+"Cancel" = "Cancel";
+"Connect" = "Connect";
+"Disconnect" = "Disconnect";
+"Couldn't read ~/.claude/settings.json: " = "Couldn't read ~/.claude/settings.json: ";
+"Saved. New Claude Code sessions will use it." = "Saved. New Claude Code sessions will use it.";
+"Backup: " = "Backup: ";
+"Couldn't update settings: " = "Couldn't update settings: ";
+
+"%@ sound" = "%@ sound";

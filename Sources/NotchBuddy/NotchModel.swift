@@ -106,6 +106,8 @@ public final class NotchModel: ObservableObject {
     }
 
     private func handleShownChanged(oldValue: AgentState, newValue: AgentState) {
+        SoundPlayer.shared.play(for: newValue)
+
         doneReturnTask?.cancel()
         doneReturnTask = nil
 

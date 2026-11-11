@@ -38,6 +38,9 @@ enum Snapshot {
             m.mode = .expanded
             add("notch-\(name)", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        for tab in SettingsView.SettingsTab.allCases {
+            add("settings-\(tab.rawValue)", CGSize(width: 640, height: 560), SettingsView(selectedTab: tab))
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             for (name, view) in jobs {
                 guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }

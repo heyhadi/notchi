@@ -58,6 +58,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         self.debugSubmenu = debugMenu
         menu.addItem(debugItem)
 
+        let settingsItem = NSMenuItem(
+            title: L("Settings…"),
+            action: #selector(openSettings),
+            keyEquivalent: ","
+        )
+        settingsItem.target = self
+        menu.addItem(settingsItem)
+
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(
@@ -101,6 +109,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             model.debugOverride = state
             updateDebugCheckmarks()
         }
+    }
+
+    @objc private func openSettings() {
+        SettingsWindow.show()
     }
 
     @objc private func quitApp() {

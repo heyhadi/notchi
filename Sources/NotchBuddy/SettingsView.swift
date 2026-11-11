@@ -1,0 +1,504 @@
+import SwiftUI
+import NotchBuddyCore
+
+@MainActor
+struct SettingsView: View {
+    @AppStorage(Prefs.language) private var language = "en"
+    @AppStorage(Prefs.avatar) private var avatar = "bolt"
+    @AppStorage(Prefs.openOnHover) private var openOnHover = true
+    @AppStorage(Prefs.soundsOn) private var soundsOn = false
+    @AppStorage(Prefs.volume) private var volume = 0.6
+    @AppStorage(Prefs.soundPack) private var soundPack = "soft"
+    @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
+
+    @State var selectedTab: SettingsTab = .avatar
+
+    enum SettingsTab: String, CaseIterable, Identifiable {
+        case avatar
+        case agents
+        case behavior
+        case sound
+        case privacy
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .avatar: return L("Avatar")
+            case .agents: return L("Agents")
+            case .behavior: return L("Behavior")
+            case .sound: return L("Sound")
+            case .privacy: return L("Privacy")
+            }
+        }
+
+        var iconName: String {
+            switch self {
+            case .avatar: return "person.crop.circle"
+            case .agents: return "network"
+            case .behavior: return "slider.horizontal.3"
+            case .sound: return "speaker.wave.2"
+            case .privacy: return "lock.shield"
+            }
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            // Sidebar
+            sidebarView
+                .frame(width: 170)
+                .background(Color(hex: 0xF6F4EF))
+
+            Divider()
+                .overlay(Color(hex: 0xE8E5DE))
+
+            // Detail Content
+            ScrollView(.vertical) {
+                VStack(alignment: .leading, spacing: 20) {
+                    switch selectedTab {
+                    case .avatar:
+                        avatarPane
+                    case .agents:
+                        agentsPane
+                    case .behavior:
+                        behaviorPane
+                    case .sound:
+                        soundPane
+                    case .privacy:
+                        privacyPane
+                    }
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+            .background(Color(hex: 0xF6F4EF))
+        }
+        .frame(width: 640, height: 560)
+        .preferredColorScheme(.light)
+        .id(language)
+    }
+
+    // MARK: - Sidebar
+
+    private var sidebarView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(SettingsTab.allCases) { tab in
+                let isSelected = (selectedTab == tab)
+                Button(action: {
+                    selectedTab = tab
+                }) {
+                    HStack(spacing: 10) {
+                        Image(systemName: tab.iconName)
+                            .font(.system(size: 14))
+                            .frame(width: 20)
+                        Text(tab.title)
+                            .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                        Spacer()
+                    }
+                    .foregroundColor(isSelected ? .white : Color(hex: 0x1B1B1F))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(isSelected ? Color(hex: 0x1B1B1F) : Color.clear)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 24)
+        .padding(.bottom, 16)
+    }
+
+    // MARK: - Avatar Tab
+
+    private struct AvatarItem: Identifiable {
+        let id: String
+        let name: String
+    }
+
+    private let avatarList: [AvatarItem] = [
+        AvatarItem(id: "bolt", name: "Bolt"),
+        AvatarItem(id: "mochi", name: "Mochi"),
+        AvatarItem(id: "goo", name: "Goo"),
+        AvatarItem(id: "boo", name: "Boo"),
+        AvatarItem(id: "tofu", name: "Tofu"),
+        AvatarItem(id: "sprout", name: "Sprout"),
+        AvatarItem(id: "ember", name: "Ember"),
+        AvatarItem(id: "nimbus", name: "Nimbus"),
+        AvatarItem(id: "inky", name: "Inky"),
+        AvatarItem(id: "bun", name: "Bun"),
+        AvatarItem(id: "byte", name: "Byte"),
+        AvatarItem(id: "quack", name: "Quack"),
+    ]
+
+    private var avatarPane: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("Pick your buddy"))
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color(hex: 0x1B1B1F))
+                Text(L("Every avatar has the same states. Switch anytime."))
+                    .font(.system(size: 13))
+                    .foregroundColor(Color(hex: 0x5E5D66))
+            }
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
+                ForEach(avatarList) { item in
+                    avatarTile(item)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func avatarTile(_ item: AvatarItem) -> some View {
+        let isBolt = (item.id == "bolt")
+        let isSelected = (avatar == item.id)
+
+        Button(action: {
+            if isBolt {
+                avatar = item.id
+            }
+        }) {
+            VStack(spacing: 6) {
+                if isBolt {
+                    BoltView(state: .sleeping, size: 64)
+                        .frame(width: 64, height: 64)
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color(hex: 0xE8E6DF))
+                            .frame(width: 64, height: 64)
+                        Text(L("Soon"))
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(Color(hex: 0x8D8C94))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Capsule().fill(Color(hex: 0xD6D2C9)))
+                    }
+                }
+
+                Text(item.name)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(isBolt ? Color(hex: 0x1B1B1F) : Color(hex: 0x8D8C94))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Color(hex: 0xDDF7EC) : Color.white)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color(hex: 0x1E8E66) : Color(hex: 0xEAE7E0), lineWidth: isSelected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(!isBolt)
+        .accessibilityLabel(isBolt ? item.name : "\(item.name), \(L("Soon"))")
+    }
+
+    // MARK: - Agents Tab
+
+    private var agentsPane: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("Connected agents"))
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color(hex: 0x1B1B1F))
+            }
+
+            VStack(alignment: .leading, spacing: 16) {
+                ConnectedAgentsSection()
+            }
+            .padding(18)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+
+            Text(L("All data stays on this Mac. Nothing is sent to the internet."))
+                .font(.system(size: 12))
+                .foregroundColor(Color(hex: 0x5E5D66))
+                .padding(.horizontal, 4)
+        }
+    }
+
+    // MARK: - Behavior Tab
+
+    private var behaviorPane: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("Behavior"))
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color(hex: 0x1B1B1F))
+            }
+
+            VStack(alignment: .leading, spacing: 16) {
+                Toggle(isOn: $openOnHover) {
+                    Text(L("Open panel on hover"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("Allowed to roam the desktop"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x8D8C94))
+                        Text(L("Coming later"))
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: 0xA9A8B0))
+                    }
+                    Spacer()
+                    Toggle(L("Allowed to roam the desktop"), isOn: .constant(false))
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .disabled(true)
+                }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("One avatar per agent"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x8D8C94))
+                        Text(L("Coming later"))
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: 0xA9A8B0))
+                    }
+                    Spacer()
+                    Toggle(L("One avatar per agent"), isOn: .constant(false))
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .disabled(true)
+                }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack {
+                    Text(L("Language"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                    Spacer()
+                    Picker(L("Language"), selection: $language) {
+                        Text("English").tag("en")
+                        Text("Bahasa Indonesia").tag("id")
+                    }
+                    .labelsHidden()
+                    .frame(width: 160)
+                }
+            }
+            .padding(18)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+        }
+    }
+
+    // MARK: - Sound Tab
+
+    private var soundPane: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("Sound"))
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color(hex: 0x1B1B1F))
+            }
+
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Text(L("Sound effects"))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                    Spacer()
+                    Toggle(isOn: $soundsOn) {
+                        Text(L("Sounds on"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                    }
+                    .toggleStyle(.switch)
+                    .tint(Color(hex: 0x1E8E66))
+                }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                VStack(spacing: 10) {
+                    ForEach(AgentState.allCases, id: \.self) { state in
+                        SoundStateRow(state: state, soundsOn: soundsOn)
+                    }
+                }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack(spacing: 14) {
+                    Text(L("Volume"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                        .frame(width: 90, alignment: .leading)
+                    Slider(value: $volume, in: 0...1)
+                        .accessibilityLabel(L("Volume"))
+                        .tint(Color(hex: 0x1E8E66))
+                    Text("\(Int(volume * 100))%")
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(Color(hex: 0x5E5D66))
+                        .frame(width: 40, alignment: .trailing)
+                }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack {
+                    Text(L("Sound pack"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                    Spacer()
+                    Picker(L("Sound pack"), selection: $soundPack) {
+                        Text(L("Soft")).tag("soft")
+                        Text(L("Retro 8-bit")).tag("retro")
+                        Text(L("Chirpy")).tag("chirpy")
+                    }
+                    .labelsHidden()
+                    .frame(width: 140)
+                }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                Toggle(isOn: $muteWhenBusy) {
+                    Text(L("Mute during calls and meetings"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
+            }
+            .padding(18)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+
+            Text(L("At most one sound per minute, so it never gets annoying."))
+                .font(.system(size: 12))
+                .foregroundColor(Color(hex: 0x5E5D66))
+                .padding(.horizontal, 4)
+        }
+    }
+
+    // MARK: - Privacy Tab
+
+    private var privacyPane: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("Privacy"))
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color(hex: 0x1B1B1F))
+            }
+
+            VStack(alignment: .leading, spacing: 16) {
+                privacyRow(
+                    icon: "lock.shield",
+                    text: L("Everything stays on this Mac. No network, no analytics, no transcript upload.")
+                )
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                privacyRow(
+                    icon: "network.badge.shield.half.filled",
+                    text: L("Claude Code events arrive through a local socket only you can open.")
+                )
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                privacyRow(
+                    icon: "terminal",
+                    text: L("Risky commands can only be approved in the terminal.")
+                )
+            }
+            .padding(18)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+        }
+    }
+
+    private func privacyRow(icon: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(Color(hex: 0x1E8E66))
+                .frame(width: 24, height: 24)
+
+            Text(text)
+                .font(.system(size: 13))
+                .foregroundColor(Color(hex: 0x1B1B1F))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer()
+        }
+    }
+}
+
+// MARK: - SoundStateRow
+
+@MainActor
+private struct SoundStateRow: View {
+    let state: AgentState
+    let soundsOn: Bool
+    @AppStorage private var soundRaw: String
+
+    init(state: AgentState, soundsOn: Bool) {
+        self.state = state
+        self.soundsOn = soundsOn
+        self._soundRaw = AppStorage(wrappedValue: SoundName.default(for: state).rawValue, Prefs.sound(for: state))
+    }
+
+    private var selectedSound: SoundName {
+        SoundName(rawValue: soundRaw) ?? SoundName.default(for: state)
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(Color(hex: state.colorHex))
+                .frame(width: 8, height: 8)
+
+            Text(stateName(state))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(hex: 0x1B1B1F))
+
+            Spacer()
+
+            Picker(String(format: L("%@ sound"), stateName(state)), selection: Binding<SoundName>(
+                get: { selectedSound },
+                set: { soundRaw = $0.rawValue }
+            )) {
+                ForEach(SoundName.allCases) { sound in
+                    Text(sound.title).tag(sound)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 130)
+
+            Button(action: {
+                SoundPlayer.shared.preview(selectedSound)
+            }) {
+                Image(systemName: "speaker.wave.2")
+                    .font(.system(size: 12))
+                    .foregroundColor(selectedSound == .off ? Color(hex: 0xB9B4C9) : Color(hex: 0x1B1B1F))
+                    .frame(width: 28, height: 28)
+                    .background(
+                        Circle()
+                            .fill(selectedSound == .off ? Color(hex: 0xF6F4EF) : Color(hex: 0xE8E5DE))
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(selectedSound == .off)
+            .accessibilityLabel(String(format: L("Preview %@ sound"), stateName(state)))
+        }
+        .opacity(soundsOn ? 1.0 : 0.45)
+    }
+}
