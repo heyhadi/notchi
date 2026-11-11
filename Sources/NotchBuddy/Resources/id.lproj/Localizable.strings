@@ -133,3 +133,4 @@
 "Other answer…" = "Jawaban lain…";
 "Send answer" = "Kirim jawaban";
 "agy (CLI). The IDE doesn't run hooks yet" = "agy (CLI). IDE-nya belum menjalankan hook";
+"You: %@" = "Kamu: %@";

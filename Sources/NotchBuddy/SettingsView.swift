@@ -157,51 +157,25 @@ struct SettingsView: View {
 
     @ViewBuilder
     private func avatarTile(_ item: AvatarItem) -> some View {
-        let isBolt = (item.id == "bolt")
         let isSelected = (avatar == item.id)
-
-        Button(action: {
-            if isBolt {
-                avatar = item.id
-            }
-        }) {
+        Button(action: { avatar = item.id }) {
             VStack(spacing: 6) {
-                if isBolt {
-                    BoltView(state: .sleeping, size: 64)
-                        .frame(width: 64, height: 64)
-                } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(hex: 0xE8E6DF))
-                            .frame(width: 64, height: 64)
-                        Text(L("Soon"))
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(Color(hex: 0x8D8C94))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Capsule().fill(Color(hex: 0xD6D2C9)))
-                    }
-                }
-
+                AvatarView(kind: AvatarKind(rawValue: item.id) ?? .bolt, state: isSelected ? .done : .sleeping, size: 64)
+                    .frame(width: 64, height: 64)
                 Text(item.name)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(isBolt ? Color(hex: 0x1B1B1F) : Color(hex: 0x8D8C94))
+                    .foregroundColor(Color(hex: 0x1B1B1F))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .padding(.horizontal, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Color(hex: 0xDDF7EC) : Color.white)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color(hex: 0x1E8E66) : Color(hex: 0xEAE7E0), lineWidth: isSelected ? 2 : 1)
-            )
+            .background(RoundedRectangle(cornerRadius: 16).fill(isSelected ? Color(hex: 0xDDF7EC) : Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 16)
+                .stroke(isSelected ? Color(hex: 0x1E8E66) : Color(hex: 0xEAE7E0), lineWidth: isSelected ? 2 : 1))
         }
         .buttonStyle(.plain)
-        .disabled(!isBolt)
-        .accessibilityLabel(isBolt ? item.name : "\(item.name), \(L("Soon"))")
+        .accessibilityLabel(item.name)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     // MARK: - Agents Tab

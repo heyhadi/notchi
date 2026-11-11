@@ -43,6 +43,8 @@ public struct NotchShape: Shape {
 public struct NotchView: View {
     @ObservedObject public var model: NotchModel
     @AppStorage(Prefs.language) private var language = "en" // re-render strings when the language changes
+    @AppStorage(Prefs.avatar) private var avatar = "bolt"
+    private var avatarKind: AvatarKind { AvatarKind(rawValue: avatar) ?? .bolt }
 
     @State private var hoverTask: Task<Void, Never>?
     @State private var leaveTask: Task<Void, Never>?
@@ -139,7 +141,7 @@ public struct NotchView: View {
     private var compactView: some View {
         HStack(alignment: .center, spacing: 0) {
             // Left ear: 22pt avatar
-            BoltView(state: model.shown, size: NotchModel.earAvatar)
+            AvatarView(kind: avatarKind, state: model.shown, size: NotchModel.earAvatar)
                 .padding(.leading, 8)
 
             Spacer()
@@ -167,7 +169,7 @@ public struct NotchView: View {
         VStack(spacing: 6) {
             // Row 1: ears
             HStack(alignment: .center, spacing: 0) {
-                BoltView(state: model.shown, size: NotchModel.earAvatar)
+                AvatarView(kind: avatarKind, state: model.shown, size: NotchModel.earAvatar)
                     .padding(.leading, 8)
 
                 Spacer()
@@ -223,7 +225,7 @@ public struct NotchView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header: 44pt avatar + title
             HStack(spacing: 12) {
-                BoltView(state: model.shown, size: 44)
+                AvatarView(kind: avatarKind, state: model.shown, size: 44)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(headerTitle)
                         .font(.system(size: 20, weight: .semibold, design: .rounded))

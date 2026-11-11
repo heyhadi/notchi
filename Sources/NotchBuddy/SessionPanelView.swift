@@ -214,6 +214,10 @@ private struct ChatBox: View {
                 .accessibilityLabel(L("Send"))
             }
             Text(status).font(.system(size: 11)).foregroundColor(Color(hex: 0x8D8C94))
+            if let mine = chat.lastSent {
+                Text(String(format: L("You: %@"), mine)).font(.system(size: 11)).foregroundColor(Color(hex: 0xA9A8B0))
+                    .lineLimit(2).truncationMode(.tail)
+            }
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color(hex: 0x1E1D23)))

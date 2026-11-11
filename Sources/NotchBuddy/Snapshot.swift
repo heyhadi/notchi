@@ -22,6 +22,14 @@ enum Snapshot {
         }
         add("bolt-states", CGSize(width: 860, height: 150),
             HStack(spacing: 16) { ForEach(AgentState.allCases, id: \.self) { BoltView(state: $0, size: 120) } }.background(Color.white))
+        add("avatars-all", CGSize(width: 860, height: 12 * 130 + 20),
+            VStack(spacing: 10) { ForEach(AvatarKind.allCases) { k in
+                HStack(spacing: 16) { ForEach(AgentState.allCases, id: \.self) { AvatarView(kind: k, state: $0, size: 120) } }
+            } }.padding(10).background(Color.white))
+        add("avatars-30pt", CGSize(width: 12 * 38 + 20, height: 6 * 38 + 20),
+            VStack(spacing: 8) { ForEach(AgentState.allCases, id: \.self) { st in
+                HStack(spacing: 8) { ForEach(AvatarKind.allCases) { AvatarView(kind: $0, state: st, size: 30) } }
+            } }.padding(10).background(Color.black))
         add("bolt-22pt", CGSize(width: 220, height: 40),
             HStack(spacing: 8) { ForEach(AgentState.allCases, id: \.self) { BoltView(state: $0, size: 22) } }.background(Color.black))
         for (mode, state) in [(NotchMode.compact, AgentState.working), (.peek, .needsYou), (.expanded, .done)] {

@@ -20,6 +20,7 @@ struct ChatState {
     var heldSince: Date?
     var lastReply: String?                           // what the agent said when it stopped
     var sentAt: Date?
+    var lastSent: String?                            // shown in the chat box so you can see it went through
 }
 
 extension NotchModel {
@@ -72,6 +73,7 @@ extension NotchModel {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, let agent = store.sessions[key]?.agent else { return }
         var c = chats[key] ?? ChatState()
+        c.lastSent = text
         if let held = c.held {
             held(agent.chatOutput(text))
             c.held = nil; c.heldSince = nil; c.sentAt = Date()

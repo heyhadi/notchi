@@ -1,25 +1,30 @@
-# Morning notes
+# Morning notes (12 Nov 2026)
 
-## Needs you
-1. **Approve the hook install**: see `docs/pending-approval.md` (exact diff, one command, backup + undo).
-2. **Listen to the sounds**: Settings → Sound → speaker buttons (sounds are off by default; I never played them overnight).
-3. **Try it live**: `open build/NotchBuddy.app`, start a new `claude` session, and check how the notch feels
-   (hover/click to open, approval buttons, avatar size). I could only check the UI through offscreen snapshots,
-   because a real screenshot would need Screen Recording permission.
+## What works (tested live with you last night)
+- **Claude Code** (terminal, VS Code, Desktop): status in the notch, **approve/deny** from the notch, **questions with answer buttons**,
+  **chat** (reply from the notch, delivered when Claude finishes its turn), risky commands (sudo, curl|sh, …) always
+  go back to the terminal. All four were checked in a real session in `~/nb-playground`.
+- Cmd+C/V/X/A/Z work in the notch text boxes.
 
-## Verified overnight
-- A real headless Claude Code 2.1.312 session (`claude -p --settings <temp file>`, your settings.json untouched)
-  sent SessionStart, UserPromptSubmit, PreToolUse, PermissionRequest, PostToolUse, Stop, SessionEnd through
-  `notchbuddy-hook`, and an `allow` answer over the socket made Claude run the command.
-- `--selftest`: hook binary → socket → app model → Allow/Deny → hook output, risky command handed back to the
-  terminal immediately, card cleared by later progress.
+## Agents
+| Agent | State |
+|---|---|
+| Claude Code | Works (tested) |
+| Antigravity `agy` (terminal) | Works (tested: status + chat) |
+| Antigravity **IDE** 2.31.1 | Does **not** run hooks at all: restarted, conversations active, our hook never invoked and no failures logged. Most likely a server-side feature flag on Google's side. Nothing to fix on our side; re-test after an Antigravity update. |
+| Codex, Gemini CLI, Cursor, Copilot, Cline, OpenCode | Built from their docs, connectable in Settings → Agents, not tested (not installed / need their UI) |
+| Kilo Code, Roo Code, Windsurf | No usable official hooks yet |
 
-- Phase 3: Settings tabs and the notch rendered in English and Bahasa Indonesia (offscreen snapshots);
-  14 unit tests pass (event parsing, state priority, risky-command classifier, settings.json installer, sound limit).
+## Diagnostics you can check yourself
+- `~/Library/Logs/NotchBuddy/events.log`: one line per event the notch received (time, agent, event, session id prefix).
+- `~/Library/Logs/NotchBuddy/hook-failures.log`: a hook ran but couldn't reach the app (e.g. app closed).
 
-## Still unknown (test when you're back)
-- In an **interactive** terminal session, does Claude Code show its own permission prompt while our hook is waiting
-  for a click in the notch? Docs don't say. If it does not, the terminal waits until you answer in the notch
-  (or press "Answer in terminal", which hands it back right away). Up to 590 s worst case.
-- Xcode prints `CoreSimulator is out of date` warnings on every `xcodebuild`. Harmless for this macOS app;
-  opening Xcode once and letting it install components would silence it.
+## Settings changed with your OK
+- `~/.claude/settings.json`: hooks added, then `Stop` waits for chat replies (backups next to the file, `*.notchbuddy-backup-*`).
+- `~/.gemini/config/hooks.json`: Antigravity hooks (you connected it from Settings).
+
+## Cleanup you may want
+- `~/nb-playground` (test folder with `notes.txt`, `hello.txt`) can be deleted.
+
+## Reminder
+- Still open from your notes: the lead's decision on wiping the Mac.
