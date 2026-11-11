@@ -17,15 +17,21 @@ extension NotchModel {
     func handle(_ e: HookEvent, respond: @escaping @Sendable (Data?) -> Void) {
         store.apply(e)
         switch e.name {
-        case "PermissionRequest":
+        case "PermissionRequest" where e.agent.approvesInNotch:
             let risks = CommandRisk.reasons(for: e)
             if risks.isEmpty {
                 pending.append(PendingRequest(event: e, risks: risks, respond: respond))
             } else {
-                respond(nil) // risky: never decided here, Claude Code asks in the terminal
+                respond(nil) // risky: never decided here, the agent asks in its own UI
                 pending.append(PendingRequest(event: e, risks: risks, respond: nil))
             }
-        case "Notification":
+        case "PreToolUse" where !e.agent.approvesInNotch:
+            // Status-only agents: never approve, but make sure a risky command gets the agent's own prompt.
+            let risks = CommandRisk.reasons(for: e)
+            respond(risks.isEmpty ? nil : e.agent.forceAskOutput(reasons: risks))
+            if risks.isEmpty { releasePending(key: SessionStore.key(e)) }
+            else { pending.append(PendingRequest(event: e, risks: risks, respond: nil)) }
+        case "PermissionRequest", "Notification":
             respond(nil)
         default:
             respond(nil)
@@ -39,7 +45,7 @@ extension NotchModel {
     func decide(_ id: PendingRequest.ID, _ decision: PermissionDecision?) {
         guard let i = pending.firstIndex(where: { $0.id == id }) else { return }
         let req = pending.remove(at: i)
-        req.respond?(decision?.hookOutput)
+        req.respond?(decision.flatMap { req.event.agent.output(for: $0) })
         if decision != nil { store.resolvePermission(sessionID: SessionStore.key(req.event)) }
         refresh(after: nil)
     }
