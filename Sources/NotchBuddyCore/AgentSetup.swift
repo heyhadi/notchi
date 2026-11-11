@@ -54,9 +54,7 @@ public enum AgentSetup {
         switch a {
         case .claudeCode, .codex, .geminiCLI, .cursor:
             let spec = jsonSpec(a, hook: hook)
-            // Install = remove our old entries, then add current ones, so upgrades replace instead of duplicating.
-            let filter = a == .cursor ? (install ? flatUninstall + " | " + flatInstall : flatUninstall)
-                                      : (install ? nestedUninstall + " | " + nestedInstall : nestedUninstall)
+            let filter = a == .cursor ? (install ? flatInstall : flatUninstall) : (install ? nestedInstall : nestedUninstall)
             let specJSON = String(decoding: try JSONSerialization.data(withJSONObject: spec, options: [.sortedKeys]), as: UTF8.self)
             let new = try HookInstaller.jq(filter, read(paths[0]) ?? "", args: ["--argjson", "spec", specJSON, "--arg", "prefix", q(hook)])
             // Removing everything from a file we created leaves "{}"; fine to keep.
@@ -158,9 +156,14 @@ public enum AgentSetup {
         }
     }
 
+    // Install replaces our existing entry in place (upgrades give a minimal diff), else appends. Handlers are
+    // written as {type, command, …} to match the usual key order.
     static let nestedInstall = """
     reduce ($spec | to_entries[]) as $x (.;
-      if any(.hooks[$x.key][]?.hooks[]?; .command == $x.value.hooks[0].command) then . else .hooks[$x.key] += [$x.value] end)
+      ($x.value | .hooks |= map({type} + .)) as $g
+      | if any(.hooks[$x.key][]?.hooks[]?; .command | startswith($prefix)) then
+          .hooks[$x.key] |= map(if any(.hooks[]?; .command | startswith($prefix)) then $g else . end)
+        else .hooks[$x.key] += [$g] end)
     """
     static let nestedUninstall = """
     if .hooks then
@@ -172,7 +175,9 @@ public enum AgentSetup {
     static let flatInstall = """
     .version //= 1
     | reduce ($spec | to_entries[]) as $x (.;
-        if any(.hooks[$x.key][]?; .command == $x.value.command) then . else .hooks[$x.key] += [$x.value] end)
+        if any(.hooks[$x.key][]?; .command | startswith($prefix)) then
+          .hooks[$x.key] |= map(if .command | startswith($prefix) then $x.value else . end)
+        else .hooks[$x.key] += [$x.value] end)
     """
     static let flatUninstall = """
     if .hooks then
