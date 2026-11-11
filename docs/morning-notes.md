@@ -2,7 +2,8 @@
 
 ## Needs you
 1. **Approve the hook install**: see `docs/pending-approval.md` (exact diff, one command, backup + undo).
-2. **Try it live**: `open build/NotchBuddy.app`, start a new `claude` session, and check how the notch feels
+2. **Listen to the sounds**: Settings → Sound → speaker buttons (sounds are off by default; I never played them overnight).
+3. **Try it live**: `open build/NotchBuddy.app`, start a new `claude` session, and check how the notch feels
    (hover/click to open, approval buttons, avatar size). I could only check the UI through offscreen snapshots,
    because a real screenshot would need Screen Recording permission.
 
@@ -12,6 +13,9 @@
   `notchbuddy-hook`, and an `allow` answer over the socket made Claude run the command.
 - `--selftest`: hook binary → socket → app model → Allow/Deny → hook output, risky command handed back to the
   terminal immediately, card cleared by later progress.
+
+- Phase 3: Settings tabs and the notch rendered in English and Bahasa Indonesia (offscreen snapshots);
+  14 unit tests pass (event parsing, state priority, risky-command classifier, settings.json installer, sound limit).
 
 ## Still unknown (test when you're back)
 - In an **interactive** terminal session, does Claude Code show its own permission prompt while our hook is waiting
