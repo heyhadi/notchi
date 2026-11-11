@@ -1,6 +1,7 @@
-# Pending your approval: install the Claude Code hook
+# Claude Code hook install
 
-Nothing below has been run. Installing edits `~/.claude/settings.json`, so it waits for your OK.
+**Installed 2026-11-12 with your OK** (backup: `~/.claude/settings.json.notchbuddy-backup-2026-11-11T18-19-54Z`).
+Originally prepared for approval; nothing below had been run before that. Installing edits `~/.claude/settings.json`, so it waits for your OK.
 
 ## What it changes
 
