@@ -53,14 +53,27 @@ public enum HookInstaller {
         let fm = FileManager.default
         var backup: String?
         if fm.fileExists(atPath: path) {
-            let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
-            backup = path + ".notchbuddy-backup-" + stamp
+            backup = uniqueBackupPath(path)
             try fm.copyItem(atPath: path, toPath: backup!)
         } else {
             try fm.createDirectory(atPath: (path as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
         }
         try new.write(toFile: path, atomically: true, encoding: .utf8)
         return backup
+    }
+
+    /// path.notchbuddy-backup-<time>, with a counter if that name is taken (two writes in one second).
+    static func uniqueBackupPath(_ path: String) -> String {
+        let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+        var p = path + ".notchbuddy-backup-" + stamp, n = 2
+        while FileManager.default.fileExists(atPath: p) { p = path + ".notchbuddy-backup-\(stamp)-\(n)"; n += 1 }
+        return p
+    }
+
+    /// jq over a settings file; empty input counts as {}.
+    static func jq(_ filter: String, _ input: String, args: [String]) throws -> String {
+        let src = input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "{}" : input
+        return try run("/usr/bin/jq", ["--indent", "2"] + args + [filter], stdin: src)
     }
 
     private static func jq(_ filter: String, _ input: String, hookPath: String) throws -> String {
@@ -70,7 +83,7 @@ public enum HookInstaller {
                        stdin: src)
     }
 
-    private static func run(_ tool: String, _ args: [String], stdin: String? = nil, okCodes: Set<Int32> = [0]) throws -> String {
+    static func run(_ tool: String, _ args: [String], stdin: String? = nil, okCodes: Set<Int32> = [0]) throws -> String {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: tool)
         p.arguments = args
