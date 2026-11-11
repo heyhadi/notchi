@@ -33,7 +33,9 @@ let connected = ok && withUnsafePointer(to: &addr) {
 }
 guard connected else { exit(0) }
 
-let message = Data("NB1 agent=\(agent)\n".utf8) + input
+// Where a Claude Code session runs (cli, claude-vscode, claude-desktop…), so the notch can label it.
+let entry = (ProcessInfo.processInfo.environment["CLAUDE_CODE_ENTRYPOINT"] ?? "").filter { $0.isLetter || $0.isNumber || $0 == "-" }
+let message = Data("NB1 agent=\(agent) entry=\(entry)\n".utf8) + input
 _ = message.withUnsafeBytes { buf -> Bool in
     var off = 0
     while off < buf.count {

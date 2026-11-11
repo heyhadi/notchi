@@ -31,6 +31,9 @@ final class HookEventTests: XCTestCase {
         XCTAssertEqual(HookEvent.parse(message: Data(body.utf8))?.agent, .claudeCode, "no header = Claude Code")
         XCTAssertEqual(HookEvent.parse(message: Data(("NB1 agent=claude-code\n" + body).utf8))?.name, "Stop")
         XCTAssertNil(HookEvent.parse(message: Data(("NB1 agent=evil\n" + body).utf8)), "unknown agent rejected")
+        let vs = HookEvent.parse(message: Data(("NB1 agent=claude-code entry=claude-vscode\n" + body).utf8))
+        XCTAssertEqual(vs?.agentLabel, "Claude Code (VS Code)")
+        XCTAssertEqual(HookEvent.parse(message: Data(("NB1 agent=claude-code entry=cli\n" + body).utf8))?.agentLabel, "Claude Code")
     }
 
     func testDecisionOutput() throws {

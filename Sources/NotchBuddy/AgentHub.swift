@@ -68,7 +68,7 @@ extension NotchModel {
     private func peek(for e: HookEvent) -> String? {
         switch e.name {
         case "PermissionRequest", "Notification":
-            return String(format: L("%@ needs approval"), "\(e.agent.displayName) · \(e.project)")
+            return String(format: L("%@ needs approval"), "\(e.agentLabel) · \(e.project)")
         case "Stop":
             let steps = store.sessions[SessionStore.key(e)]?.steps ?? 0
             return String(format: L("Done · %d steps"), steps)

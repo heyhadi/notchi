@@ -3,6 +3,7 @@ import Foundation
 /// One Claude Code hook payload (stdin JSON of the hook), reduced to what the app shows.
 public struct HookEvent: Sendable, Equatable {
     public var agent: AgentKind = .claudeCode
+    public var surface: String?          // "VS Code", "Desktop"… when not a plain terminal
     public var name: String
     public var sessionID: String
     public var cwd: String
@@ -36,6 +37,9 @@ public struct HookEvent: Sendable, Equatable {
     }
 
     public var project: String { (cwd as NSString).lastPathComponent }
+
+    /// "Claude Code" or "Claude Code (VS Code)".
+    public var agentLabel: String { surface.map { "\(agent.displayName) (\($0))" } ?? agent.displayName }
 
     /// Short "last step" text, e.g. "Bash: npm test" or "Edit: Foo.swift".
     public var stepSummary: String? {

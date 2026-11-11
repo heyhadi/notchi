@@ -4,6 +4,7 @@ import Foundation
 public struct AgentSession: Identifiable, Sendable, Equatable {
     public let id: String
     public var agent: AgentKind = .claudeCode
+    public var agentLabel = "Claude Code"
     public var project: String
     public var cwd: String
     public var state: AgentState = .sleeping
@@ -26,6 +27,7 @@ public struct SessionStore: Sendable {
         if e.name == "SessionEnd" { sessions[key] = nil; return }
         var s = sessions[key] ?? AgentSession(id: key, agent: e.agent, project: e.project, cwd: e.cwd, updated: now)
         if !e.cwd.isEmpty { s.cwd = e.cwd; s.project = e.project }
+        s.agentLabel = e.agentLabel
         s.updated = now
         switch e.name {
         case "SessionStart": s.state = .sleeping
