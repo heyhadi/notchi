@@ -203,20 +203,47 @@ pre.term .c { color: #6C7A89; }
 .copy { position: absolute; right: 12px; top: 12px; background: #1b2229; color: #cfd8e1; border: 1px solid #2a343d; border-radius: 8px; padding: 5px 10px; font: 500 12px var(--body); cursor: pointer; }
 footer.end { padding-block: 36px 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
 
-/* ---------- avatars ---------- */
+/* ---------- avatars (motion from AvatarView.swift) ---------- */
 .av { display: block; overflow: visible; }
-.av .bodyg { transform-origin: 50px 92px; transform-box: view-box; animation: bob 2.4s ease-in-out infinite; }
-.av[data-state="working"] .bodyg, .av[data-state="thinking"] .bodyg { animation-duration: .7s; }
-.av[data-state="needsYou"] .bodyg { animation: shake .5s ease-in-out infinite; }
-.av[data-state="sleeping"] .bodyg { animation-duration: 4.5s; }
+.av .st, .av .fl, .av .sq, .av .sw, .av .fk { transform-box: view-box; }
+.av .sw { transform-box: fill-box; transform-origin: 50% 100%; }
+.av[data-state="sleeping"] .st { animation: breathe 4s ease-in-out infinite; }
+.av[data-state="working"] .st { animation: workbob .5s ease-in-out infinite; }
+.av[data-state="needsYou"] .st { animation: hop .9s linear infinite; }
+.av[data-state="done"] .st { animation: jump 1s linear infinite; }
+.av[data-state="error"] .st { animation: wobble 1.2s ease-in-out infinite alternate; }
+.av[data-state="thinking"] .fl { animation: floaty 2.6s ease-in-out infinite; transform-origin: 60px 100px; }
+.av[data-state="thinking"] .sq { animation: squash 1.8s ease-in-out infinite; transform-origin: 60px 104px; }
+.av:not([data-state="sleeping"]) .sw { animation: sway 2.2s ease-in-out infinite; }
+.av[data-state="thinking"] .sw { animation-name: swaybig; }
+.av:not([data-state="sleeping"]) .fk { animation: flicker .9s ease-in-out infinite; transform-origin: 60px 106px; }
 .av .eyes { transition: transform .12s ease-out; }
-.av .lid { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
+.av .lid { transform-box: fill-box; transform-origin: center; animation: blink 4s infinite; }
+.av .spin { transform-box: fill-box; transform-origin: center; animation: spin2 1s linear infinite; }
+.av .zz { animation: rise 2.7s linear infinite; opacity: 0; }
+.av .pd { animation: pdot 1.2s ease-in-out infinite; }
+.av .pop { transform-box: fill-box; transform-origin: center; animation: pop .9s ease-in-out infinite; }
+.av .cf { transform-box: fill-box; transform-origin: center; animation: confetti 1s linear infinite; }
+.av .smoke { animation: rise 2.7s linear infinite; opacity: 0; }
+@keyframes breathe { 50% { transform: scale(1.02, 1.04); } }
+@keyframes workbob { 50% { transform: translateY(-3px); } }
+@keyframes hop { 0%, 100% { transform: none; } 30% { transform: translateY(-10px) rotate(-4deg); } 60% { transform: rotate(4deg); } }
+@keyframes jump { 0%, 100% { transform: scale(1.08, .92); } 40% { transform: translateY(-12px) scale(.94, 1.08); } 60% { transform: translateY(-12px); } }
+@keyframes wobble { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+@keyframes floaty { 50% { transform: translateY(-5px); } }
+@keyframes squash { 50% { transform: scale(1.06, .94); } }
+@keyframes sway { 0%, 100% { transform: rotate(-3.5deg); } 50% { transform: rotate(3.5deg); } }
+@keyframes swaybig { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+@keyframes flicker { 50% { transform: scale(.97, 1.06); } }
+@keyframes spin2 { to { transform: rotate(360deg); } }
+@keyframes rise { 0% { opacity: 0; transform: translate(0, 0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -16px); } }
+@keyframes pdot { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes pop { 50% { transform: scale(1.2); } }
+@keyframes confetti { from { opacity: 1; transform: translate(0, 0) rotate(0); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(180deg); } }
 
 @keyframes spin { to { --a: 360deg; } }
 @keyframes pulse { 50% { opacity: .35; } }
-@keyframes bob { 50% { transform: translateY(-2.5px) scale(1.02, .98); } }
-@keyframes shake { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
-@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(.1); } }
 @keyframes blink2 { 50% { opacity: 0; } }
 @keyframes press { 50% { transform: scale(.94); box-shadow: 0 0 0 6px rgba(155,242,208,.25); } }
 
@@ -420,49 +447,125 @@ function play(name, pitch = 1, force = false) {
 }
 function setSound(on) { soundOn = on; $("#mSoundSt").textContent = on ? "on" : "off"; if (on) play("hello", 1, true); }
 
-/* ================= buddies (procedural SVG) ================= */
+/* ================= buddies: the app's own avatars ================= */
+// Bodies are Avatar.dc.html (viewBox 120) with the face taken out; faces, motion and overlays follow AvatarView.swift / BoltView.swift.
 const KINDS = {
-  bolt:   { name: "Bolt",   ey: 52, cheer: "Zzzap!",  body: `<circle cx="50" cy="54" r="34" fill="#FFD84D"/><polygon points="52,8 38,30 49,30 44,46 62,24 51,24" fill="#FFB020"/>` },
-  mochi:  { name: "Mochi",  ey: 58, cheer: "Mochi~",  body: `<ellipse cx="50" cy="62" rx="40" ry="31" fill="#FFE3EC"/><circle cx="26" cy="68" r="5" fill="#FFB8CB" opacity=".8"/><circle cx="74" cy="68" r="5" fill="#FFB8CB" opacity=".8"/>` },
-  goo:    { name: "Goo",    ey: 56, cheer: "Blorp!",  body: `<path d="M14 80 C10 50 30 24 50 24 C72 24 90 48 86 80 C84 92 74 90 72 82 C70 92 58 92 56 82 C52 94 40 94 38 82 C34 92 18 92 14 80Z" fill="#6EE7A8"/>` },
-  boo:    { name: "Boo",    ey: 46, cheer: "Boo!",    body: `<path d="M18 86 V46 C18 24 32 12 50 12 C68 12 82 24 82 46 V86 L72 78 L62 88 L50 78 L38 88 L28 78Z" fill="#F4F6FA"/>` },
-  tofu:   { name: "Tofu",   ey: 54, cheer: "Tofu!",   body: `<rect x="16" y="22" width="68" height="64" rx="16" fill="#FFF3D6"/><rect x="16" y="70" width="68" height="16" rx="8" fill="#F1DFB4"/>` },
-  sprout: { name: "Sprout", ey: 62, cheer: "Sprout!", body: `<circle cx="50" cy="64" r="30" fill="#8FD36B"/><path d="M50 36 C48 22 38 16 28 18 C30 30 38 36 50 36Z" fill="#4CAF50"/><path d="M50 36 C52 20 64 14 74 18 C72 30 62 36 50 36Z" fill="#6CC24A"/>` },
-  ember:  { name: "Ember",  ey: 62, cheer: "Hot hot!", body: `<path d="M50 8 C58 26 78 34 78 62 C78 82 66 92 50 92 C34 92 22 82 22 62 C22 48 32 42 36 30 C42 38 44 40 46 44 C50 32 46 22 50 8Z" fill="#FF8A3D"/><path d="M50 44 C58 54 64 60 64 72 C64 84 58 90 50 90 C42 90 36 84 36 72 C36 62 46 56 50 44Z" fill="#FFC857"/>` },
-  nimbus: { name: "Nimbus", ey: 56, cheer: "Puff!",   body: `<g fill="#B9D6FF"><circle cx="34" cy="62" r="22"/><circle cx="58" cy="50" r="26"/><circle cx="72" cy="66" r="20"/><rect x="26" y="62" width="58" height="24" rx="12"/></g>` },
-  inky:   { name: "Inky",   ey: 62, cheer: "Splat!",  body: `<path d="M50 8 C60 30 80 44 80 66 C80 84 66 94 50 94 C34 94 20 84 20 66 C20 44 40 30 50 8Z" fill="#2B3A67"/><ellipse cx="38" cy="60" rx="5" ry="9" fill="#fff" opacity=".18"/>` },
-  bun:    { name: "Bun",    ey: 62, cheer: "Bun bun!", body: `<ellipse cx="34" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="66" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="34" cy="28" rx="4" ry="14" fill="#F7B6C5"/><ellipse cx="66" cy="28" rx="4" ry="14" fill="#F7B6C5"/><circle cx="50" cy="66" r="30" fill="#F2E4D4"/>` },
-  byte:   { name: "Byte",   ey: 56, cheer: "01010!",  body: `<line x1="50" y1="14" x2="50" y2="26" stroke="#2DD4BF" stroke-width="4"/><circle cx="50" cy="12" r="5" fill="#9BF2D0"/><path d="M22 28 H78 V40 H86 V80 H78 V88 H22 V80 H14 V40 H22Z" fill="#2DD4BF"/>` },
-  quack:  { name: "Quack",  ey: 50, cheer: "Quack!",  body: `<circle cx="50" cy="58" r="32" fill="#FFD84D"/><path d="M40 62 H76 Q80 68 76 72 H40Z" fill="#FF8A3D"/>` }
+  bolt: { name: "Bolt", cheer: "Zzzap!", ground: 104, bolt: true,
+    shadow: `<ellipse cx="60" cy="113" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="fl"><line x1="60" y1="24" x2="60" y2="12" stroke="#1E8E66" stroke-width="4" stroke-linecap="round"/><circle cx="60" cy="10" r="6" fill="#FFB020"/><rect x="42" y="82" width="36" height="22" rx="10" fill="#3DDC97"/><rect x="52" y="88" width="16" height="9" rx="3" fill="#1E8E66"/><rect x="16" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="94" y="44" width="10" height="18" rx="5" fill="#1E8E66"/><rect x="24" y="22" width="72" height="62" rx="27" fill="#3DDC97"/><rect x="33" y="32" width="54" height="40" rx="18" fill="#1B1B1F"/><ellipse cx="39" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/><ellipse cx="81" cy="63" rx="4.5" ry="2.6" fill="#FF8FB1"/>`, close: `</g>`,
+    eyes0: `<ellipse cx="48" cy="51" rx="6" ry="8" fill="#9BF2D0"/><ellipse cx="72" cy="51" rx="6" ry="8" fill="#9BF2D0"/><circle cx="50" cy="47.5" r="2" fill="#fff"/><circle cx="74" cy="47.5" r="2" fill="#fff"/>`,
+    mouth0: `<path d="M54 62 Q60 67 66 62" fill="none" stroke="#9BF2D0" stroke-width="3" stroke-linecap="round"/>` },
+  mochi: { name: "Mochi", cheer: "Mochi~", ground: 109, ex: [46, 74], ey: 66, rx: 5, ry: 6.5, m: [60, 78], hw: 4.5,
+    shadow: `<ellipse cx="60" cy="113" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<path class="sw" d="M90 100 Q114 94 104 68" fill="none" stroke="#F7C3A3" stroke-width="9" stroke-linecap="round"/><g class="sq"><path d="M28 56 L34 20 L56 40 Z" fill="#FFD6BD"/><path d="M92 56 L86 20 L64 40 Z" fill="#FFD6BD"/><path d="M35 44 L38 29 L48 39 Z" fill="#FF9EB5"/><path d="M85 44 L82 29 L72 39 Z" fill="#FF9EB5"/><ellipse cx="60" cy="74" rx="40" ry="35" fill="#FFD6BD"/><ellipse cx="60" cy="90" rx="22" ry="14" fill="#FFF3EA"/><path d="M58 72 L62 72 L60 74.5 Z" fill="#FF7A9A"/><path d="M22 72 L33 74 M22 79 L33 78 M98 72 L87 74 M98 79 L87 78" stroke="#C98F6E" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="38" cy="76" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/><ellipse cx="82" cy="76" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/>`, close: `</g>`,
+    mouth0: `<path d="M55 76 Q57.5 79 60 76 Q62.5 79 65 76" fill="none" stroke="#1B1B1F" stroke-width="2" stroke-linecap="round"/>` },
+  goo: { name: "Goo", cheer: "Blorp!", ground: 104, ex: [48, 72], ey: 68, rx: 5, ry: 6.5, m: [60, 81], hw: 4.5,
+    shadow: `<ellipse cx="60" cy="110" rx="36" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="sq"><path d="M20 102 C20 60 36 30 60 30 C84 30 100 60 100 102 Q90 110 80 102 Q70 112 60 102 Q50 112 40 102 Q30 110 20 102 Z" fill="#5AB8FF"/><ellipse cx="42" cy="48" rx="8" ry="5" fill="#fff" opacity=".6"/><circle cx="80" cy="44" r="2.5" fill="#fff" opacity=".6"/><ellipse cx="37" cy="79" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/><ellipse cx="83" cy="79" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/>`, close: `</g>`,
+    mouth0: `<ellipse cx="60" cy="81" rx="4" ry="3" fill="#1B1B1F"/>` },
+  boo: { name: "Boo", cheer: "Boo!", ground: 106, ex: [48, 72], ey: 60, rx: 5, ry: 6.5, m: [60, 74], hw: 4.5,
+    shadow: `<ellipse cx="60" cy="114" rx="22" ry="3.5" fill="#1B1B1F" opacity=".08"/>`,
+    body: `<g class="fl"><path d="M28 98 V56 A32 32 0 0 1 92 56 V98 Q84 90 76 98 Q68 106 60 98 Q52 90 44 98 Q36 106 28 98 Z" fill="#FFFFFF" stroke="#CFC6F2" stroke-width="2"/><ellipse class="sw" cx="24" cy="70" rx="6" ry="9" fill="#FFFFFF" stroke="#CFC6F2" stroke-width="2"/><ellipse cx="38" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".7"/><ellipse cx="82" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".7"/>`, close: `</g>`,
+    mouth0: `<path d="M55 72 Q60 77 65 72" fill="none" stroke="#1B1B1F" stroke-width="2.4" stroke-linecap="round"/>` },
+  tofu: { name: "Tofu", cheer: "Tofu!", ground: 104, ex: [47, 73], ey: 68, rx: 5, ry: 6.5, m: [60, 82], hw: 4.5,
+    shadow: `<ellipse cx="60" cy="108" rx="34" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="sq"><rect x="24" y="36" width="72" height="68" rx="20" fill="#FFE58A"/><rect x="34" y="43" width="30" height="7" rx="3.5" fill="#FFFFFF" opacity=".6"/><path d="M98 30 Q104 40 98 45 Q92 40 98 30 Z" fill="#5AB8FF"/><ellipse cx="36" cy="80" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/><ellipse cx="84" cy="80" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/>`, close: `</g>`,
+    mouth0: `<path d="M53 80 Q56.5 84 60 80 Q63.5 84 67 80" fill="none" stroke="#1B1B1F" stroke-width="2.4" stroke-linecap="round"/>` },
+  sprout: { name: "Sprout", cheer: "Sprout!", ground: 106, ex: [50, 70], ey: 88, rx: 4.5, ry: 6, m: [60, 98], hw: 4,
+    shadow: `<ellipse cx="60" cy="110" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="sw"><path d="M60 68 V42" stroke="#3F9E45" stroke-width="4" stroke-linecap="round"/><path d="M60 50 C46 50 36 38 38 26 C51 26 60 36 60 50 Z" fill="#6DD36A"/><path d="M60 44 C73 44 84 33 82 20 C69 20 60 30 60 44 Z" fill="#4CC24A"/></g><path d="M34 74 H86 L80 106 H40 Z" fill="#E8875A"/><rect x="30" y="66" width="60" height="12" rx="6" fill="#F29C6F"/><ellipse cx="42" cy="96" rx="4" ry="2.5" fill="#FF8FB1" opacity=".9"/><ellipse cx="78" cy="96" rx="4" ry="2.5" fill="#FF8FB1" opacity=".9"/>`, close: ``,
+    mouth0: `<path d="M56 97 Q60 101 64 97" fill="none" stroke="#1B1B1F" stroke-width="2.2" stroke-linecap="round"/>` },
+  ember: { name: "Ember", cheer: "Hot hot!", ground: 106, ex: [51, 69], ey: 80, rx: 4.5, ry: 6, m: [60, 91.5], hw: 4,
+    shadow: `<ellipse cx="60" cy="112" rx="26" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="fk"><path d="M60 16 C70 34 92 46 90 74 C88 96 74 106 60 106 C46 106 32 96 30 76 C29 60 40 52 44 40 C48 50 52 54 56 54 C54 40 54 30 60 16 Z" fill="#FF7A45"/><path d="M60 52 C66 62 77 68 76 82 C75 94 67 101 60 101 C53 101 45 94 44 84 C44 74 54 68 60 52 Z" fill="#FFC145"/>`, close: `</g>`,
+    mouth0: `<path d="M56 90 Q60 94 64 90" fill="none" stroke="#1B1B1F" stroke-width="2.2" stroke-linecap="round"/>` },
+  nimbus: { name: "Nimbus", cheer: "Puff!", ground: 96, ex: [52, 72], ey: 68, rx: 4.5, ry: 6, m: [62, 78.5], hw: 4,
+    shadow: ``, after: `<path d="M48 96 Q52 104 48 108 Q44 104 48 96 Z" fill="#5AB8FF"/><path d="M74 98 Q78 106 74 110 Q70 106 74 98 Z" fill="#5AB8FF"/>`,
+    body: `<g class="fl"><path d="M30 86 A16 16 0 0 1 32 54 A22 22 0 0 1 72 44 A18 18 0 0 1 98 64 A12 12 0 0 1 92 86 Z" fill="#FFFFFF" stroke="#BFDDED" stroke-width="2"/><ellipse cx="43" cy="76" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".8"/><ellipse cx="81" cy="76" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".8"/>`, close: `</g>`,
+    mouth0: `<path d="M58 77 Q62 81 66 77" fill="none" stroke="#1B1B1F" stroke-width="2.2" stroke-linecap="round"/>` },
+  inky: { name: "Inky", cheer: "Splat!", ground: 108, ex: [48, 72], ey: 60, rx: 5, ry: 6.5, m: [60, 73], hw: 4.5,
+    shadow: `<ellipse cx="60" cy="113" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="sw"><path d="M36 78 Q30 98 40 106" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/><path d="M52 82 Q48 102 56 108" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/><path d="M68 82 Q72 102 64 108" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/><path d="M84 78 Q90 98 80 106" fill="none" stroke="#A78BFA" stroke-width="9" stroke-linecap="round"/></g><g class="fl"><ellipse cx="60" cy="58" rx="34" ry="32" fill="#A78BFA"/><circle cx="44" cy="40" r="4" fill="#C4B1FF"/><circle cx="77" cy="36" r="3" fill="#C4B1FF"/><ellipse cx="37" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/><ellipse cx="83" cy="70" rx="5" ry="3" fill="#FF8FB1" opacity=".9"/>`, close: `</g>`,
+    mouth0: `<ellipse cx="60" cy="73" rx="3" ry="3.5" fill="#1B1B1F"/>` },
+  bun: { name: "Bun", cheer: "Bun bun!", ground: 110, ex: [48, 72], ey: 76, rx: 5, ry: 6.5, m: [60, 89], hw: 4,
+    shadow: `<ellipse cx="60" cy="112" rx="30" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="sq"><ellipse cx="46" cy="32" rx="9" ry="24" fill="#FFFFFF" stroke="#F4C7D6" stroke-width="2"/><ellipse cx="46" cy="34" rx="4" ry="16" fill="#FFB8CC"/><g class="sw"><ellipse cx="76" cy="32" rx="9" ry="24" fill="#FFFFFF" stroke="#F4C7D6" stroke-width="2"/><ellipse cx="76" cy="34" rx="4" ry="16" fill="#FFB8CC"/></g><ellipse cx="60" cy="80" rx="36" ry="30" fill="#FFFFFF" stroke="#F4C7D6" stroke-width="2"/><ellipse cx="60" cy="84" rx="3" ry="2" fill="#FF7A9A"/><ellipse cx="38" cy="86" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/><ellipse cx="82" cy="86" rx="5" ry="3" fill="#FF8FB1" opacity=".8"/>`, close: `</g>`,
+    mouth0: `<path d="M56 88 Q58 90.5 60 88 Q62 90.5 64 88" fill="none" stroke="#1B1B1F" stroke-width="2" stroke-linecap="round"/>` },
+  byte: { name: "Byte", cheer: "01010!", ground: 94, pixel: true, ex: [40, 72], ey: 54, m: [60, 74],
+    shadow: `<rect x="36" y="106" width="48" height="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="fl"><path fill="#5B6CFF" d="M32 30h8v8h-8z M80 30h8v8h-8z M40 38h8v8h-8z M72 38h8v8h-8z M32 46h56v8h-56z M24 54h16v8h-16z M48 54h24v8h-24z M80 54h16v8h-16z M16 62h88v8h-88z M16 70h8v8h-8z M32 70h56v8h-56z M96 70h8v8h-8z M16 78h8v8h-8z M32 78h8v8h-8z M80 78h8v8h-8z M96 78h8v8h-8z M40 86h16v8h-16z M64 86h16v8h-16z"/><rect x="32" y="70" width="8" height="8" fill="#FF8FB1"/><rect x="80" y="70" width="8" height="8" fill="#FF8FB1"/>`, close: `</g>`,
+    eyes0: `<rect x="40" y="54" width="8" height="8" fill="#1B1B1F"/><rect x="72" y="54" width="8" height="8" fill="#1B1B1F"/>`, mouth0: `` },
+  quack: { name: "Quack", cheer: "Quack!", ground: 107, ex: [42, 58], ey: 46, rx: 4.5, ry: 6, m: [50, 59], hw: 4,
+    shadow: `<ellipse cx="62" cy="110" rx="34" ry="4" fill="#1B1B1F" opacity=".1"/>`,
+    body: `<g class="sq"><path d="M94 72 L110 58 L104 84 Z" fill="#FFD84D"/><ellipse cx="62" cy="82" rx="38" ry="25" fill="#FFD84D"/><circle cx="50" cy="50" r="24" fill="#FFD84D"/><ellipse class="sw" cx="74" cy="82" rx="16" ry="10" fill="#F5C21B"/><path d="M14 54 Q24 45 33 51 Q24 60 14 54 Z" fill="#FF9A3C"/><ellipse cx="38" cy="57" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".9"/><ellipse cx="64" cy="57" rx="4.5" ry="2.6" fill="#FF8FB1" opacity=".9"/>`, close: `</g>`, mouth0: `` }
 };
 const ORDER = Object.keys(KINDS);
-const COLORS = { sleeping: "#6b7280", thinking: "#8AB4FF", working: "#34D399", needsYou: "#FFB020", done: "#9BF2D0", error: "#FF6B6B" };
-function face(kind, state, mouthOpen = 0) {
-  const y = KINDS[kind].ey, ink = kind === "inky" ? "#fff" : "#1b1f2a";
-  const eye = x => {
-    switch (state) {
-      case "sleeping": return `<path d="M${x - 5} ${y} q5 5 10 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      case "done": return `<path d="M${x - 5} ${y + 2} q5 -7 10 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-      case "error": return `<path d="M${x - 4} ${y - 4} l8 8 M${x + 4} ${y - 4} l-8 8" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`;
-      case "needsYou": return `<circle cx="${x}" cy="${y}" r="6.5" fill="#fff"/><g class="eyes"><circle cx="${x}" cy="${y}" r="3.2" fill="${ink}"/></g>`;
-      default: return `<g class="eyes"><ellipse class="lid" cx="${x}" cy="${y}" rx="${state === "working" ? 3.4 : 4.4}" ry="${state === "working" ? 3.2 : 4.6}" fill="${ink}"/></g>`;
-    }
-  };
-  const mouths = {
-    sleeping: `<circle cx="50" cy="${y + 14}" r="2.4" fill="${ink}" opacity=".6"/>`,
-    done: `<path d="M42 ${y + 10} q8 9 16 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
-    error: `<path d="M42 ${y + 15} q4 -5 8 0 t8 0" stroke="${ink}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    needsYou: `<ellipse cx="50" cy="${y + 13}" rx="3.4" ry="4.4" fill="${ink}"/>`,
-    thinking: `<path d="M45 ${y + 13} h10" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`,
-    working: `<path d="M44 ${y + 12} h12" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`
-  };
-  const mouth = mouthOpen ? `<ellipse cx="50" cy="${y + 13}" rx="${(4 + mouthOpen * 3).toFixed(1)}" ry="${(2 + mouthOpen * 6).toFixed(1)}" fill="${ink}"/>` : (mouths[state] || `<path d="M44 ${y + 11} q6 5 12 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`);
-  const extra = state === "needsYou" ? `<text x="50" y="10" text-anchor="middle" font-size="20" font-weight="800" fill="#FFB020" font-family="Unbounded,sans-serif">!</text>`
-    : state === "working" ? `<path d="M78 ${y - 18} q4 6 0 9 q-4 -3 0 -9z" fill="#7FC8FF"/>`
-    : state === "sleeping" ? `<text x="80" y="20" font-size="13" font-weight="800" fill="#9BF2D0" opacity=".8" font-family="Unbounded,sans-serif">z</text>` : "";
-  return eye(38) + eye(62) + `<g class="mouth">${mouth}</g>` + extra;
+const COLORS = { sleeping: "#6b7280", thinking: "#8AB4FF", working: "#34D399", needsYou: "#FFB020", done: "#9BF2D0", error: "#FF6B6B", awake: "#9BF2D0" };
+const INK = "#1B1B1F", PINK = "#FF6B8F", MINT = "#9BF2D0";
+const el = (x, y, rx, ry, f) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}"/>`;
+const rc = (x, y, w, h, f) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}"/>`;
+const ln = (d, c, w) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+const blinky = s => s === "thinking" || s === "working" || s === "needsYou" || s === "awake";
+const eyesG = (inner, st) => `<g class="eyes"><g class="${blinky(st) ? "lid" : ""}">${inner}</g></g>`;
+// round-faced buddies: AvatarView.roundFace
+function roundFace(a, st, open) {
+  const [x0, x1] = a.ex, y = a.ey, rx = a.rx, ry = a.ry, [mx, my] = a.m, hw = a.hw, xs = [x0, x1];
+  if (st === "awake" || open) {
+    const e = xs.map(x => el(x, y, rx, ry, INK) + `<circle cx="${x + 1.8}" cy="${y - 2.5}" r="1.8" fill="#fff"/>`).join("");
+    return eyesG(e, "awake") + (open ? el(mx, my, 3 + open * 2.5, 1.5 + open * 4.5, INK) : a.mouth0);
+  }
+  switch (st) {
+    case "sleeping": return xs.map(x => ln(`M${x - rx - 1} ${y} Q${x} ${y + 6} ${x + rx + 1} ${y}`, INK, 3)).join("") + el(mx, my, 2.4, 1.8, INK);
+    case "thinking": return eyesG(xs.map(x => el(x, y - 2.5, rx, ry, INK) + el(x + 1.8, y - 6, 1.7, 1.7, "#fff")).join(""), st) + ln(`M${mx - hw + 1} ${my} L${mx + hw - 1} ${my}`, INK, 2.6);
+    case "working": return eyesG(xs.map(x => el(x, y + 1.5, rx, ry * .85, INK) + el(x + 1.6, y - .8, 1.3, 1.3, "#fff")).join(""), st) + ln(`M${mx - 3.5} ${my} Q${mx} ${my + 2.5} ${mx + 3.5} ${my}`, INK, 2.6);
+    case "needsYou": { const r = Math.max(rx, ry) + 2.5; return eyesG(xs.map(x => el(x, y - .5, r, r, INK) + el(x + 2.4, y - 3.5, 2.3, 2.3, "#fff")).join(""), st) + el(mx, my + 1, 3.2, 4.2, INK); }
+    case "done": return xs.map(x => ln(`M${x - rx - .5} ${y + 2.5} Q${x} ${y - 6.5} ${x + rx + .5} ${y + 2.5}`, INK, 3.2)).join("") + `<path d="M${mx - hw - 1} ${my - .5} Q${mx} ${my + 10} ${mx + hw + 1} ${my - .5} Z" fill="${PINK}" stroke="${INK}" stroke-width="1.4"/>`;
+    case "error": { const r = Math.max(rx, ry) - .8; return xs.map(x => `<circle class="spin" cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="7 3.5"/>` + el(x, y, 1.2, 1.2, INK)).join("") + ln(`M${mx - 6} ${my} Q${mx - 3} ${my - 3.5} ${mx} ${my} Q${mx + 3} ${my + 3.5} ${mx + 6} ${my}`, INK, 2.6); }
+  }
+  return "";
 }
-const avatar = (kind, state, mouthOpen = 0) => `<svg class="av" data-state="${state}" viewBox="0 0 100 100" role="img" aria-label="${KINDS[kind].name}, ${state === "needsYou" ? "needs you" : state}"><g class="bodyg">${KINDS[kind].body}${face(kind, state, mouthOpen)}</g></svg>`;
+// Byte: AvatarView.pixelFace
+function pixelFace(a, st, open) {
+  const [x0, x1] = a.ex, y = a.ey, [mx, my] = a.m, xs = [x0, x1];
+  if (st === "awake" || open) return eyesG(a.eyes0, "awake") + (open ? rc(mx - 4, my - 2, 8, 2 + Math.round(open * 6), INK) : "");
+  switch (st) {
+    case "sleeping": return xs.map(x => rc(x, y + 5, 8, 3, INK)).join("") + rc(mx - 2, my - 1, 4, 3, INK);
+    case "thinking": return eyesG(xs.map(x => rc(x, y - 2, 8, 8, INK) + rc(x + 4, y - 1, 3, 3, "#fff")).join(""), st) + rc(mx - 6, my - 1, 12, 3, INK);
+    case "working": return eyesG(xs.map(x => rc(x, y + 2, 8, 6, INK)).join(""), st) + rc(mx - 4, my - 1, 8, 3, INK);
+    case "needsYou": return eyesG(xs.map(x => rc(x - 2, y - 2, 12, 12, INK) + rc(x + 4.5, y, 4, 4, "#fff")).join(""), st) + rc(mx - 3, my - 3, 6, 7, INK);
+    case "done": return xs.map(x => rc(x, y + 5, 2.7, 3, INK) + rc(x + 2.7, y + 2, 2.6, 3, INK) + rc(x + 5.3, y + 5, 2.7, 3, INK)).join("") + rc(mx - 7, my - 2, 14, 7, INK) + rc(mx - 6, my - 1, 12, 5, PINK);
+    case "error": return xs.map(x => [[0, 0], [5, 0], [2.5, 2.5], [0, 5], [5, 5]].map(([dx, dy]) => rc(x + dx, y + dy + 1, 3, 3, INK)).join("")).join("") + [3, 0, 3, 0].map((dy, i) => rc(mx - 8 + i * 4, my - 2 + dy, 4, 3, INK)).join("");
+  }
+  return "";
+}
+// Bolt: BoltView.faceContent (mint face on its dark screen)
+function boltFace(a, st, open) {
+  if (st === "awake" || open) return eyesG(a.eyes0, "awake") + (open ? el(60, 63, 3 + open * 2.5, 1.5 + open * 4, MINT) : a.mouth0);
+  switch (st) {
+    case "sleeping": return ln("M42 52 Q48 57 54 52 M66 52 Q72 57 78 52", MINT, 3) + el(60, 63, 2.5, 2, MINT);
+    case "thinking": return eyesG(el(51, 47, 5, 6.5, MINT) + el(75, 47, 5, 6.5, MINT), st) + ln("M55 63 L65 63", MINT, 3);
+    case "working": return eyesG(el(48, 54, 5.5, 6.5, MINT) + el(72, 54, 5.5, 6.5, MINT), st) + ln("M55 64 Q60 66 65 64", MINT, 3);
+    case "needsYou": return eyesG(el(48, 50, 8, 8, MINT) + el(50.5, 46.5, 2.5, 2.5, "#fff") + el(72, 50, 8, 8, MINT) + el(74.5, 46.5, 2.5, 2.5, "#fff"), st) + el(60, 64, 3.5, 4, MINT);
+    case "done": return ln("M42 54 Q48 45 54 54 M66 54 Q72 45 78 54", MINT, 3.5) + `<path d="M53 60 Q60 70 67 60 Z" fill="#FF8FB1"/>`;
+    case "error": return `<circle class="spin" cx="48" cy="51" r="6" fill="none" stroke="#FF9B9B" stroke-width="2.5" stroke-dasharray="10 4"/><circle class="spin" cx="72" cy="51" r="6" fill="none" stroke="#FF9B9B" stroke-width="2.5" stroke-dasharray="10 4"/>` + ln("M52 64 Q56 61 60 64 Q64 67 68 64", "#FF9B9B", 2.5);
+  }
+  return "";
+}
+// overlays sit outside the body motion (AvatarView.overlays / BoltView.stateOverlays)
+function overlay(a, st) {
+  switch (st) {
+    case "sleeping": return [[92, 30, 12, 0, "z"], [98, 22, 14, .9, "z"], [104, 14, 16, 1.8, "Z"]].map(([x, y, fs, d, t]) => `<text class="zz" x="${x}" y="${y}" font-size="${fs}" font-weight="700" fill="#7C7690" font-family="ui-rounded, 'SF Pro Rounded', system-ui, sans-serif" style="animation-delay:${d}s">${t}</text>`).join("");
+    case "thinking": return `<circle cx="94" cy="26" r="2.5" fill="#fff" stroke="#D9CFFF" stroke-width="1.5"/><rect x="84" y="2" width="34" height="18" rx="9" fill="#fff" stroke="#D9CFFF" stroke-width="1.5"/>` + [93, 101, 109].map((x, i) => `<circle class="pd" cx="${x}" cy="11" r="2.5" fill="#A78BFA" style="animation-delay:${i * .2}s"/>`).join("");
+    case "needsYou": return `<g class="pop"><circle cx="102" cy="20" r="12" fill="#FFB020"/><text x="102" y="26" text-anchor="middle" font-size="17" font-weight="800" fill="#3D2600" font-family="ui-rounded, system-ui, sans-serif">!</text></g>`;
+    case "done": return [[18, 36, -12, -22, "#FFB020", 0], [98, 34, 12, -24, "#FF8FB1", 0], [28, 16, -8, -20, "#5AB8FF", .2], [88, 14, 8, -22, "#3DDC97", .2], [74, 4, 4, -18, "#A78BFA", .4]].map(([x, y, dx, dy, c, d]) => `<rect class="cf" x="${x - 2.5}" y="${y - 4}" width="5" height="8" rx="1" fill="${c}" style="--dx:${dx}px;--dy:${dy}px;animation-delay:${d}s"/>`).join("");
+    case "error": return [[86, 20, 5, 0], [94, 14, 4, .7], [80, 12, 3.5, 1.4]].map(([x, y, r, d]) => `<circle class="smoke" cx="${x}" cy="${y}" r="${r}" fill="#B4B2A9" style="animation-delay:${d}s"/>`).join("");
+    case "working": return a.bolt ? `<rect x="28" y="88" width="64" height="20" rx="5" fill="#2A2A30"/><rect x="35" y="93" width="22" height="3" rx="1.5" fill="#3DDC97"/><rect x="35" y="100" width="34" height="3" rx="1.5" fill="#5E5D66"/>` : "";
+  }
+  return "";
+}
+function face(kind, st, open = 0) { const a = KINDS[kind]; return (a.bolt ? boltFace : a.pixel ? pixelFace : roundFace)(a, st, open); }
+const avatar = (kind, state, open = 0) => { const a = KINDS[kind];
+  return `<svg class="av" data-state="${state}" viewBox="0 0 120 120" role="img" aria-label="${a.name}, ${state === "needsYou" ? "needs you" : state}"${a.pixel ? ' shape-rendering="crispEdges"' : ""}>${a.shadow}<g class="st" style="transform-origin:60px ${a.ground}px">${a.body}${face(kind, state, open)}${a.close}${a.after || ""}</g>${overlay(a, state)}</svg>`; };
 
 /* eyes follow the cursor, everywhere on the page (one rAF per pointer move) */
 let ptr = null, eyeRaf = 0;
