@@ -5,6 +5,7 @@ import NotchBuddyCore
 /// Expanded-panel body: the first pending approval card, then one row per session.
 struct SessionPanelView: View {
     @ObservedObject var model: NotchModel
+    @State private var showAll = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -24,7 +25,7 @@ struct SessionPanelView: View {
                     .padding(.vertical, 24)
                     .background(RoundedRectangle(cornerRadius: 16).fill(Color(hex: 0x1E1D23)))
             }
-            ForEach(model.sessions.prefix(5)) { session in
+            ForEach(showAll ? model.sessions : Array(model.sessions.prefix(5))) { session in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .top, spacing: 8) {
                         ClickableRow(session: session, tokens: model.tokens[session.id])
@@ -48,9 +49,12 @@ struct SessionPanelView: View {
                 }
             }
             if model.sessions.count > 5 {
-                Text(String(format: L("+%d more"), model.sessions.count - 5))
-                    .font(.system(size: 12)).foregroundColor(Color(hex: 0x8D8C94))
-                    .frame(maxWidth: .infinity)
+                Button { showAll.toggle() } label: {
+                    Text(showAll ? L("Show less") : String(format: L("+%d more"), model.sessions.count - 5))
+                        .font(.system(size: 12)).foregroundColor(Color(hex: 0x9BF2D0))
+                        .frame(maxWidth: .infinity).padding(.vertical, 4).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
     }
