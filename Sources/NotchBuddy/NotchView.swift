@@ -263,6 +263,12 @@ public struct NotchView: View {
                     .frame(height: 1)
 
                 HStack {
+                    if model.tokensToday > 0 {
+                        Text(String(format: L("Today: %@ tokens"), TokenCount.short(model.tokensToday)))
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(Color(hex: 0xA9A8B0))
+                        Text("·").font(.system(size: 12)).foregroundColor(Color(hex: 0x8D8C94))
+                    }
                     Text(L("All data stays on this Mac"))
                         .font(.system(size: 12))
                         .foregroundColor(Color(hex: 0x8D8C94))

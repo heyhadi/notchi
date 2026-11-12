@@ -26,7 +26,7 @@ struct SessionPanelView: View {
             ForEach(model.sessions.prefix(5)) { session in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .top, spacing: 8) {
-                        SessionRow(session: session)
+                        SessionRow(session: session, tokens: model.tokens[session.id])
                         if session.agent.supportsChat {
                             let open = model.chats[session.id]?.open == true
                             Button { model.setChatOpen(session.id, !open) } label: {
@@ -52,6 +52,7 @@ struct SessionPanelView: View {
 
 private struct SessionRow: View {
     let session: AgentSession
+    let tokens: Int?
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -61,6 +62,10 @@ private struct SessionRow: View {
                     Text("\(session.agentLabel) · \(session.project)").font(.system(size: 14)).foregroundColor(.white)
                     Spacer()
                     Text(detail).font(.system(size: 13)).foregroundColor(Color(hex: 0xA9A8B0))
+                    if let tokens, tokens > 0 {
+                        Text(String(format: L("%@ tokens"), TokenCount.short(tokens)))
+                            .font(.system(size: 12, design: .monospaced)).foregroundColor(Color(hex: 0x8D8C94))
+                    }
                 }
                 if let step = session.state == .error ? session.message : session.lastStep {
                     Text(step).font(.system(size: 12, design: .monospaced)).foregroundColor(Color(hex: 0x8D8C94))

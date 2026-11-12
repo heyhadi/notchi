@@ -62,6 +62,10 @@ public final class NotchModel: ObservableObject {
     @Published var chats: [String: ChatState] = [:]   // by SessionStore key
     var onWantsKeyboard: (() -> Void)?                 // the panel makes itself key so the chat box can take typing
     var store = SessionStore()
+    @Published var tokens: [String: Int] = [:]          // by SessionStore key (Claude Code only)
+    @Published var tokensToday = 0
+    let tokenMeter = TokenMeter()
+    var tokensRead = Date.distantPast
     @Published public var workingStartTime: Date?
 
     private var doneReturnTask: Task<Void, Never>?

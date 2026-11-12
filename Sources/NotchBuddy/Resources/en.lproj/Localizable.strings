@@ -136,3 +136,5 @@
 "You: %@" = "You: %@";
 "Glow around the notch" = "Glow around the notch";
 "A moving light runs around the notch while agents work, in the state color when one needs you." = "A moving light runs around the notch while agents work, in the state color when one needs you.";
+"%@ tokens" = "%@ tokens";
+"Today: %@ tokens" = "Today: %@ tokens";

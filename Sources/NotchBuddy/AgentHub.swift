@@ -141,6 +141,10 @@ extension NotchModel {
         sessions = store.current()
         state = pending.isEmpty ? store.topState() : .needsYou
         if let e { peekText = peek(for: e) }
+        if Date().timeIntervalSince(tokensRead) > 5 { // hooks fire many times a second during a turn
+            tokensRead = Date()
+            tokenMeter.update { [weak self] bySession, today in self?.tokens = bySession; self?.tokensToday = today }
+        }
     }
 
     private func peek(for e: HookEvent) -> String? {
