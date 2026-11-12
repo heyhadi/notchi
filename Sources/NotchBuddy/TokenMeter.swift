@@ -24,10 +24,9 @@ final class TokenMeter: @unchecked Sendable { // all state lives on `queue`
                           let size = (a[.size] as? NSNumber)?.uint64Value else { continue }
                     var u = files[path] ?? TranscriptUsage()
                     if size < u.offset { u = TranscriptUsage() } // rewritten
-                    if size > u.offset, let h = FileHandle(forReadingAtPath: path) {
-                        try? h.seek(toOffset: u.offset)
-                        if let data = try? h.readToEnd() { u.consume(data) { $0 >= start } }
-                        try? h.close()
+                    // Memory-mapped: only the new bytes are touched, and their pages are clean file pages, not heap the app has to hold.
+                    if size > u.offset, let mapped = try? Data(contentsOf: URL(fileURLWithPath: path), options: .alwaysMapped) {
+                        u.consume(mapped.dropFirst(Int(u.offset))) { $0 >= start }
                     }
                     files[path] = u
                 }
@@ -43,6 +42,7 @@ final class TokenMeter: @unchecked Sendable { // all state lives on `queue`
             today += oc.today
             DispatchQueue.main.async { MainActor.assumeIsolated { done(bySession, today) } }
         }
+
     }
 
     /// OpenCode keeps every message (with its token counts) in one SQLite file; opened read-only, never written.
