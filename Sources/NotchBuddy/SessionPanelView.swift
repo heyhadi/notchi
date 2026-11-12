@@ -234,8 +234,9 @@ private struct ChatBox: View {
         if let sent = chat.sentAt, Date().timeIntervalSince(sent) < 5 { return L("Sent") }
         if chat.held != nil { return String(format: L("%@ is waiting for your reply"), name) }
         if !chat.queued.isEmpty { return String(format: L("Will be sent when %@ finishes this turn"), name) }
+        let stale = Date().timeIntervalSince(session.updated) > 600 // no event for 10 min: it is not mid-turn any more
         switch session.state {
-        case .working, .thinking, .needsYou: return String(format: L("Your message goes in when %@ finishes this turn"), name)
+        case .working, .thinking, .needsYou where !stale: return String(format: L("Your message goes in when %@ finishes this turn"), name)
         default: return String(format: L("%@ already finished. Your message goes in at the end of its next turn, or turn on \"Wait for my reply\" in Settings."), name)
         }
     }
