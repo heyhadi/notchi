@@ -14,7 +14,7 @@ public struct BoltView: View {
     }
 
     public var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 24, paused: reduceMotion)) { timeline in
             let time = reduceMotion ? 0.0 : timeline.date.timeIntervalSinceReferenceDate
             let startle = computeStartle(time: time)
 

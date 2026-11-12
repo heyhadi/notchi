@@ -155,10 +155,19 @@ public struct NotchView: View {
 
     // MARK: - Compact Mode
 
+    /// The notch is faded out while every agent sleeps; don't keep animating an avatar nobody can see.
+    @ViewBuilder private var earAvatar: some View {
+        if model.shown == .sleeping && model.mode != .expanded && !model.isChatting {
+            Color.clear.frame(width: NotchModel.earAvatar, height: NotchModel.earAvatar)
+        } else {
+            AvatarView(kind: avatarKind, state: model.shown, size: NotchModel.earAvatar)
+        }
+    }
+
     private var compactView: some View {
         HStack(alignment: .center, spacing: 0) {
             // Left ear: 22pt avatar
-            AvatarView(kind: avatarKind, state: model.shown, size: NotchModel.earAvatar)
+            earAvatar
                 .padding(.leading, 8)
 
             Spacer()
@@ -411,7 +420,7 @@ private struct NotchGlow: View {
     }
 
     var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { ctx in
+        TimelineView(.animation(minimumInterval: 1.0 / 20, paused: reduceMotion)) { ctx in
             let t = reduceMotion ? 0 : ctx.date.timeIntervalSinceReferenceDate
             let turn = alert ? 2.0 : 4.0 // seconds per lap
             let gradient = AngularGradient(colors: colors, center: .center,

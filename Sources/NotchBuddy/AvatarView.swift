@@ -34,7 +34,7 @@ private struct PortedAvatar: View {
     @State private var lastStateChange = Date()
 
     var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 24, paused: reduceMotion)) { timeline in
             let time = reduceMotion ? 0.0 : timeline.date.timeIntervalSinceReferenceDate
             Canvas { ctx, _ in
                 var c = ctx

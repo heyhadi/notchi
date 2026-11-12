@@ -115,6 +115,9 @@ final class RoamPanel: NSPanel {
         }
     }
 
+    /// Publishing re-renders the view; only do it when the angle visibly changes.
+    private func setTilt(_ t: Double) { if abs(t - look.tilt) > 0.5 { look.tilt = t } }
+
     private var isOnGround: Bool { !dragging && airY == 0 && vy == 0 }
 
     private func say(_ lines: [String], for seconds: TimeInterval = 1.6) {
@@ -126,7 +129,8 @@ final class RoamPanel: NSPanel {
     private func place(hop: Double = 0, bob: Double = 0) {
         let wide = look.bubble != nil
         let w: CGFloat = wide ? 160 : side, h: CGFloat = wide ? 104 : side
-        setFrame(NSRect(x: x - (w - side) / 2, y: ground + airY + hop + bob, width: w, height: h), display: true)
+        let r = NSRect(x: (x - (w - side) / 2).rounded(), y: (ground + airY + hop + bob).rounded(), width: w, height: h) // whole points: no sub-pixel redraws
+        if r != frame { setFrame(r, display: false) }
     }
 
     /// Walks with a bob and tilt, stops now and then to look around or hop, watches a cursor near the Dock, hops for joy when an
@@ -140,14 +144,14 @@ final class RoamPanel: NSPanel {
             let u = now.timeIntervalSince(s0) / 0.7
             if u >= 1 { spinStart = nil; look.spin = 0 } else { look.spin = 360 * (1 - (1 - u) * (1 - u)) }
         }
-        if dragging { look.tilt = sin(now.timeIntervalSinceReferenceDate * 9) * 18; place(); return } // dangling from the mouse
+        if dragging { setTilt(sin(now.timeIntervalSinceReferenceDate * 9) * 18); place(); return } // dangling from the mouse
         if airY > 0 || vy > 0 {
             vy -= 1800 * CGFloat(dt); airY += vy * CGFloat(dt)
-            look.tilt = Double(max(-15, min(15, vy / 60)))
+            setTilt(Double(max(-15, min(15, vy / 60))))
             if airY <= 0 {
                 airY = 0
                 if vy < -300 { vy = -vy * 0.4; airY = 0.01; if look.bubble == nil { say(["Oof!", "Ouch!", "Bonk!"]) }
-                    SoundPlayer.shared.react(.thud) } else { vy = 0; look.tilt = 0 }
+                    SoundPlayer.shared.react(.thud) } else { vy = 0; setTilt(0) }
             }
             place(); return
         }
@@ -165,11 +169,11 @@ final class RoamPanel: NSPanel {
         let standing = !walking || curious || now < pauseUntil
         var bob = 0.0
         if standing {
-            look.tilt = 0
+            setTilt(0)
         } else {
             phase += dt * 9
             bob = abs(sin(phase)) * 3
-            look.tilt = sin(phase) * 4
+            setTilt(sin(phase) * 4)
             x += direction * 70 * CGFloat(dt)
             if x < f.minX { x = f.minX; direction = 1 } else if x > f.maxX - side { x = f.maxX - side; direction = -1 }
             if now >= bumpCooldownUntil,
