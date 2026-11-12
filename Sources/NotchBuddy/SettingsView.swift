@@ -267,7 +267,7 @@ struct SettingsView: View {
                         Text(L("Daily token limit"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(hex: 0x1B1B1F))
-                        Text(L("In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it."))
+                        Text(L("In millions of tokens, 0 = off. Today's Claude Code and OpenCode tokens turn amber and the notch bwomps once when you pass it."))
                             .font(.system(size: 11))
                             .foregroundColor(Color(hex: 0x5E5D66))
                             .fixedSize(horizontal: false, vertical: true)
