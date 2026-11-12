@@ -2,6 +2,19 @@ import AppKit
 import SwiftUI
 import Combine
 
+/// The panel isn't key until clicked; without this the first click only focuses it and a second one reaches the buttons.
+private final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+}
+
+@_silgen_name("CGSMainConnectionID") private func CGSMainConnectionID() -> Int32
+@_silgen_name("CGSSetConnectionProperty") private func CGSSetConnectionProperty(_ cid: Int32, _ target: Int32, _ key: CFString, _ value: CFTypeRef) -> Int32
+
+/// Lets this (never-frontmost) app change the cursor over its own panel. Private WindowServer call; if it ever vanishes the cursor just stays an arrow.
+private func allowCursorWhileInBackground() {
+    _ = CGSSetConnectionProperty(CGSMainConnectionID(), CGSMainConnectionID(), "SetsCursorInBackground" as CFString, kCFBooleanTrue)
+}
+
 public final class NotchPanel: NSPanel {
     public let model: NotchModel
     private var globalMonitor: Any?
@@ -30,11 +43,12 @@ public final class NotchPanel: NSPanel {
         self.hasShadow = false
         self.ignoresMouseEvents = true
 
-        let hostingView = NSHostingView(rootView: NotchView(model: model))
+        let hostingView = FirstClickHostingView(rootView: NotchView(model: model))
         hostingView.frame = initialRect
         hostingView.autoresizingMask = [.width, .height]
         self.contentView = hostingView
 
+        allowCursorWhileInBackground()
         updatePanelFrame()
         setupEventMonitors()
         idleObserver = model.objectWillChange.sink { [weak self] in

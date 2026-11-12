@@ -51,6 +51,20 @@ struct SessionPanelView: View {
     }
 }
 
+/// Pointing-hand cursor over its bounds. A tracking area with .cursorUpdate lets AppKit own the cursor, so it doesn't flicker back to the arrow.
+private struct PointerArea: NSViewRepresentable {
+    final class V: NSView {
+        override func updateTrackingAreas() {
+            trackingAreas.forEach(removeTrackingArea)
+            addTrackingArea(NSTrackingArea(rect: bounds, options: [.cursorUpdate, .activeAlways, .inVisibleRect], owner: self))
+        }
+        override func cursorUpdate(with event: NSEvent) { NSCursor.pointingHand.set() }
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+    }
+    func makeNSView(context: Context) -> V { V() }
+    func updateNSView(_ v: V, context: Context) {}
+}
+
 /// Row that jumps to the session's app on click; the highlight, arrow and pointer tell you it is clickable.
 private struct ClickableRow: View {
     let session: AgentSession
@@ -71,7 +85,8 @@ private struct ClickableRow: View {
                 }
             }
             .contentShape(Rectangle())
-            .onHover { hovering = $0; if $0 { NSCursor.pointingHand.push() } else { NSCursor.pop() } }
+            .onHover { hovering = $0 }
+            .background(PointerArea())
             .onTapGesture { TerminalJump.activate(for: session) }
             .help(L("Open the app this session runs in"))
     }
