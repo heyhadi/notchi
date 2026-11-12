@@ -7,6 +7,40 @@ struct SessionPanelView: View {
     @ObservedObject var model: NotchModel
     @State private var showAll = false
 
+    @ViewBuilder private var sessionList: some View {
+        ForEach(showAll ? model.sessions : Array(model.sessions.prefix(5))) { session in
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 8) {
+                    ClickableRow(session: session, tokens: model.tokens[session.id])
+                    if session.agent.supportsChat {
+                        let open = model.chats[session.id]?.open == true
+                        Button { model.setChatOpen(session.id, !open) } label: {
+                            Image(systemName: open ? "bubble.left.fill" : "bubble.left")
+                                .font(.system(size: 13))
+                                .foregroundColor(model.chats[session.id]?.held != nil ? Color(hex: 0xFFB020)
+                                                 : open ? Color(hex: 0x9BF2D0) : Color(hex: 0xA9A8B0))
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(format: open ? L("Close chat with %@") : L("Chat with %@"), session.agentLabel))
+                    }
+                }
+                if model.chats[session.id]?.open == true {
+                    ChatBox(model: model, session: session)
+                }
+            }
+        }
+        if model.sessions.count > 5 {
+            Button { showAll.toggle() } label: {
+                Text(showAll ? L("Show less") : String(format: L("+%d more"), model.sessions.count - 5))
+                    .font(.system(size: 12)).foregroundColor(Color(hex: 0x9BF2D0))
+                    .frame(maxWidth: .infinity).padding(.vertical, 4).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if let req = model.pending.first {
@@ -25,36 +59,11 @@ struct SessionPanelView: View {
                     .padding(.vertical, 24)
                     .background(RoundedRectangle(cornerRadius: 16).fill(Color(hex: 0x1E1D23)))
             }
-            ForEach(showAll ? model.sessions : Array(model.sessions.prefix(5))) { session in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .top, spacing: 8) {
-                        ClickableRow(session: session, tokens: model.tokens[session.id])
-                        if session.agent.supportsChat {
-                            let open = model.chats[session.id]?.open == true
-                            Button { model.setChatOpen(session.id, !open) } label: {
-                                Image(systemName: open ? "bubble.left.fill" : "bubble.left")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(model.chats[session.id]?.held != nil ? Color(hex: 0xFFB020)
-                                                     : open ? Color(hex: 0x9BF2D0) : Color(hex: 0xA9A8B0))
-                                    .frame(width: 28, height: 28)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(String(format: open ? L("Close chat with %@") : L("Chat with %@"), session.agentLabel))
-                        }
-                    }
-                    if model.chats[session.id]?.open == true {
-                        ChatBox(model: model, session: session)
-                    }
-                }
-            }
-            if model.sessions.count > 5 {
-                Button { showAll.toggle() } label: {
-                    Text(showAll ? L("Show less") : String(format: L("+%d more"), model.sessions.count - 5))
-                        .font(.system(size: 12)).foregroundColor(Color(hex: 0x9BF2D0))
-                        .frame(maxWidth: .infinity).padding(.vertical, 4).contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+            if showAll {
+                ScrollView(showsIndicators: false) { VStack(alignment: .leading, spacing: 12) { sessionList } }
+                    .frame(maxHeight: 260) // the notch caps at 500 pt; scroll instead of clipping
+            } else {
+                sessionList
             }
         }
     }
