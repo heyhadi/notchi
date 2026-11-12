@@ -15,6 +15,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.roam) private var roam = false
     @AppStorage(Prefs.avatarPerAgent) private var avatarPerAgent = false
     @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
+    @AppStorage(Prefs.reactionSounds) private var reactionSounds = true
 
     @State var selectedTab: SettingsTab = .avatar
 
@@ -405,6 +406,16 @@ struct SettingsView: View {
                     .labelsHidden()
                     .frame(width: 140)
                 }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                Toggle(isOn: $reactionSounds) {
+                    Text(L("Avatar and chat reaction sounds"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: 0x1B1B1F))
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
 

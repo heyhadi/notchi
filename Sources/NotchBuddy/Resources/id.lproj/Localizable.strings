@@ -155,3 +155,4 @@
 "Avatar per agent" = "Avatar per agent";
 "%@ will see it after its next tool call" = "%@ akan melihatnya setelah tool call berikutnya";
 "%@ is idle. Your message waits until you run it again." = "%@ sedang idle. Pesanmu menunggu sampai kamu menjalankannya lagi.";
+"Avatar and chat reaction sounds" = "Suara reaksi avatar dan chat";

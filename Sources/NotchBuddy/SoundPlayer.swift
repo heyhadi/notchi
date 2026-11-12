@@ -62,7 +62,7 @@ final class SoundPlayer {
     private var reactGate = SoundGate(interval: 0.3) // pokes can come fast; don't machine-gun
 
     func react(_ r: Reaction) {
-        guard UserDefaults.standard.bool(forKey: Prefs.soundsOn), reactGate.allow(),
+        guard UserDefaults.standard.bool(forKey: Prefs.soundsOn), UserDefaults.standard.bool(forKey: Prefs.reactionSounds), reactGate.allow(),
               !(UserDefaults.standard.object(forKey: Prefs.muteWhenBusy) as? Bool ?? true && isInputDeviceInUse()),
               let format = AVAudioFormat(standardFormatWithSampleRate: 44100.0, channels: 1) else { return }
         let blips: [Blip]; var pitch = 1.0

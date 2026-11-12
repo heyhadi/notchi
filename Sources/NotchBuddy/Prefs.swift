@@ -17,12 +17,13 @@ enum Prefs {
     static let avatarPerAgent = "avatarPerAgent" // Bool, default false: the avatar follows the agent that is driving the notch
     static func avatarKey(for a: AgentKind) -> String { "avatar.\(a.rawValue)" }
     static let greetDay = "greetDay"            // "yyyy-MM-dd" of the last good-morning sound
+    static let reactionSounds = "reactionSounds" // Bool, default true: little noises for the roaming avatar and chat (still needs sounds on)
     static let muteWhenBusy = "muteWhenBusy"    // Bool, default true: mute while the mic is in use (calls, meetings)
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
     static func register() {
         var d: [String: Any] = [language: "en", avatar: "bolt", openOnHover: true, holdForReply: false, glow: true, soundsOn: false,
-                                volume: 0.6, soundPack: "robot", muteWhenBusy: true, dailyTokenLimitM: 0, roam: false, avatarPerAgent: false]
+                                volume: 0.6, soundPack: "robot", muteWhenBusy: true, dailyTokenLimitM: 0, roam: false, avatarPerAgent: false, reactionSounds: true]
         for s in AgentState.allCases { d[sound(for: s)] = SoundName.default(for: s).rawValue }
         UserDefaults.standard.register(defaults: d)
     }
