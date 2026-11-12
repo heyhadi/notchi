@@ -66,6 +66,8 @@ public final class NotchModel: ObservableObject {
     @Published var tokensToday = 0
     let tokenMeter = TokenMeter()
     var tokensRead = Date.distantPast
+    static let sessionsFile = URL(fileURLWithPath: HookServer.directory + "/sessions.json")
+    var sessionsSaved = Date.distantPast
     @Published public var workingStartTime: Date?
 
     private var doneReturnTask: Task<Void, Never>?
@@ -75,6 +77,7 @@ public final class NotchModel: ObservableObject {
         self.geometry = NotchGeometry.compute()
         self.mode = .compact
         updateCurrentSize()
+        if let data = try? Data(contentsOf: Self.sessionsFile) { store.restore(SessionStore.restored(from: data)); sessions = store.current() }
 
         NotificationCenter.default.addObserver(
             self,

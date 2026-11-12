@@ -1,7 +1,7 @@
 import Foundation
 
 /// One Claude Code session as the notch sees it.
-public struct AgentSession: Identifiable, Sendable, Equatable {
+public struct AgentSession: Identifiable, Sendable, Equatable, Codable {
     public let id: String
     public var agent: AgentKind = .claudeCode
     public var agentLabel = "Claude Code"
@@ -21,6 +21,18 @@ public struct SessionStore: Sendable {
     public var idleAfter: TimeInterval = 120
 
     public init() {}
+
+    /// Sessions as saved at the last quit, minus anything older than `maxAge`; they come back sleeping until a new event arrives.
+    public static func restored(from data: Data, maxAge: TimeInterval = 12 * 3600, at now: Date = Date()) -> [String: AgentSession] {
+        guard let list = try? JSONDecoder().decode([AgentSession].self, from: data) else { return [:] }
+        return Dictionary(list.filter { now.timeIntervalSince($0.updated) <= maxAge }.map { s -> (String, AgentSession) in
+            var s = s; s.state = .sleeping; s.message = nil; return (s.id, s)
+        }, uniquingKeysWith: { a, _ in a })
+    }
+
+    public func encoded() -> Data? { try? JSONEncoder().encode(Array(sessions.values)) }
+
+    public mutating func restore(_ restored: [String: AgentSession]) { sessions.merge(restored) { live, _ in live } }
 
     public mutating func apply(_ e: HookEvent, at now: Date = Date()) {
         let key = Self.key(e)

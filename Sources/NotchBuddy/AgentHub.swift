@@ -139,6 +139,11 @@ extension NotchModel {
             if store.sessions[k] == nil { c.held?(nil); chats[k] = nil }
         }
         sessions = store.current()
+        if Date().timeIntervalSince(sessionsSaved) > 5, let data = store.encoded() { // throttled; owner-only like the socket dir
+            sessionsSaved = Date()
+            try? data.write(to: Self.sessionsFile, options: .atomic)
+            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: Self.sessionsFile.path)
+        }
         state = pending.isEmpty ? store.topState() : .needsYou
         if let e { peekText = peek(for: e) }
         if Date().timeIntervalSince(tokensRead) > 5 { // hooks fire many times a second during a turn
