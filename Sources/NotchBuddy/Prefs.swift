@@ -11,12 +11,14 @@ enum Prefs {
     static let soundsOn = "soundsOn"            // Bool, default false (sounds are opt-in)
     static let volume = "volume"                // Double 0...1, default 0.6
     static let soundPack = "soundPack"          // "soft" | "retro" | "chirpy" | "robot"
+    static let dailyTokenLimitM = "dailyTokenLimitM" // Int, millions of tokens per day, 0 = off (Claude Code only)
+    static let limitAlertDay = "limitAlertDay"  // "yyyy-MM-dd" of the last limit alert, so it fires once a day
     static let muteWhenBusy = "muteWhenBusy"    // Bool, default true: mute while the mic is in use (calls, meetings)
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
     static func register() {
         var d: [String: Any] = [language: "en", avatar: "bolt", openOnHover: true, holdForReply: false, glow: true, soundsOn: false,
-                                volume: 0.6, soundPack: "robot", muteWhenBusy: true]
+                                volume: 0.6, soundPack: "robot", muteWhenBusy: true, dailyTokenLimitM: 0]
         for s in AgentState.allCases { d[sound(for: s)] = SoundName.default(for: s).rawValue }
         UserDefaults.standard.register(defaults: d)
     }

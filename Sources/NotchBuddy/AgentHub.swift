@@ -148,8 +148,16 @@ extension NotchModel {
         if let e { peekText = peek(for: e) }
         if Date().timeIntervalSince(tokensRead) > 5 { // hooks fire many times a second during a turn
             tokensRead = Date()
-            tokenMeter.update { [weak self] bySession, today in self?.tokens = bySession; self?.tokensToday = today }
+            tokenMeter.update { [weak self] bySession, today in self?.tokens = bySession; self?.tokensToday = today; self?.alertIfOverLimit() }
         }
+    }
+
+    /// Once per day, when today's tokens pass the limit: one bwomp (if sounds are on). The footer turns amber meanwhile.
+    private func alertIfOverLimit() {
+        let day = Date().formatted(.iso8601.year().month().day())
+        guard overTokenLimit, UserDefaults.standard.string(forKey: Prefs.limitAlertDay) != day else { return }
+        UserDefaults.standard.set(day, forKey: Prefs.limitAlertDay)
+        if UserDefaults.standard.bool(forKey: Prefs.soundsOn) { SoundPlayer.shared.preview(.bwomp) }
     }
 
     private func peek(for e: HookEvent) -> String? {

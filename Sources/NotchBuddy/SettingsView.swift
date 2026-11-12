@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.soundsOn) private var soundsOn = false
     @AppStorage(Prefs.volume) private var volume = 0.6
     @AppStorage(Prefs.soundPack) private var soundPack = "robot"
+    @AppStorage(Prefs.dailyTokenLimitM) private var dailyTokenLimitM = 0
     @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
 
     @State var selectedTab: SettingsTab = .avatar
@@ -253,6 +254,24 @@ struct SettingsView: View {
                 }
                 .toggleStyle(.switch)
                 .tint(Color(hex: 0x1E8E66))
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("Daily token limit"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(L("In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it."))
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: 0x5E5D66))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer()
+                    TextField("0", value: $dailyTokenLimitM, format: .number)
+                        .textFieldStyle(.roundedBorder).frame(width: 60).multilineTextAlignment(.trailing)
+                    Text("M").font(.system(size: 13)).foregroundColor(Color(hex: 0x5E5D66))
+                }
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
 

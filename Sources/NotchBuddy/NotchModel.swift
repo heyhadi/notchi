@@ -64,6 +64,8 @@ public final class NotchModel: ObservableObject {
     var store = SessionStore()
     @Published var tokens: [String: Int] = [:]          // by SessionStore key (Claude Code only)
     @Published var tokensToday = 0
+    var tokenLimit: Int { UserDefaults.standard.integer(forKey: Prefs.dailyTokenLimitM) * 1_000_000 }
+    var overTokenLimit: Bool { tokenLimit > 0 && tokensToday >= tokenLimit }
     let tokenMeter = TokenMeter()
     var tokensRead = Date.distantPast
     static let sessionsFile = URL(fileURLWithPath: HookServer.directory + "/sessions.json")

@@ -143,3 +143,6 @@
 "+%d more" = "+%d lagi";
 "Show less" = "Sembunyikan";
 "Robot" = "Robot";
+"Today: %@ of %@ tokens" = "Hari ini: %@ dari %@ token";
+"Daily token limit" = "Batas token harian";
+"In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it." = "Dalam jutaan token, 0 = mati. Token Claude Code hari ini jadi oranye dan notch berbunyi bwomp sekali saat batas terlewati.";

@@ -143,3 +143,6 @@
 "+%d more" = "+%d more";
 "Show less" = "Show less";
 "Robot" = "Robot";
+"Today: %@ of %@ tokens" = "Today: %@ of %@ tokens";
+"Daily token limit" = "Daily token limit";
+"In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it." = "In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it.";
