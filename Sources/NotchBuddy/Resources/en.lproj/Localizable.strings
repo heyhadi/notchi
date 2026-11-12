@@ -153,3 +153,5 @@
 "Your avatar walks along the bottom of the screen while an agent is busy. Drag it, poke it, double-click to open the notch." = "Your avatar walks along the bottom of the screen while an agent is busy. Drag it, poke it, double-click to open the notch.";
 "The notch shows the avatar of the agent that is busiest right now. Pick each agent's avatar on the Avatar tab." = "The notch shows the avatar of the agent that is busiest right now. Pick each agent's avatar on the Avatar tab.";
 "Avatar per agent" = "Avatar per agent";
+"%@ will see it after its next tool call" = "%@ will see it after its next tool call";
+"%@ is idle. Your message waits until you run it again." = "%@ is idle. Your message waits until you run it again.";

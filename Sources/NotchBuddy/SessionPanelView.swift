@@ -265,7 +265,7 @@ private struct ChatBox: View {
                 .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
                 .accessibilityLabel(L("Send"))
             }
-            Text(status).font(.system(size: 11)).foregroundColor(Color(hex: 0x8D8C94))
+            Text(status).font(.system(size: 11)).foregroundColor(Color(hex: idleNow ? 0xFFB020 : 0x8D8C94))
             if let mine = chat.lastSent {
                 Text(String(format: L("You: %@"), mine)).font(.system(size: 11)).foregroundColor(Color(hex: 0xA9A8B0))
                     .lineLimit(2).truncationMode(.tail)
@@ -276,11 +276,20 @@ private struct ChatBox: View {
         .onAppear { focused = true }
     }
 
+    /// Finished and not held: a queued message has nobody to deliver it until the agent runs again.
+    private var idleNow: Bool {
+        chat.held == nil && ([.done, .sleeping, .error].contains(session.state) || Date().timeIntervalSince(session.updated) > 600)
+    }
+
     private var status: String {
         let name = session.agentLabel
         if let sent = chat.sentAt, Date().timeIntervalSince(sent) < 5 { return L("Sent") }
         if chat.held != nil { return String(format: L("%@ is waiting for your reply"), name) }
-        if !chat.queued.isEmpty { return String(format: L("Will be sent when %@ finishes this turn"), name) }
+        if !chat.queued.isEmpty && idleNow { return String(format: L("%@ is idle. Your message waits until you run it again."), name) } // nothing can wake it
+        if !chat.queued.isEmpty {
+            return session.agent.midTurnOutput("") != nil ? String(format: L("%@ will see it after its next tool call"), name)
+                                                          : String(format: L("Will be sent when %@ finishes this turn"), name)
+        }
         let stale = Date().timeIntervalSince(session.updated) > 600 // no event for 10 min: it is not mid-turn any more
         switch session.state {
         case .working, .thinking, .needsYou where !stale: return String(format: L("Your message goes in when %@ finishes this turn"), name)

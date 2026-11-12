@@ -153,3 +153,5 @@
 "Your avatar walks along the bottom of the screen while an agent is busy. Drag it, poke it, double-click to open the notch." = "Avatarmu jalan-jalan di bagian bawah layar selama agent sibuk. Seret, colek, atau klik dua kali untuk membuka notch.";
 "The notch shows the avatar of the agent that is busiest right now. Pick each agent's avatar on the Avatar tab." = "Notch menampilkan avatar agent yang paling sibuk saat ini. Pilih avatar tiap agent di tab Avatar.";
 "Avatar per agent" = "Avatar per agent";
+"%@ will see it after its next tool call" = "%@ akan melihatnya setelah tool call berikutnya";
+"%@ is idle. Your message waits until you run it again." = "%@ sedang idle. Pesanmu menunggu sampai kamu menjalankannya lagi.";
