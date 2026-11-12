@@ -47,6 +47,11 @@ struct SessionPanelView: View {
                     }
                 }
             }
+            if model.sessions.count > 5 {
+                Text(String(format: L("+%d more"), model.sessions.count - 5))
+                    .font(.system(size: 12)).foregroundColor(Color(hex: 0x8D8C94))
+                    .frame(maxWidth: .infinity)
+            }
         }
     }
 }
