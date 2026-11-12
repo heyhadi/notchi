@@ -1,11 +1,14 @@
 import AppKit
 import SwiftUI
+import Combine
 
 public final class NotchPanel: NSPanel {
     public let model: NotchModel
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var clickMonitor: Any?
+    private var idleObserver: AnyCancellable?
+    private var idleHidden = false
 
     public override var canBecomeKey: Bool { true }
     public override var canBecomeMain: Bool { false }
@@ -34,6 +37,10 @@ public final class NotchPanel: NSPanel {
 
         updatePanelFrame()
         setupEventMonitors()
+        idleObserver = model.objectWillChange.sink { [weak self] in
+            DispatchQueue.main.async { self?.updateIdleVisibility() } // objectWillChange fires before the new value lands
+        }
+        updateIdleVisibility()
         model.onWantsKeyboard = { [weak self] in self?.makeKey() } // non-activating: typing works without stealing focus from other apps' windows
 
         NotificationCenter.default.addObserver(
@@ -95,7 +102,17 @@ public final class NotchPanel: NSPanel {
         }
     }
 
+    /// No agent busy for a while (every session asleep): fade the notch away; any new activity brings it back.
+    private func updateIdleVisibility() {
+        let idle = model.shown == .sleeping && model.mode != .expanded && !model.isChatting
+        guard idle != idleHidden else { return }
+        idleHidden = idle
+        if idle { ignoresMouseEvents = true }
+        NSAnimationContext.runAnimationGroup { $0.duration = 0.4; animator().alphaValue = idle ? 0 : 1 }
+    }
+
     private func updateMouseHitTesting() {
+        guard !idleHidden else { return }
         let mouseLoc = NSEvent.mouseLocation
         let isInside = currentContentRect.contains(mouseLoc)
         let shouldIgnore = !isInside
