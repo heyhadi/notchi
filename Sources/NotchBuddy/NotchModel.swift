@@ -135,8 +135,18 @@ public final class NotchModel: ObservableObject {
         }
     }
 
+    /// First time an agent wakes up today: a cheerful good-morning (only if sounds are on). True if it played.
+    private func greetIfFirstToday() -> Bool {
+        let day = Date().formatted(.iso8601.year().month().day()), d = UserDefaults.standard
+        guard d.string(forKey: Prefs.greetDay) != day else { return false }
+        d.set(day, forKey: Prefs.greetDay)
+        guard d.bool(forKey: Prefs.soundsOn) else { return false }
+        SoundPlayer.shared.react(.hello)
+        return true
+    }
+
     private func handleShownChanged(oldValue: AgentState, newValue: AgentState) {
-        SoundPlayer.shared.play(for: newValue)
+        if !(oldValue == .sleeping && newValue != .sleeping && greetIfFirstToday()) { SoundPlayer.shared.play(for: newValue) } // the greeting replaces the state sound, which would cut it off
 
         doneReturnTask?.cancel()
         doneReturnTask = nil

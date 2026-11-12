@@ -63,6 +63,11 @@ final class RoamPanel: NSPanel {
     private var bubbleUntil = Date.distantPast
     private var spinStart: Date?
     private var bumpCooldownUntil = Date.distantPast
+    private var wasAwake = false                // only a buddy that was up falls asleep on screen
+    private var sleepSince: Date?
+    private var asleepDone = false
+    private var lastZ = Date.distantPast
+    private var zStep = 0
     var peers: () -> [RoamPanel] = { [] }       // the other walkers, set by RoamManager
 
     init(model: NotchModel, agent: AgentKind?) {
@@ -101,9 +106,19 @@ final class RoamPanel: NSPanel {
     private var shownState: AgentState { model.shown(for: agent) }
     private var walking: Bool { [.working, .thinking].contains(shownState) }
 
+    private static let sleepFor: TimeInterval = 600 // lies there snoring this long, then fades away (an idle machine goes quiet)
+
+    private var shouldShow: Bool {
+        guard enabled && !retired else { return false }
+        if shownState != .sleeping { return true }
+        return sleepSince.map { Date().timeIntervalSince($0) < Self.sleepFor } ?? false
+    }
+
     /// Show/hide and start/stop the walk timer from the current pref and agent state.
     private func sync() {
-        let visible = enabled && !retired && shownState != .sleeping
+        if shownState != .sleeping { wasAwake = true; sleepSince = nil; asleepDone = false }
+        else if wasAwake, sleepSince == nil { sleepSince = Date() }
+        let visible = shouldShow
         if visible, timer == nil {
             if let f = screen?.visibleFrame ?? NSScreen.main?.visibleFrame { x = .random(in: f.minX...(f.maxX - side)); setFrameOrigin(NSPoint(x: x, y: f.minY)) }
             last = Date()
@@ -111,7 +126,7 @@ final class RoamPanel: NSPanel {
             timer = Timer.scheduledTimer(withTimeInterval: 1 / 30, repeats: true) { [weak self] _ in MainActor.assumeIsolated { self?.tick() } }
         }
         NSAnimationContext.runAnimationGroup { $0.duration = 0.4; animator().alphaValue = visible ? 1 : 0 } completionHandler: {
-            MainActor.assumeIsolated { if !(self.enabled && !self.retired && self.shownState != .sleeping) { self.timer?.invalidate(); self.timer = nil; self.orderOut(nil) } }
+            MainActor.assumeIsolated { if !self.shouldShow { self.timer?.invalidate(); self.timer = nil; self.orderOut(nil) } }
         }
     }
 
@@ -140,6 +155,7 @@ final class RoamPanel: NSPanel {
         guard let f = NSScreen.main?.visibleFrame else { return }
         ground = f.minY
         if look.bubble != nil, now > bubbleUntil { look.bubble = nil }
+        if shownState == .sleeping, !asleepDone, let s0 = sleepSince, now.timeIntervalSince(s0) > Self.sleepFor { asleepDone = true; sync() }
         if let s0 = spinStart {
             let u = now.timeIntervalSince(s0) / 0.7
             if u >= 1 { spinStart = nil; look.spin = 0 } else { look.spin = 360 * (1 - (1 - u) * (1 - u)) }
@@ -168,7 +184,12 @@ final class RoamPanel: NSPanel {
         if shownState == .needsYou, hopStart == nil, now.timeIntervalSince(lastHop) > 1.4 { hopStart = now }
         let standing = !walking || curious || now < pauseUntil
         var bob = 0.0
-        if standing {
+        if shownState == .sleeping {
+            setTilt(-80) // lying on its side
+            if look.bubble == nil, now.timeIntervalSince(lastZ) > 1.8 {
+                say([["z", "zZ", "zZz", "Zzz…"][zStep % 4]], for: 1.2); zStep += 1; lastZ = now
+            }
+        } else if standing {
             setTilt(0)
         } else {
             phase += dt * 9
@@ -248,6 +269,7 @@ final class RoamPanel: NSPanel {
         let now = Date()
         pokes = now.timeIntervalSince(lastPoke) > 3 ? 1 : pokes + 1
         lastPoke = now; hopStart = now
+        if shownState == .sleeping { SoundPlayer.shared.react(.poke(level: 1)); say(["Huh?! Five more minutes…", "Zzz… who's there?", "Mmm… not now"], for: 2); return }
         let mine = model.currentAvatar(fallback: UserDefaults.standard.string(forKey: Prefs.avatar) ?? "bolt", for: agent)
         SoundPlayer.shared.react(pokes >= 4 ? .dizzy : .poke(level: pokes))
         switch pokes {

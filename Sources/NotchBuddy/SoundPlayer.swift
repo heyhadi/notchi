@@ -58,7 +58,7 @@ final class SoundPlayer {
     }
 
     /// Little noises for the roaming avatar's reactions. Follows the master sound switch, volume and mic mute; always the robot voice.
-    enum Reaction { case poke(level: Int), grab, thud, bonk, greet, dizzy, whoa }
+    enum Reaction { case poke(level: Int), grab, thud, bonk, greet, dizzy, whoa, queued, delivered, hello }
     private var reactGate = SoundGate(interval: 0.3) // pokes can come fast; don't machine-gun
 
     func react(_ r: Reaction) {
@@ -74,6 +74,9 @@ final class SoundPlayer {
         case .greet: blips = [(900, 1200, 0.07, 0.04, 0), (1200, 1600, 0.10, 0, 0)]
         case .dizzy: blips = [(1200, 500, 0.35, 0, 60)]
         case .whoa: blips = [(600, 1400, 0.20, 0.02, 0), (1400, 300, 0.30, 0, 0)]
+        case .queued: blips = [(800, 1000, 0.06, 0, 0)]                                  // "got it, waiting for its turn"
+        case .hello: blips = [(700, 900, 0.07, 0.03, 0), (900, 1200, 0.07, 0.03, 0), (1200, 1600, 0.07, 0.03, 0), (1500, 2200, 0.20, 0, 35)] // good morning
+        case .delivered: blips = [(700, 900, 0.06, 0.03, 0), (900, 1500, 0.10, 0, 0)]    // "bi-dup!": it went in
         }
         if let buffer = render(blips, pitch: pitch, format: format) { playBuffer(buffer) }
     }

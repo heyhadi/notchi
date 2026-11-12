@@ -16,6 +16,7 @@ enum Prefs {
     static let roam = "roam"                    // Bool, default false: the avatar also walks along the bottom of the screen while an agent is busy
     static let avatarPerAgent = "avatarPerAgent" // Bool, default false: the avatar follows the agent that is driving the notch
     static func avatarKey(for a: AgentKind) -> String { "avatar.\(a.rawValue)" }
+    static let greetDay = "greetDay"            // "yyyy-MM-dd" of the last good-morning sound
     static let muteWhenBusy = "muteWhenBusy"    // Bool, default true: mute while the mic is in use (calls, meetings)
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
