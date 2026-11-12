@@ -93,6 +93,10 @@ extension NotchModel {
         if open { onWantsKeyboard?() }
     }
 
+    func closeChats() {
+        for key in chats.keys where chats[key]?.open == true { setChatOpen(key, false) }
+    }
+
     var isChatting: Bool { chats.values.contains { $0.open } }
 
     /// The user clicked Allow once / Deny / Answer in terminal on a card.

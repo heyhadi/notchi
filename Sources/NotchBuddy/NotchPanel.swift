@@ -5,6 +5,7 @@ public final class NotchPanel: NSPanel {
     public let model: NotchModel
     private var globalMonitor: Any?
     private var localMonitor: Any?
+    private var clickMonitor: Any?
 
     public override var canBecomeKey: Bool { true }
     public override var canBecomeMain: Bool { false }
@@ -50,6 +51,9 @@ public final class NotchPanel: NSPanel {
         if let l = localMonitor {
             NSEvent.removeMonitor(l)
         }
+        if let c = clickMonitor {
+            NSEvent.removeMonitor(c)
+        }
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -81,6 +85,13 @@ public final class NotchPanel: NSPanel {
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] event in
             self?.updateMouseHitTesting()
             return event
+        }
+
+        // A click in any other app or on the desktop closes the chat box and folds the panel away.
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            guard let self, self.model.isChatting else { return }
+            self.model.closeChats()
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.68)) { self.model.requestCollapse() }
         }
     }
 
