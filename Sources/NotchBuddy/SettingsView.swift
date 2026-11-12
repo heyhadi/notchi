@@ -12,6 +12,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.volume) private var volume = 0.6
     @AppStorage(Prefs.soundPack) private var soundPack = "robot"
     @AppStorage(Prefs.dailyTokenLimitM) private var dailyTokenLimitM = 0
+    @AppStorage(Prefs.roam) private var roam = false
     @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
 
     @State var selectedTab: SettingsTab = .avatar
@@ -280,21 +281,19 @@ struct SettingsView: View {
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
 
-                HStack {
+                Toggle(isOn: $roam) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L("Allowed to roam the desktop"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: 0x8D8C94))
-                        Text(L("Coming later"))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(L("Your avatar walks along the bottom of the screen while an agent is busy. Click it to open the notch."))
                             .font(.system(size: 11))
-                            .foregroundColor(Color(hex: 0xA9A8B0))
+                            .foregroundColor(Color(hex: 0x5E5D66))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer()
-                    Toggle(L("Allowed to roam the desktop"), isOn: .constant(false))
-                        .labelsHidden()
-                        .toggleStyle(.switch)
-                        .disabled(true)
                 }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
 
