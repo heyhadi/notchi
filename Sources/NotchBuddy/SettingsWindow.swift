@@ -19,7 +19,7 @@ enum SettingsWindow {
             backing: .buffered,
             defer: false
         )
-        newWindow.title = L("Notch Buddy Settings")
+        newWindow.title = L("Notchi Settings")
         newWindow.isReleasedWhenClosed = false
         newWindow.contentView = NSHostingView(rootView: SettingsView())
         newWindow.center()

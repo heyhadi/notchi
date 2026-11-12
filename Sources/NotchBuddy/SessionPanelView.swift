@@ -342,7 +342,7 @@ private struct ApprovalCard: View {
             } else {
                 HStack(spacing: 8) {
                     button(L("Allow once"), primary: true) { decide(.allow) }
-                    button(L("Deny"), primary: false) { decide(.deny(L("Denied from Notch Buddy"))) }
+                    button(L("Deny"), primary: false) { decide(.deny(L("Denied from Notchi"))) }
                     Spacer()
                     button(L("Answer in terminal"), primary: false, quiet: true) { decide(nil) }
                 }

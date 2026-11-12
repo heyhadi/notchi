@@ -76,7 +76,7 @@ public enum AgentSetup {
             for (event, path) in zip(clineEvents, paths) {
                 if let existing = read(path), !existing.contains(managed) {
                     throw NSError(domain: "AgentSetup", code: 1, userInfo: [NSLocalizedDescriptionKey:
-                        "You already have a Cline hook at \(path). Notch Buddy won't overwrite it."])
+                        "You already have a Cline hook at \(path). Notchi won't overwrite it."])
                 }
                 let script = "#!/bin/sh\n# \(marker): managed by Notch Buddy, remove from Settings → Agents\nexec "
                     + command(hook, .cline, event: event, fallback: #"{"cancel":false}"#) + "\n"

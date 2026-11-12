@@ -1,4 +1,4 @@
-"Notch Buddy" = "Notch Buddy";
+"Notchi" = "Notchi";
 "Debug: force state" = "Debug: force state";
 "Automatic" = "Automatic";
 "Sleeping" = "Sleeping";
@@ -7,7 +7,7 @@
 "Needs you" = "Needs you";
 "Done" = "Done";
 "Error" = "Error";
-"Quit Notch Buddy" = "Quit Notch Buddy";
+"Quit Notchi" = "Quit Notchi";
 
 "Thinking…" = "Thinking…";
 "Working…" = "Working…";
@@ -26,7 +26,7 @@
 "All quiet" = "All quiet";
 "Allow once" = "Allow once";
 "Answer in terminal" = "Answer in terminal";
-"Denied from Notch Buddy" = "Denied from Notch Buddy";
+"Denied from Notchi" = "Denied from Notchi";
 "Deny" = "Deny";
 "Dismiss" = "Dismiss";
 "Done %d min ago" = "Done %d min ago";
@@ -45,7 +45,7 @@
 
 "Settings…" = "Settings…";
 "Settings" = "Settings";
-"Notch Buddy Settings" = "Notch Buddy Settings";
+"Notchi Settings" = "Notchi Settings";
 
 "Avatar" = "Avatar";
 "Agents" = "Agents";

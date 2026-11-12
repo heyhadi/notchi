@@ -1,4 +1,4 @@
-"Notch Buddy" = "Notch Buddy";
+"Notchi" = "Notchi";
 "Debug: force state" = "Debug: paksa status";
 "Automatic" = "Otomatis";
 "Sleeping" = "Tidur";
@@ -7,7 +7,7 @@
 "Needs you" = "Perlu bantuanmu";
 "Done" = "Selesai";
 "Error" = "Kesalahan";
-"Quit Notch Buddy" = "Keluar dari Notch Buddy";
+"Quit Notchi" = "Keluar dari Notchi";
 
 "Thinking…" = "Sedang berpikir…";
 "Working…" = "Sedang bekerja…";
@@ -26,7 +26,7 @@
 "All quiet" = "Semua tenang";
 "Allow once" = "Izinkan sekali";
 "Answer in terminal" = "Jawab di terminal";
-"Denied from Notch Buddy" = "Ditolak dari Notch Buddy";
+"Denied from Notchi" = "Ditolak dari Notchi";
 "Deny" = "Tolak";
 "Dismiss" = "Tutup";
 "Done %d min ago" = "Selesai %d menit lalu";
@@ -45,7 +45,7 @@
 
 "Settings…" = "Pengaturan…";
 "Settings" = "Pengaturan";
-"Notch Buddy Settings" = "Pengaturan Notch Buddy";
+"Notchi Settings" = "Pengaturan Notchi";
 
 "Avatar" = "Avatar";
 "Agents" = "Agen";

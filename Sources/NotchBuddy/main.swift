@@ -22,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         roamManager = RoamManager(model: model)
 
         hookServer.onEvent = { [model] event, respond in model.handle(event, respond: respond) }
-        do { try hookServer.start() } catch { NSLog("Notch Buddy: hook socket failed: \(error)") }
+        do { try hookServer.start() } catch { NSLog("Notchi: hook socket failed: \(error)") }
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [model] _ in
             MainActor.assumeIsolated { model.refresh(after: nil) }
         }
@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let editItem = NSMenuItem(title: "Edit", action: nil, keyEquivalent: "")
         editItem.submenu = edit
         let main = NSMenu()
-        main.addItem(NSMenuItem(title: "Notch Buddy", action: nil, keyEquivalent: ""))
+        main.addItem(NSMenuItem(title: "Notchi", action: nil, keyEquivalent: ""))
         main.addItem(editItem)
         NSApp.mainMenu = main
     }
@@ -50,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func setupStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
-            button.image = NSImage(systemSymbolName: "face.smiling", accessibilityDescription: L("Notch Buddy"))
+            button.image = NSImage(systemSymbolName: "face.smiling", accessibilityDescription: L("Notchi"))
         }
 
         let menu = NSMenu()
@@ -91,7 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(
-            title: L("Quit Notch Buddy"),
+            title: L("Quit Notchi"),
             action: #selector(quitApp),
             keyEquivalent: "q"
         )

@@ -35,13 +35,13 @@ cat << 'EOF' > "$APP_DIR/Contents/Info.plist"
     <key>CFBundleIdentifier</key>
     <string>com.heyhadi.NotchBuddy</string>
     <key>CFBundleName</key>
-    <string>Notch Buddy</string>
+    <string>Notchi</string>
     <key>CFBundleExecutable</key>
     <string>NotchBuddy</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>NSAppleEventsUsageDescription</key>
-    <string>Notch Buddy brings the Terminal tab of a session to the front when you click it.</string>
+    <string>Notchi brings the Terminal tab of a session to the front when you click it.</string>
     <key>LSUIElement</key>
     <true/>
     <key>LSMinimumSystemVersion</key>

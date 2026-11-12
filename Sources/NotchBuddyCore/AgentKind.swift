@@ -48,7 +48,7 @@ public enum AgentKind: String, CaseIterable, Sendable, Codable {
     /// Stop-hook answer that makes the agent continue with the user's message.
     public func chatOutput(_ text: String) -> Data? {
         // Chat UIs show this as a hook message, not a user bubble, so the quote keeps the message visible in the history.
-        let framed = "Message from the user, sent from Notch Buddy. Start your reply with the message quoted on one line as "
+        let framed = "Message from the user, sent from Notchi. Start your reply with the message quoted on one line as "
             + "\"> From notch: <message>\", then act on it.\n\n" + text
         switch self {
         case .claudeCode, .codex: return json(["decision": "block", "reason": framed])
@@ -62,14 +62,14 @@ public enum AgentKind: String, CaseIterable, Sendable, Codable {
     /// can add context the model reads before its next step. Others wait for the Stop hook.
     public func midTurnOutput(_ text: String) -> Data? {
         guard self == .claudeCode else { return nil }
-        let framed = "Message from the user, sent from Notch Buddy while you were working. Start your next reply text with the message quoted on one line as "
+        let framed = "Message from the user, sent from Notchi while you were working. Start your next reply text with the message quoted on one line as "
             + "\"> From notch: <message>\", then act on it.\n\n" + text
         return json(["hookSpecificOutput": ["hookEventName": "PostToolUse", "additionalContext": framed]])
     }
 
     /// For a risky command: force the agent's own prompt where the hook format allows it (nil = leave the agent alone).
     public func forceAskOutput(reasons: [String]) -> Data? {
-        let reason = "Notch Buddy: " + reasons.joined(separator: ", ") + ". Approve this yourself."
+        let reason = "Notchi: " + reasons.joined(separator: ", ") + ". Approve this yourself."
         switch self {
         case .antigravity: return json(["decision": "force_ask", "reason": reason])
         case .copilot: return json(["permissionDecision": "ask", "permissionDecisionReason": reason])
