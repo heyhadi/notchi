@@ -113,9 +113,9 @@ public final class NotchPanel: NSPanel {
             return event
         }
 
-        // A click in any other app or on the desktop closes the chat box and folds the panel away.
+        // A click in any other app or on the desktop closes the chat box and folds the panel away (also when it was opened by a click, not hover).
         clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            guard let self, self.model.isChatting else { return }
+            guard let self, self.model.isChatting || self.model.mode == .expanded else { return } // expanded without hover (opened from the roaming avatar) has no hover-exit to close it
             self.model.closeChats()
             withAnimation(.spring(response: 0.55, dampingFraction: 0.68)) { self.model.requestCollapse() }
         }
