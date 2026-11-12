@@ -134,3 +134,5 @@
 "Send answer" = "Kirim jawaban";
 "agy (CLI). The IDE doesn't run hooks yet" = "agy (CLI). IDE-nya belum menjalankan hook";
 "You: %@" = "Kamu: %@";
+"Glow around the notch" = "Cahaya di pinggir notch";
+"A moving light runs around the notch while agents work, in the state color when one needs you." = "Cahaya bergerak mengelilingi notch selama agen bekerja, dengan warna state saat agen butuh kamu.";

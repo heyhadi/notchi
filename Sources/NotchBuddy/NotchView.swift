@@ -3,21 +3,27 @@ import NotchBuddyCore
 
 public struct NotchShape: Shape {
     public var bottomRadius: CGFloat
+    public var openTop = false // the glow skips the top edge: it sits on the screen edge
 
     public var animatableData: CGFloat {
         get { bottomRadius }
         set { bottomRadius = newValue }
     }
 
-    public init(bottomRadius: CGFloat) {
+    public init(bottomRadius: CGFloat, openTop: Bool = false) {
         self.bottomRadius = bottomRadius
+        self.openTop = openTop
     }
 
     public func path(in rect: CGRect) -> Path {
         var path = Path()
         let r = max(0, min(bottomRadius, rect.width / 2, rect.height))
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        if openTop {
+            path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+        } else {
+            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        }
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
         path.addArc(
             center: CGPoint(x: rect.maxX - r, y: rect.maxY - r),
@@ -35,7 +41,7 @@ public struct NotchShape: Shape {
             clockwise: false
         )
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.closeSubpath()
+        if !openTop { path.closeSubpath() }
         return path
     }
 }
@@ -44,6 +50,7 @@ public struct NotchView: View {
     @ObservedObject public var model: NotchModel
     @AppStorage(Prefs.language) private var language = "en" // re-render strings when the language changes
     @AppStorage(Prefs.avatar) private var avatar = "bolt"
+    @AppStorage(Prefs.glow) private var glow = true
     private var avatarKind: AvatarKind { AvatarKind(rawValue: avatar) ?? .bolt }
 
     @State private var hoverTask: Task<Void, Never>?
@@ -88,10 +95,18 @@ public struct NotchView: View {
     public var body: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                // Background black notch shape
+                // Background black notch shape, with the moving glow around its edge
+                if glow && model.shown != .sleeping {
+                    NotchGlow(state: model.shown, radius: currentRadius, blurred: true)
+                        .frame(width: currentWidth, height: currentHeight)
+                }
                 NotchShape(bottomRadius: currentRadius)
                     .fill(Color.black)
                     .frame(width: currentWidth, height: currentHeight)
+                if glow && model.shown != .sleeping {
+                    NotchGlow(state: model.shown, radius: currentRadius, blurred: false)
+                        .frame(width: currentWidth, height: currentHeight)
+                }
 
                 // Content inside the shape
                 Group {
@@ -368,6 +383,42 @@ public struct NotchView: View {
 }
 
 // MARK: - Subviews & Preferences
+
+/// Glowbar-style light running around the notch edge: four colors while busy, the state color (pulsing) when it wants you.
+private struct NotchGlow: View {
+    let state: AgentState
+    let radius: CGFloat
+    let blurred: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var alert: Bool { [.needsYou, .done, .error].contains(state) }
+    private var colors: [Color] {
+        if alert {
+            let c = Color(hex: state.colorHex)
+            return [c, c.opacity(0.2), c, c.opacity(0.2), c]
+        }
+        return [0x4285F4, 0x34A853, 0xFBBC05, 0xEA4335, 0x4285F4].map { Color(hex: $0) }
+    }
+
+    var body: some View {
+        TimelineView(.animation(paused: reduceMotion)) { ctx in
+            let t = reduceMotion ? 0 : ctx.date.timeIntervalSinceReferenceDate
+            let turn = alert ? 2.0 : 4.0 // seconds per lap
+            let gradient = AngularGradient(colors: colors, center: .center,
+                                           angle: .degrees(t.truncatingRemainder(dividingBy: turn) / turn * 360))
+            let pulse = alert && !reduceMotion ? 0.65 + 0.35 * sin(t * 2 * .pi / 1.2) : 1
+            Group {
+                if blurred {
+                    NotchShape(bottomRadius: radius, openTop: true).stroke(gradient, lineWidth: 6).blur(radius: 7)
+                } else {
+                    NotchShape(bottomRadius: radius, openTop: true).stroke(gradient, lineWidth: 1.5)
+                }
+            }
+            .opacity(pulse)
+        }
+        .allowsHitTesting(false)
+    }
+}
 
 private struct PulsingDotView: View {
     let color: Color

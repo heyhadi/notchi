@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.avatar) private var avatar = "bolt"
     @AppStorage(Prefs.openOnHover) private var openOnHover = true
     @AppStorage(Prefs.holdForReply) private var holdForReply = false
+    @AppStorage(Prefs.glow) private var glow = true
     @AppStorage(Prefs.soundsOn) private var soundsOn = false
     @AppStorage(Prefs.volume) private var volume = 0.6
     @AppStorage(Prefs.soundPack) private var soundPack = "soft"
@@ -217,6 +218,22 @@ struct SettingsView: View {
                     Text(L("Open panel on hover"))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Color(hex: 0x1B1B1F))
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                Toggle(isOn: $glow) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("Glow around the notch"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(L("A moving light runs around the notch while agents work, in the state color when one needs you."))
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: 0x5E5D66))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
                 .toggleStyle(.switch)
                 .tint(Color(hex: 0x1E8E66))
