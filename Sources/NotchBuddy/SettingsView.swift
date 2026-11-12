@@ -21,6 +21,7 @@ struct SettingsView: View {
         case agents
         case behavior
         case sound
+        case history
         case privacy
 
         var id: String { rawValue }
@@ -31,6 +32,7 @@ struct SettingsView: View {
             case .agents: return L("Agents")
             case .behavior: return L("Behavior")
             case .sound: return L("Sound")
+            case .history: return L("History")
             case .privacy: return L("Privacy")
             }
         }
@@ -41,6 +43,7 @@ struct SettingsView: View {
             case .agents: return "network"
             case .behavior: return "slider.horizontal.3"
             case .sound: return "speaker.wave.2"
+            case .history: return "clock.arrow.circlepath"
             case .privacy: return "lock.shield"
             }
         }
@@ -68,6 +71,8 @@ struct SettingsView: View {
                         behaviorPane
                     case .sound:
                         soundPane
+                    case .history:
+                        HistoryPane()
                     case .privacy:
                         privacyPane
                     }
@@ -528,5 +533,46 @@ private struct SoundStateRow: View {
             .accessibilityLabel(String(format: L("Preview %@ sound"), stateName(state)))
         }
         .opacity(soundsOn ? 1.0 : 0.45)
+    }
+}
+
+
+private struct HistoryPane: View {
+    @State private var entries: [HistoryEntry] = []
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text(L("History")).font(.system(size: 22, weight: .semibold, design: .rounded)).foregroundColor(Color(hex: 0x1B1B1F))
+                Spacer()
+                if !entries.isEmpty {
+                    Button(L("Clear")) { try? FileManager.default.removeItem(at: NotchModel.historyFile); entries = [] }
+                }
+            }
+            Text(L("Finished sessions, newest first. Stored only on this Mac."))
+                .font(.system(size: 12)).foregroundColor(Color(hex: 0x5E5D66))
+            if entries.isEmpty {
+                Text(L("Nothing yet. Sessions show up here when they end."))
+                    .font(.system(size: 13)).foregroundColor(Color(hex: 0x5E5D66))
+            }
+            ForEach(entries) { e in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(e.agentLabel) · \(e.project)").font(.system(size: 13, weight: .medium)).foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(detail(e)).font(.system(size: 11)).foregroundColor(Color(hex: 0x5E5D66))
+                    }
+                    Spacer()
+                }
+                Divider().overlay(Color(hex: 0xF0ECE1))
+            }
+        }
+        .onAppear { entries = SessionHistory.load(try? Data(contentsOf: NotchModel.historyFile)) }
+    }
+
+    private func detail(_ e: HistoryEntry) -> String {
+        var parts = [e.ended.formatted(date: .abbreviated, time: .shortened)]
+        if let d = e.duration { parts.append(d < 60 ? "<1 min" : "\(Int(d / 60)) min") }
+        if let t = e.tokens, t > 0 { parts.append(String(format: L("%@ tokens"), TokenCount.short(t))) }
+        return parts.joined(separator: " · ")
     }
 }

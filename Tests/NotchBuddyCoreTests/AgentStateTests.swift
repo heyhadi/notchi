@@ -23,3 +23,14 @@ final class SessionPersistenceTests: XCTestCase {
         XCTAssertEqual(back["a:1"]?.state, .sleeping)
     }
 }
+
+final class SessionHistoryTests: XCTestCase {
+    func testNewestFirstAndCapped() {
+        var data: Data?
+        for i in 0..<5 {
+            data = SessionHistory.appending(HistoryEntry(agentLabel: "A", project: "p\(i)", started: nil, ended: Date(timeIntervalSince1970: Double(i)), tokens: nil), to: data, limit: 3)
+        }
+        XCTAssertEqual(SessionHistory.load(data).map(\.project), ["p4", "p3", "p2"])
+        XCTAssertEqual(SessionHistory.load(Data("junk".utf8)), [])
+    }
+}

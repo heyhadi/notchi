@@ -26,6 +26,7 @@ struct ChatState {
 extension NotchModel {
     /// Entry point for every hook event. `respond` must be called once (nil = no decision).
     func handle(_ e: HookEvent, respond: @escaping @Sendable (Data?) -> Void) {
+        if e.name == "SessionEnd", let s = store.sessions[SessionStore.key(e)] { recordHistory(s) }
         store.apply(e)
         switch e.name {
         case "PermissionRequest" where e.agent.approvesInNotch:
@@ -150,6 +151,13 @@ extension NotchModel {
             tokensRead = Date()
             tokenMeter.update { [weak self] bySession, today in self?.tokens = bySession; self?.tokensToday = today; self?.alertIfOverLimit() }
         }
+    }
+
+    private func recordHistory(_ s: AgentSession) {
+        let entry = HistoryEntry(agentLabel: s.agentLabel, project: s.project, started: s.started, ended: Date(), tokens: tokens[s.id])
+        guard let data = SessionHistory.appending(entry, to: try? Data(contentsOf: Self.historyFile)) else { return }
+        try? data.write(to: Self.historyFile, options: .atomic)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: Self.historyFile.path)
     }
 
     /// Once per day, when today's tokens pass the limit: one bwomp (if sounds are on). The footer turns amber meanwhile.

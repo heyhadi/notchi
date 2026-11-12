@@ -12,6 +12,7 @@ public struct AgentSession: Identifiable, Sendable, Equatable, Codable {
     public var message: String?
     public var steps = 0          // tool calls since the last prompt ("progress")
     public var updated: Date
+    public var started: Date?      // first event we saw for it (nil for sessions saved before this existed)
 }
 
 /// Pure reducer from hook events to sessions; the app owns one and publishes its output.
@@ -41,6 +42,7 @@ public struct SessionStore: Sendable {
         if !e.cwd.isEmpty { s.cwd = e.cwd; s.project = e.project }
         s.agentLabel = e.agentLabel
         s.updated = now
+        s.started = s.started ?? now
         switch e.name {
         case "SessionStart": s.state = .sleeping
         case "UserPromptSubmit": s.state = .thinking; s.steps = 0; s.message = nil

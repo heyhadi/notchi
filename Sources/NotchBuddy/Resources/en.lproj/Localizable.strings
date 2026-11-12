@@ -146,3 +146,7 @@
 "Today: %@ of %@ tokens" = "Today: %@ of %@ tokens";
 "Daily token limit" = "Daily token limit";
 "In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it." = "In millions of tokens, 0 = off. Today's Claude Code tokens turn amber and the notch bwomps once when you pass it.";
+"History" = "History";
+"Clear" = "Clear";
+"Finished sessions, newest first. Stored only on this Mac." = "Finished sessions, newest first. Stored only on this Mac.";
+"Nothing yet. Sessions show up here when they end." = "Nothing yet. Sessions show up here when they end.";
