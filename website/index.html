@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Notch Buddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a live macOS desktop as the hero (notch, menu bar, Dock), then plain sections that each show one real feature. */
+@property --a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+:root {
+  --bg: #E8ECF1; --surface: #F6F8FA; --ink: #0E1116; --muted: #566171; --line: #D2D9E2;
+  --accent: #0C8A63; --accent-ink: #FFFFFF; --amber: #B96A00; --danger: #C23B3B;
+  --screen: #0D1116; --screen-ink: #E9EEF3; --notch: #000;
+  --display: "Unbounded", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0C0F; --surface: #13171C; --ink: #E8EEF4; --muted: #99A4B1; --line: #232A33;
+    --accent: #9BF2D0; --accent-ink: #052217; --amber: #FFB020; --danger: #FF7B7B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0C0F; --surface: #13171C; --ink: #E8EEF4; --muted: #99A4B1; --line: #232A33;
+  --accent: #9BF2D0; --accent-ink: #052217; --amber: #FFB020; --danger: #FF7B7B; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); margin: 0; }
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
+p { margin: 0; text-wrap: pretty; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+/* Header */
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 15px var(--display); letter-spacing: -0.01em; text-decoration: none; }
+.brand .mark { width: 34px; height: 22px; background: #000; border-radius: 0 0 10px 10px; display: grid; place-items: center; border: 1px solid var(--line); border-top: none; }
+.brand .mark i { width: 6px; height: 6px; border-radius: 50%; background: #9BF2D0; box-shadow: 0 0 8px #9BF2D0; animation: pulse 1.8s ease-in-out infinite; }
+nav.links { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+nav.links a { text-decoration: none; font-size: 14px; color: var(--muted); padding: 7px 10px; border-radius: 8px; }
+nav.links a:hover { color: var(--ink); background: var(--surface); }
+.icon-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; font-size: 16px; }
+.icon-btn:hover { border-color: var(--accent); }
+
+/* Hero */
+.hero { padding-top: 18px; display: grid; gap: 22px; }
+.hero h1 { font-size: clamp(34px, 6.4vw, 68px); max-width: 15ch; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero .lede { max-width: 62ch; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+.stage-note { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font: 500 12px var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.stage-note b { color: var(--accent); font-weight: 500; }
+
+/* The desktop stage: designed at 960x600, scaled to fit */
+.stage-frame { width: 100%; position: relative; margin-top: 20px; }
+.stage {
+  width: 960px; height: 600px; position: absolute; left: 0; top: 0; transform-origin: top left;
+  border-radius: 18px; overflow: hidden; color: var(--screen-ink); user-select: none; -webkit-user-select: none;
+  background:
+    radial-gradient(900px 420px at 18% 108%, rgba(52, 211, 153, .22), transparent 60%),
+    radial-gradient(700px 380px at 92% 8%, rgba(66, 133, 244, .16), transparent 60%),
+    linear-gradient(165deg, #18323A 0%, #0E1318 62%);
+  box-shadow: 0 30px 70px -28px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07) inset;
+  font: 400 13px/1.4 var(--body);
+}
+.stage::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px); background-size: 3px 3px; pointer-events: none; mix-blend-mode: screen; }
+.menubar { position: absolute; inset: 0 0 auto 0; height: 26px; background: rgba(0,0,0,.28); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12px; z-index: 1; }
+.menubar span { opacity: .85; margin-right: 14px; }
+.menubar .right { display: flex; gap: 14px; opacity: .85; }
+.dock { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); height: 54px; padding: 0 14px; display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; z-index: 1; }
+.dock i { width: 36px; height: 36px; border-radius: 9px; display: block; }
+.floor-line { position: absolute; left: 0; right: 0; bottom: 70px; height: 1px; }
+
+/* Notch */
+.notch-shell { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 210px; height: 32px; z-index: 5; isolation: isolate; transition: width .55s cubic-bezier(.3,1.35,.5,1), height .55s cubic-bezier(.3,1.35,.5,1), opacity .5s; cursor: pointer; }
+.notch-shell[data-mode="peek"] { width: 360px; height: 84px; }
+.notch-shell[data-mode="expanded"] { width: 470px; height: var(--h, 360px); cursor: default; }
+.notch-shell[data-state="sleeping"] { opacity: .16; }
+.notch-body { position: absolute; inset: 0; background: var(--notch); border-radius: 0 0 20px 20px; overflow: hidden; }
+.notch-shell[data-mode="expanded"] .notch-body { border-radius: 0 0 26px 26px; }
+.glow { position: absolute; inset: -3px -3px -3px -3px; border-radius: 0 0 24px 24px; z-index: -1; background: conic-gradient(from var(--a), #4285F4, #34A853, #FBBC05, #EA4335, #4285F4); filter: blur(7px); opacity: 0; transition: opacity .4s; animation: spin 4s linear infinite; }
+.notch-shell[data-state="working"] .glow, .notch-shell[data-state="thinking"] .glow { opacity: .85; }
+.notch-shell[data-state="needsYou"] .glow { opacity: .95; background: conic-gradient(from var(--a), #FFB020, rgba(255,176,32,.2), #FFB020, rgba(255,176,32,.2), #FFB020); animation-duration: 2s; }
+.notch-shell[data-state="done"] .glow { opacity: .8; background: conic-gradient(from var(--a), #9BF2D0, rgba(155,242,208,.2), #9BF2D0, rgba(155,242,208,.2), #9BF2D0); animation-duration: 2s; }
+.notch-shell[data-state="error"] .glow { opacity: .9; background: conic-gradient(from var(--a), #FF6B6B, rgba(255,107,107,.2), #FF6B6B, rgba(255,107,107,.2), #FF6B6B); animation-duration: 2s; }
+.ears { height: 32px; display: flex; align-items: center; justify-content: space-between; padding: 0 9px; }
+.ears .l { width: 24px; height: 24px; }
+.ears .r { display: flex; align-items: center; gap: 6px; font: 500 11px var(--mono); color: #cfd6de; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c, #6b7280); }
+.dot.pulse { animation: pulse 1.2s ease-in-out infinite; }
+.warn { color: #FFB020; font-size: 11px; }
+.peek-row { padding: 6px 16px 0; display: flex; align-items: center; gap: 10px; justify-content: space-between; opacity: 0; transition: opacity .3s .15s; }
+.notch-shell[data-mode="peek"] .peek-row { opacity: 1; }
+.peek-row .txt { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill { border: 0; border-radius: 99px; padding: 3px 11px; font: 600 12px var(--body); cursor: pointer; background: #FFB020; color: #3D2600; }
+.panel { position: absolute; left: 0; right: 0; top: 32px; padding: 6px 16px 14px; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.notch-shell[data-mode="expanded"] .panel { opacity: 1; pointer-events: auto; transition: opacity .35s .2s; }
+.card { background: #1E1D23; border-radius: 14px; padding: 11px 13px; margin-top: 8px; }
+.card h4 { margin: 0 0 6px; font: 600 13px var(--body); }
+.code { font: 400 12px/1.45 var(--mono); background: #0f0f13; border-radius: 8px; padding: 8px 10px; color: #cfe8dd; overflow-wrap: anywhere; }
+.code.risky { color: #ffb4b4; }
+.risk { color: #FF9C9C; font-size: 12px; margin-top: 7px; }
+.btns { display: flex; gap: 8px; margin-top: 9px; }
+.btn { border: 0; border-radius: 9px; padding: 6px 14px; font: 600 12px var(--body); cursor: pointer; background: #2b2a31; color: #eee; }
+.btn.go { background: #9BF2D0; color: #052217; }
+.btn:hover { filter: brightness(1.15); }
+.row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 10px; cursor: pointer; }
+.row:hover { background: rgba(255,255,255,.06); }
+.row .name { font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .meta { font-size: 11.5px; color: #A9A8B0; white-space: nowrap; }
+.row .tok { font: 11px var(--mono); color: #8D8C94; }
+.chat-btn { background: none; border: 0; color: #A9A8B0; cursor: pointer; padding: 4px; border-radius: 6px; display: grid; place-items: center; }
+.chat-btn.open { color: #9BF2D0; }
+.chat { background: #1E1D23; border-radius: 14px; padding: 10px; margin: 2px 0 6px; }
+.chat .in { display: flex; gap: 8px; }
+.chat input { flex: 1; min-width: 0; background: #0f0f13; color: #eee; border: 1px solid #34333b; border-radius: 9px; padding: 7px 10px; font: 13px var(--body); }
+.chat .st { font-size: 11px; color: #8D8C94; margin-top: 7px; }
+.chat .st.idle { color: #FFB020; }
+.chat .you { font-size: 11px; color: #A9A8B0; margin-top: 3px; }
+.chat .agent { font-size: 12px; color: #cfe8dd; margin-top: 6px; border-left: 2px solid #9BF2D0; padding-left: 8px; }
+.foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #2A2A30; font-size: 11.5px; color: #8D8C94; }
+.foot .tk { font-family: var(--mono); color: #A9A8B0; }
+.foot .tk.over { color: #FFB020; }
+.toast { position: absolute; left: 50%; bottom: 84px; transform: translate(-50%, 10px); background: rgba(0,0,0,.8); color: #fff; padding: 7px 14px; border-radius: 99px; font-size: 12px; opacity: 0; transition: opacity .25s, transform .25s; z-index: 9; pointer-events: none; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* Walkers */
+.walker { position: absolute; width: 64px; height: 64px; z-index: 4; cursor: grab; touch-action: none; }
+.walker.grabbed { cursor: grabbing; }
+.walker .sprite { width: 64px; height: 64px; transform-origin: 50% 70%; }
+.walker .bub { position: absolute; left: 50%; bottom: 68px; transform: translateX(-50%); white-space: nowrap; background: #fff; color: #14171c; font: 600 12px var(--body); padding: 4px 10px; border-radius: 99px; box-shadow: 0 2px 8px rgba(0,0,0,.3); opacity: 0; transition: opacity .15s; pointer-events: none; }
+.walker .bub.on { opacity: 1; }
+
+/* Controls under the stage */
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
+.controls .grp { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.controls .label { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; padding: 7px 13px; font: 500 13px var(--body); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip .dot { --c: var(--chipc); }
+.sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
+
+/* Sections */
+section { padding-block: clamp(56px, 9vw, 104px); }
+section.alt { background: var(--surface); border-block: 1px solid var(--line); }
+.kicker { font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+h2 { font-size: clamp(26px, 4.2vw, 44px); max-width: 20ch; }
+.sub { color: var(--muted); max-width: 60ch; margin-top: 14px; }
+.grid { display: grid; gap: 16px; margin-top: 36px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.feat { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+section.alt .feat { background: var(--bg); }
+.feat h3 { font-size: 17px; letter-spacing: -0.01em; }
+.feat p { color: var(--muted); font-size: 15px; }
+.demo { background: #0D1116; color: #E9EEF3; border-radius: 12px; padding: 12px; min-height: 96px; display: grid; align-content: center; gap: 8px; overflow: hidden; }
+.demo .code { font-size: 12px; }
+.bar { height: 8px; border-radius: 99px; background: #232A33; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 40%; background: linear-gradient(90deg, #34D399, #9BF2D0); border-radius: 99px; animation: fill 5s ease-in-out infinite; }
+.tag { display: inline-block; font: 500 11px var(--mono); padding: 3px 8px; border-radius: 6px; background: #1E1D23; color: #A9A8B0; margin: 2px 4px 2px 0; }
+.tag.on { background: #123127; color: #9BF2D0; }
+.tag.off { background: #2a1d1d; color: #ff9c9c; }
+
+/* Avatar gallery */
+.gallery { display: grid; gap: 12px; margin-top: 36px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); }
+.tile { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 16px; padding: 14px 8px 10px; cursor: pointer; display: grid; gap: 6px; justify-items: center; font: 500 13px var(--body); }
+.tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+.tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+.tile svg { width: 84px; height: 84px; }
+.tile small { color: var(--muted); font: 400 11px var(--mono); }
+
+/* Sound lab */
+.lab { display: grid; gap: 14px; margin-top: 32px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+.snd { border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 16px; display: grid; gap: 10px; text-align: left; color: var(--ink); cursor: pointer; font: inherit; }
+.snd:hover { border-color: var(--accent); }
+.snd b { font: 600 15px var(--body); }
+.snd span { color: var(--muted); font-size: 13px; }
+.snd svg { width: 100%; height: 56px; }
+.snd path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 400; stroke-dashoffset: 0; }
+.snd.play path { animation: draw .9s ease-out; }
+.hint { color: var(--muted); font-size: 14px; margin-top: 16px; }
+
+/* Safety + build */
+.two { display: grid; gap: clamp(24px, 5vw, 64px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
+.rules { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.rules li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; }
+.rules li::before { content: ""; width: 10px; height: 10px; margin-top: 7px; border-radius: 50%; background: var(--accent); }
+.rules b { font-weight: 600; }
+.rules span { color: var(--muted); }
+pre.term { background: #0D1116; color: #DDE6EE; border-radius: 14px; padding: 18px; overflow-x: auto; font: 400 13.5px/1.7 var(--mono); margin: 0; position: relative; }
+pre.term .c { color: #6C7A89; }
+.copy { position: absolute; right: 10px; top: 10px; background: #1b2229; color: #cfd8e1; border: 1px solid #2a343d; border-radius: 8px; padding: 5px 10px; font: 500 12px var(--body); cursor: pointer; }
+table.agents { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+table.agents th, table.agents td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+table.agents th { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.yes { color: var(--accent); font-weight: 600; }
+.scroll-x { overflow-x: auto; }
+footer.end { padding-block: 40px 56px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+
+/* Avatars */
+.av { display: block; }
+.av .body { transform-origin: 50px 96px; animation: bob 2.4s ease-in-out infinite; }
+.av[data-state="working"] .body, .av[data-state="thinking"] .body { animation-duration: .7s; }
+.av[data-state="needsYou"] .body { animation: shake .5s ease-in-out infinite; }
+.av[data-state="sleeping"] .body { animation-duration: 4.5s; }
+.av .blink { animation: blink 4.2s infinite; transform-origin: center; transform-box: fill-box; }
+
+@keyframes spin { to { --a: 360deg; } }
+@keyframes pulse { 50% { opacity: .35; } }
+@keyframes bob { 50% { transform: translateY(-2.5px) scale(1.02, .98); } }
+@keyframes shake { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes fill { 0% { width: 8%; } 70% { width: 92%; } 100% { width: 8%; } }
+@keyframes draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
+}
+@media (max-width: 640px) { .sep { display: none; } nav.links a:not(.keep) { display: none; } }
+</style>
+</head>
+<body>
+<!--BODY-->
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#top" aria-label="Notch Buddy"><span class="mark"><i></i></span>Notch Buddy</a>
+    <nav class="links" aria-label="Sections">
+      <a href="#features">Features</a><a href="#avatars">Avatars</a><a href="#sounds">Sounds</a><a href="#agents">Agents</a><a class="keep" href="#build">Build</a>
+      <button class="icon-btn" id="theme" aria-label="Toggle light and dark">◐</button>
+    </nav>
+  </header>
+
+  <div class="hero" id="top">
+    <h1>Your coding agents, <em>living</em> in the notch.</h1>
+    <p class="lede">Notch Buddy is a native macOS app that shows what Claude Code, Codex, OpenCode and Antigravity are doing, lets you approve or answer from the notch, and sends a little buddy walking along your Dock. This is the real thing, rebuilt for the browser. Poke it.</p>
+    <div class="stage-note"><b>Live demo</b><span>click the notch</span><span>·</span><span>drag the buddies</span><span>·</span><span>poke them</span><span>·</span><span>sound is off until you turn it on</span></div>
+  </div>
+
+  <div class="stage-frame" id="frame">
+    <div class="stage" id="stage" aria-label="Interactive desktop demo of Notch Buddy">
+      <div class="menubar"><div><span></span><span><b>Notch Buddy</b></span><span>File</span><span>Edit</span><span>View</span></div><div class="right"><span id="clock">9:41</span></div></div>
+      <div class="notch-shell" id="notch" data-mode="compact" data-state="sleeping" role="button" tabindex="0" aria-label="Notch Buddy panel">
+        <div class="glow"></div>
+        <div class="notch-body">
+          <div class="ears"><div class="l" id="earAv"></div><div class="r" id="earR"></div></div>
+          <div class="peek-row"><div class="txt" id="peekTxt"></div><button class="pill" id="peekBtn" hidden>Review</button></div>
+          <div class="panel" id="panel"></div>
+        </div>
+      </div>
+      <div class="dock" aria-hidden="true"><i style="background:#3b82f6"></i><i style="background:#f59e0b"></i><i style="background:#10b981"></i><i style="background:#ef4444"></i><i style="background:#8b5cf6"></i><i style="background:#64748b"></i></div>
+      <div id="walkers"></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+  </div>
+
+  <div class="controls" id="controls">
+    <div class="grp"><span class="label">Agent state</span>
+      <button class="chip" data-st="sleeping" aria-pressed="true" style="--chipc:#6b7280"><i class="dot"></i>Idle</button>
+      <button class="chip" data-st="thinking" aria-pressed="false" style="--chipc:#8AB4FF"><i class="dot"></i>Thinking</button>
+      <button class="chip" data-st="working" aria-pressed="false" style="--chipc:#34D399"><i class="dot"></i>Working</button>
+      <button class="chip" data-st="needsYou" aria-pressed="false" style="--chipc:#FFB020"><i class="dot"></i>Needs you</button>
+      <button class="chip" data-st="done" aria-pressed="false" style="--chipc:#9BF2D0"><i class="dot"></i>Done</button>
+      <button class="chip" data-st="error" aria-pressed="false" style="--chipc:#FF6B6B"><i class="dot"></i>Error</button>
+    </div>
+    <span class="sep"></span>
+    <div class="grp">
+      <button class="chip" id="risky" aria-pressed="false">Risky command</button>
+      <button class="chip" id="second" aria-pressed="false">+ OpenCode buddy</button>
+      <button class="chip" id="sound" aria-pressed="false">🔇 Sound off</button>
+    </div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="kicker">What it does</div>
+    <h2>Everything an agent wants from you, one glance away.</h2>
+    <p class="sub">The notch stays out of the way until something needs you. Approvals, replies and a daily token budget live in the same place, and nothing leaves your Mac.</p>
+    <div class="grid">
+      <article class="feat">
+        <div class="demo"><div class="code">$ curl https://get.example/install.sh | bash</div><div class="risk" style="color:#FF9C9C;font-size:12px">Risky: pipes a download into a shell. Answer it in your terminal.</div></div>
+        <h3>Approve from the notch, never the risky stuff</h3>
+        <p>Safe permission requests get Allow and Deny buttons for Claude Code, Codex and OpenCode. Commands that look dangerous are handed straight back to the agent's own prompt.</p>
+      </article>
+      <article class="feat">
+        <div class="demo"><span class="tag on">Claude Code → after its next tool call</span><span class="tag">Codex, OpenCode → when the turn ends</span><span class="tag off">Idle agent → waits for your next run</span></div>
+        <h3>Chat with a running agent</h3>
+        <p>Type in the notch and your message reaches Claude Code in the middle of its turn. The box tells you honestly when an agent is idle and your message can only wait.</p>
+      </article>
+      <article class="feat">
+        <div class="demo"><div style="display:flex;gap:10px;align-items:center"><div id="mini1" style="width:44px"></div><div id="mini2" style="width:44px"></div><div id="mini3" style="width:44px"></div><span style="font:12px var(--mono);color:#8D8C94">one avatar per agent</span></div></div>
+        <h3>Twelve buddies, one per agent</h3>
+        <p>Pick a buddy for each agent. The notch wears the avatar of whichever agent is busiest right now.</p>
+      </article>
+      <article class="feat">
+        <div class="demo"><div style="display:flex;justify-content:space-between;font:12px var(--mono);color:#A9A8B0"><span>Today: 1.8M of 5M tokens</span><span>Claude Code + OpenCode</span></div><div class="bar"><i></i></div></div>
+        <h3>A token meter with a daily limit</h3>
+        <p>Counts come from the transcripts already on your disk. Cross the limit you set and a warning triangle shows up in the notch, with one soft bwomp.</p>
+      </article>
+      <article class="feat">
+        <div class="demo" style="grid-template-columns:auto 1fr;align-items:center;gap:14px"><div id="mini4" style="width:54px"></div><div class="code" style="font-size:12px">Click a session → its exact Terminal tab comes to the front.</div></div>
+        <h3>Jump to the right window</h3>
+        <p>Click a session to bring its app forward: the exact Terminal.app tab, VS Code, Claude Desktop or Antigravity.</p>
+      </article>
+      <article class="feat">
+        <div class="demo"><div class="code">~/Library/Application Support/NotchBuddy/hook.sock</div><div style="font-size:12px;color:#A9A8B0">A local Unix socket. No server, no account, no network.</div></div>
+        <h3>Local by design</h3>
+        <p>Hooks talk to the app over a socket inside your home folder. Session history stays in a file you can delete from Settings.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="avatars">
+  <div class="wrap">
+    <div class="kicker">The buddies</div>
+    <h2>Pick one. Watch it react.</h2>
+    <p class="sub">Every buddy has the same moods: asleep, thinking, working, needs you, done and error. Tap one to move it into the demo above.</p>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+
+<section id="sounds">
+  <div class="wrap">
+    <div class="kicker">The robot voice</div>
+    <h2>Beeps that sound like a mood, not a notification.</h2>
+    <p class="sub">The default sound pack is wordless droid babble, synthesized from gliding blips. Press a card to hear it. Needs-you rises like a question, done trills upward, errors sag.</p>
+    <div class="lab" id="lab"></div>
+    <p class="hint">Turns on after your first press. In the app, sounds are off until you enable them and mute themselves while your microphone is in use.</p>
+  </div>
+</section>
+
+<section class="alt" id="agents">
+  <div class="wrap two">
+    <div>
+      <div class="kicker">Safety first</div>
+      <h2>It never approves what it should not.</h2>
+      <ul class="rules" style="margin-top:28px">
+        <li><div><b>Risky commands are never approvable here.</b><br><span>The hook answers immediately with no decision, so the agent asks in its own terminal.</span></div></li>
+        <li><div><b>Only agents with a real permission hook can be approved.</b><br><span>Everywhere else Notch Buddy only shows status.</span></div></li>
+        <li><div><b>Every file it writes is labelled and reversible.</b><br><span>Settings changes carry a marker and a timestamped backup, and removal only touches its own entries.</span></div></li>
+      </ul>
+    </div>
+    <div>
+      <div class="kicker">Supported agents</div>
+      <div class="scroll-x"><table class="agents">
+        <thead><tr><th>Agent</th><th>Status</th><th>Approve</th><th>Chat</th></tr></thead>
+        <tbody>
+          <tr><td>Claude Code</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+          <tr><td>Codex</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+          <tr><td>OpenCode</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+          <tr><td>Antigravity</td><td class="yes">yes</td><td>no</td><td class="yes">yes</td></tr>
+          <tr><td>Gemini CLI, Cursor, Copilot, Cline</td><td class="yes">yes</td><td>no</td><td>no</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <div class="wrap two">
+    <div>
+      <div class="kicker">Run it</div>
+      <h2>A Swift package. Build it in a minute.</h2>
+      <p class="sub">Needs macOS 14 or later and the Swift toolchain. A Mac with a notch looks best; others get the same panel under the menu bar.</p>
+    </div>
+    <div>
+<pre class="term" id="term"><button class="copy" id="copy">Copy</button><span class="c"># build and open the app</span>
+./scripts/make-app.sh
+open build/NotchBuddy.app
+
+<span class="c"># run the tests</span>
+swift test
+
+<span class="c"># then: menu bar icon → Settings → Agents → Connect</span></pre>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><footer class="end">Notch Buddy · SwiftUI · everything stays on your Mac. This page is a browser re-creation of the app's behavior; sounds are synthesized live with the Web Audio API.</footer></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+/* ---------- theme ---------- */
+const root = document.documentElement;
+const saved = store.get("nb-theme");
+if (saved) root.dataset.theme = saved;
+$("#theme").onclick = () => {
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark"; store.set("nb-theme", root.dataset.theme);
+};
+
+/* ---------- robot voice (Web Audio) ---------- */
+// [startHz, endHz, seconds, gapAfter, warbleHz]  same tables as the app's synthesizer
+const SND = {
+  tick: [[900, 1300, .05, 0, 0]],
+  ask: [[600, 760, .07, .04, 0], [780, 520, .08, .04, 0], [520, 1500, .20, 0, 25]],
+  done: [[800, 1000, .06, .02, 0], [1000, 1250, .06, .02, 0], [1250, 1700, .07, .03, 0], [1500, 2100, .22, 0, 40]],
+  error: [[700, 420, .16, .05, 0], [480, 220, .30, 0, 18]],
+  poke: [[1100, 1600, .06, 0, 0]], grab: [[500, 900, .12, .02, 0], [900, 1300, .15, 0, 30]], thud: [[260, 120, .12, 0, 0]],
+  bonk: [[400, 200, .08, .02, 0], [700, 350, .12, 0, 20]], greet: [[900, 1200, .07, .04, 0], [1200, 1600, .10, 0, 0]],
+  dizzy: [[1200, 500, .35, 0, 60]], whoa: [[600, 1400, .20, .02, 0], [1400, 300, .30, 0, 0]],
+  queued: [[800, 1000, .06, 0, 0]], delivered: [[700, 900, .06, .03, 0], [900, 1500, .10, 0, 0]],
+  hello: [[700, 900, .07, .03, 0], [900, 1200, .07, .03, 0], [1200, 1600, .07, .03, 0], [1500, 2200, .20, 0, 35]]
+};
+let ac = null, soundOn = false, lastBlip = 0;
+function ensureAudio() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch { ac = null; } return ac; }
+function play(name, pitch = 1, force = false) {
+  if ((!soundOn && !force) || !ensureAudio()) return;
+  const now = performance.now(); if (!force && now - lastBlip < 300) return; lastBlip = now;
+  let t = ac.currentTime + 0.01;
+  for (const [f0, f1, dur, gap, warble] of SND[name]) {
+    const osc = ac.createOscillator(), osc2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
+    osc.frequency.setValueAtTime(f0 * pitch, t); osc.frequency.linearRampToValueAtTime(f1 * pitch, t + dur);
+    osc2.frequency.setValueAtTime(f0 * pitch * 2, t); osc2.frequency.linearRampToValueAtTime(f1 * pitch * 2, t + dur);
+    g2.gain.value = .25;
+    if (warble) { const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 28; lg.gain.value = warble * pitch; lfo.connect(lg); lg.connect(osc.frequency); lfo.start(t); lfo.stop(t + dur + .05); }
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22, t + .006); g.gain.setValueAtTime(.22, t + dur - .02); g.gain.linearRampToValueAtTime(0, t + dur);
+    osc.connect(g); osc2.connect(g2); g2.connect(g); g.connect(ac.destination);
+    osc.start(t); osc2.start(t); osc.stop(t + dur + .02); osc2.stop(t + dur + .02);
+    t += dur + gap;
+  }
+}
+const soundBtn = $("#sound");
+function setSound(on) { soundOn = on; soundBtn.setAttribute("aria-pressed", on); soundBtn.textContent = on ? "🔊 Sound on" : "🔇 Sound off"; if (on) { ensureAudio(); play("hello", 1, true); } }
+soundBtn.onclick = () => setSound(!soundOn);
+
+/* ---------- avatars (procedural, 100x100) ---------- */
+const KINDS = {
+  bolt:   { name: "Bolt",   ey: 52, body: c => `<circle cx="50" cy="54" r="34" fill="#FFD84D"/><polygon points="52,8 38,30 49,30 44,46 62,24 51,24" fill="#FFB020"/>` },
+  mochi:  { name: "Mochi",  ey: 58, body: c => `<ellipse cx="50" cy="62" rx="40" ry="31" fill="#FFE3EC"/><circle cx="26" cy="68" r="5" fill="#FFB8CB" opacity=".8"/><circle cx="74" cy="68" r="5" fill="#FFB8CB" opacity=".8"/>` },
+  goo:    { name: "Goo",    ey: 56, body: c => `<path d="M14 80 C10 50 30 24 50 24 C72 24 90 48 86 80 C84 92 74 90 72 82 C70 92 58 92 56 82 C52 94 40 94 38 82 C34 92 18 92 14 80Z" fill="#6EE7A8"/>` },
+  boo:    { name: "Boo",    ey: 46, body: c => `<path d="M18 86 V46 C18 24 32 12 50 12 C68 12 82 24 82 46 V86 L72 78 L62 88 L50 78 L38 88 L28 78Z" fill="#F4F6FA"/>` },
+  tofu:   { name: "Tofu",   ey: 54, body: c => `<rect x="16" y="22" width="68" height="64" rx="16" fill="#FFF3D6"/><rect x="16" y="70" width="68" height="16" rx="8" fill="#F1DFB4"/>` },
+  sprout: { name: "Sprout", ey: 62, body: c => `<circle cx="50" cy="64" r="30" fill="#8FD36B"/><path d="M50 36 C48 22 38 16 28 18 C30 30 38 36 50 36Z" fill="#4CAF50"/><path d="M50 36 C52 20 64 14 74 18 C72 30 62 36 50 36Z" fill="#6CC24A"/>` },
+  ember:  { name: "Ember",  ey: 62, body: c => `<path d="M50 8 C58 26 78 34 78 62 C78 82 66 92 50 92 C34 92 22 82 22 62 C22 48 32 42 36 30 C42 38 44 40 46 44 C50 32 46 22 50 8Z" fill="#FF8A3D"/><path d="M50 44 C58 54 64 60 64 72 C64 84 58 90 50 90 C42 90 36 84 36 72 C36 62 46 56 50 44Z" fill="#FFC857"/>` },
+  nimbus: { name: "Nimbus", ey: 56, body: c => `<g fill="#B9D6FF"><circle cx="34" cy="62" r="22"/><circle cx="58" cy="50" r="26"/><circle cx="72" cy="66" r="20"/><rect x="26" y="62" width="58" height="24" rx="12"/></g>` },
+  inky:   { name: "Inky",   ey: 62, body: c => `<path d="M50 8 C60 30 80 44 80 66 C80 84 66 94 50 94 C34 94 20 84 20 66 C20 44 40 30 50 8Z" fill="#2B3A67"/><ellipse cx="38" cy="60" rx="5" ry="9" fill="#fff" opacity=".18"/>` },
+  bun:    { name: "Bun",    ey: 62, body: c => `<ellipse cx="34" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="66" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="34" cy="28" rx="4" ry="14" fill="#F7B6C5"/><ellipse cx="66" cy="28" rx="4" ry="14" fill="#F7B6C5"/><circle cx="50" cy="66" r="30" fill="#F2E4D4"/>` },
+  byte:   { name: "Byte",   ey: 56, body: c => `<line x1="50" y1="14" x2="50" y2="26" stroke="#2DD4BF" stroke-width="4"/><circle cx="50" cy="12" r="5" fill="#9BF2D0"/><path d="M22 28 H78 V40 H86 V80 H78 V88 H22 V80 H14 V40 H22Z" fill="#2DD4BF"/>` },
+  quack:  { name: "Quack",  ey: 50, body: c => `<circle cx="50" cy="58" r="32" fill="#FFD84D"/><path d="M40 62 H76 Q80 68 76 72 H40Z" fill="#FF8A3D"/>` }
+};
+function face(kind, state) {
+  const y = KINDS[kind].ey, ink = kind === "inky" || kind === "boo" ? (kind === "inky" ? "#fff" : "#1b1f2a") : "#1b1f2a";
+  const eye = (x) => {
+    switch (state) {
+      case "sleeping": return `<path d="M${x - 5} ${y} q5 5 10 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      case "done": return `<path d="M${x - 5} ${y + 2} q5 -7 10 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      case "error": return `<path d="M${x - 4} ${y - 4} l8 8 M${x + 4} ${y - 4} l-8 8" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`;
+      case "needsYou": return `<circle cx="${x}" cy="${y}" r="6" fill="#fff"/><circle cx="${x}" cy="${y}" r="3" fill="${ink}"/>`;
+      case "thinking": return `<g class="blink"><circle cx="${x + 2}" cy="${y - 2}" r="4" fill="${ink}"/></g>`;
+      default: return `<g class="blink"><circle cx="${x}" cy="${y}" r="${state === "working" ? 3.2 : 4.2}" fill="${ink}"/></g>`;
+    }
+  };
+  const mouth = { sleeping: `<circle cx="50" cy="${y + 14}" r="2.4" fill="${ink}" opacity=".6"/>`,
+    done: `<path d="M42 ${y + 10} q8 9 16 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    error: `<path d="M42 ${y + 15} q4 -5 8 0 t8 0" stroke="${ink}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+    needsYou: `<ellipse cx="50" cy="${y + 13}" rx="3.4" ry="4.4" fill="${ink}"/>`,
+    thinking: `<path d="M45 ${y + 13} h10" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`,
+    working: `<path d="M44 ${y + 12} h12" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`
+  }[state] || `<path d="M44 ${y + 11} q6 5 12 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const extra = state === "needsYou" ? `<text x="50" y="12" text-anchor="middle" font-size="20" font-weight="700" fill="#FFB020" font-family="Unbounded,sans-serif">!</text>`
+    : state === "working" ? `<path d="M76 ${y - 18} q4 6 0 9 q-4 -3 0 -9z" fill="#7FC8FF"/>`
+    : state === "sleeping" ? `<text x="78" y="22" font-size="13" font-weight="700" fill="currentColor" opacity=".6" font-family="Unbounded,sans-serif">z</text>` : "";
+  return eye(38) + eye(62) + mouth + extra;
+}
+function avatar(kind, state, pxClass = "") {
+  return `<svg class="av ${pxClass}" data-state="${state}" viewBox="0 0 100 100" role="img" aria-label="${KINDS[kind].name}, ${state}"><g class="body">${KINDS[kind].body()}${face(kind, state)}</g></svg>`;
+}
+const COLORS = { sleeping: "#6b7280", thinking: "#8AB4FF", working: "#34D399", needsYou: "#FFB020", done: "#9BF2D0", error: "#FF6B6B" };
+
+/* ---------- state ---------- */
+const S = { state: "sleeping", mode: "compact", risky: false, second: false, chat: null, tokens: 1_780_000, limit: 2_000_000, greeted: false, kind1: "bolt", kind2: "byte", started: Date.now() };
+const sessions = () => [
+  { id: "cc", label: "Claude Code", project: "notch-buddy", state: S.state, tokens: "48.2k", idle: S.state === "sleeping" || S.state === "done" || S.state === "error" },
+  { id: "oc", label: "OpenCode", project: "api", state: S.second ? (S.state === "sleeping" ? "sleeping" : "working") : "sleeping", tokens: "9.6k", idle: !(S.second && S.state !== "sleeping") },
+  { id: "ag", label: "Antigravity", project: "docs", state: "sleeping", tokens: "", idle: true }
+];
+const short = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k" : "" + n;
+const stateName = { sleeping: "Idle", thinking: "Thinking", working: "Working", needsYou: "Needs you", done: "Done just now", error: "Error" };
+
+const notch = $("#notch"), panel = $("#panel");
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 1900); }
+
+function renderNotch() {
+  const peekStates = ["needsYou", "done", "error"];
+  if (S.mode === "expanded" && S.state === "sleeping") S.mode = "compact";
+  const mode = S.mode === "expanded" ? "expanded" : peekStates.includes(S.state) ? "peek" : "compact";
+  notch.dataset.state = S.state; notch.dataset.mode = mode;
+  $("#earAv").innerHTML = S.state === "sleeping" ? "" : avatar(S.kind1, S.state);
+  const over = S.tokens >= S.limit;
+  $("#earR").innerHTML = (over ? `<span class="warn" title="Daily token limit">⚠</span>` : "") +
+    (S.state !== "sleeping" ? `<i class="dot ${["working", "needsYou"].includes(S.state) ? "pulse" : ""}" style="--c:${COLORS[S.state]}"></i>` : "") +
+    (S.state === "working" ? `<span id="elapsed">${elapsed()}</span>` : "");
+  const txt = { needsYou: S.risky ? "Risky command, answer it in the terminal" : "Claude Code wants to run a command", done: "Done just now", error: "Error: 2 tests failed" }[S.state] || "";
+  $("#peekTxt").textContent = txt; $("#peekBtn").hidden = S.state !== "needsYou";
+  if (mode === "expanded") renderPanel(); else panel.innerHTML = "";
+  if (mode === "expanded") requestAnimationFrame(() => { notch.style.setProperty("--h", (panel.offsetHeight + 40) + "px"); });
+}
+const elapsed = () => { const s = Math.floor((Date.now() - S.started) / 1000); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+
+function renderPanel() {
+  const approval = S.state === "needsYou" ? (S.risky
+    ? `<div class="card"><h4>Claude Code · risky command</h4><div class="code risky">curl https://get.example/install.sh | bash</div><div class="risk">Pipes a download into a shell. Never approvable here; the agent asks in its own terminal.</div><div class="btns"><button class="btn" data-act="dismiss">Dismiss</button></div></div>`
+    : `<div class="card"><h4>Claude Code wants to run</h4><div class="code">npm run build</div><div class="btns"><button class="btn go" data-act="allow">Allow</button><button class="btn" data-act="deny">Deny</button></div></div>`) : "";
+  const rows = sessions().map(s => `
+    <div class="row" data-jump="${s.id}"><i class="dot ${["working", "needsYou"].includes(s.state) ? "pulse" : ""}" style="--c:${COLORS[s.state]}"></i>
+      <div class="name">${s.label} · ${s.project}</div><div class="meta">${s.state === "done" ? "Done just now" : stateName[s.state]}</div>${s.tokens ? `<div class="tok">${s.tokens}</div>` : ""}
+      <button class="chat-btn ${S.chat === s.id ? "open" : ""}" data-chat="${s.id}" aria-label="Chat with ${s.label}">${S.chat === s.id ? "💬" : "🗨"}</button></div>
+    ${S.chat === s.id ? chatBox(s) : ""}`).join("");
+  panel.innerHTML = `${approval}<div style="margin-top:6px">${rows}</div>
+    <div class="foot"><span class="tk ${S.tokens >= S.limit ? "over" : ""}">Today: ${short(S.tokens)} of ${short(S.limit)} tokens</span><span>All data stays on this Mac</span></div>`;
+  const inp = $("#chatIn"); if (inp && S.chatFocus) { inp.focus(); S.chatFocus = false; }
+}
+function chatBox(s) {
+  const st = s.idle ? `${s.label} is idle. Your message waits until you run it again.` : s.id === "cc" ? `${s.label} will see it after its next tool call` : `Will be sent when ${s.label} finishes this turn`;
+  return `<div class="chat"><div class="in"><input id="chatIn" placeholder="Message ${s.label}…" maxlength="120" autocomplete="off"><button class="btn go" data-act="send">Send</button></div>
+    <div class="st ${s.idle ? "idle" : ""}">${st}</div>${S.sent ? `<div class="you">You: ${esc(S.sent)}</div>` : ""}${S.reply ? `<div class="agent">${S.reply}</div>` : ""}</div>`;
+}
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function setState(next, quiet) {
+  const prev = S.state; S.state = next;
+  if (next === "working" && prev !== "working") S.started = Date.now();
+  if (prev === "sleeping" && next !== "sleeping" && !S.greeted) { S.greeted = true; play("hello"); }
+  else if (!quiet) { const m = { working: "tick", needsYou: "ask", done: "done", error: "error" }[next]; if (m) play(m); }
+  $$(".chip[data-st]").forEach(b => b.setAttribute("aria-pressed", b.dataset.st === next));
+  renderNotch(); syncWalkers();
+}
+
+$$(".chip[data-st]").forEach(b => b.onclick = () => setState(b.dataset.st));
+$("#risky").onclick = e => { S.risky = !S.risky; e.currentTarget.setAttribute("aria-pressed", S.risky); if (S.state !== "needsYou") setState("needsYou"); else renderNotch(); };
+$("#second").onclick = e => { S.second = !S.second; e.currentTarget.setAttribute("aria-pressed", S.second); syncWalkers(); renderNotch(); if (S.second && S.state === "sleeping") setState("working"); };
+
+notch.addEventListener("click", e => {
+  const t = e.target.closest("[data-act],[data-chat],[data-jump],#peekBtn");
+  if (!t) { if (S.state !== "sleeping" && S.mode !== "expanded") { S.mode = "expanded"; renderNotch(); } return; }
+  if (t.id === "peekBtn") { S.mode = "expanded"; renderNotch(); return; }
+  if (t.dataset.act === "allow" || t.dataset.act === "deny") { toast(t.dataset.act === "allow" ? "Allowed. Claude Code carries on." : "Denied."); setState("working", true); play("tick"); return; }
+  if (t.dataset.act === "dismiss") { setState("working", true); return; }
+  if (t.dataset.act === "send") { sendChat(); return; }
+  if (t.dataset.chat) { S.chat = S.chat === t.dataset.chat ? null : t.dataset.chat; S.sent = S.reply = null; S.chatFocus = true; renderNotch(); return; }
+  if (t.dataset.jump) { toast("Brought its Terminal tab to the front"); }
+});
+notch.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === notch) { e.preventDefault(); notch.click(); } if (e.key === "Enter" && e.target.id === "chatIn") sendChat(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && S.mode === "expanded") { S.mode = "compact"; S.chat = null; renderNotch(); } });
+$("#stage").addEventListener("pointerdown", e => { if (!e.target.closest("#notch") && !e.target.closest(".walker") && S.mode === "expanded") { S.mode = "compact"; S.chat = null; renderNotch(); } });
+
+function sendChat() {
+  const inp = $("#chatIn"); const text = inp ? inp.value.trim() : ""; if (!text) return;
+  const s = sessions().find(x => x.id === S.chat);
+  S.sent = text; S.reply = null;
+  play(s.idle ? "queued" : "delivered", 1, soundOn);
+  if (!s.idle) setTimeout(() => { S.reply = `> From notch: ${esc(text)}<br>On it. Picking that up right after this step.`; if (S.mode === "expanded") renderPanel(); }, 1300);
+  renderPanel();
+}
+$("#peekBtn").hidden = true;
+
+/* tokens tick up while an agent works */
+setInterval(() => { if (["working", "thinking"].includes(S.state)) { const was = S.tokens >= S.limit; S.tokens += Math.round(rnd(900, 3200)); if (!was && S.tokens >= S.limit) play("error"); renderNotch(); } else if (S.state === "working") renderNotch(); }, 1000);
+setInterval(() => { const el = $("#elapsed"); if (el) el.textContent = elapsed(); const d = new Date(); $("#clock").textContent = d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0"); }, 1000);
+
+/* ---------- stage scaling ---------- */
+const frame = $("#frame"), stage = $("#stage");
+let scale = 1;
+function fit() { scale = Math.min(1, frame.clientWidth / 960); stage.style.transform = `scale(${scale})`; frame.style.height = 600 * scale + "px"; }
+new ResizeObserver(fit).observe(frame); fit();
+
+/* ---------- roaming buddies ---------- */
+const FLOOR = 600 - 70;           // y of the Dock top in stage space
+const lines = {
+  grab: ["Wooaah!", "Put me down!", "Heeelp!", "I can fly?!"], oof: ["Oof!", "Ouch!", "Bonk!"],
+  p1: k => [CATCH[k], "Hehe!", "Hi!"], p2: ["Tickles!", "Hey!", "That's my nose!", "Stop it, hehe"], p4: ["Dizzy… 🌀", "You're making me spin!"],
+  bonk: ["Bonk!", "Ow!", "Hey, watch it!", "Sorry!"], greet: n => [`Hi ${n}!`, "Hello!", "Oh, hi!"], dizzy: ["Dizzy…", "Whoa…"], whoa: ["Whoa!", "Waaah!"], oops: ["Oops!", "Sorry!", "My bad!"],
+  zzz: ["z", "zZ", "zZz", "Zzz…"], wake: ["Huh?! Five more minutes…", "Zzz… who's there?", "Mmm… not now"]
+};
+const CATCH = { bolt: "Zzzap!", mochi: "Mochi~", goo: "Blorp!", boo: "Boo!", tofu: "Tofu!", sprout: "Sprout!", ember: "Hot hot!", nimbus: "Puff!", inky: "Splat!", bun: "Bun bun!", byte: "01010!", quack: "Quack!" };
+const walkers = [];
+class Walker {
+  constructor(id, label, kindKey) {
+    this.id = id; this.label = label; this.kindKey = kindKey; this.x = rnd(80, 760); this.air = 0; this.vy = 0; this.dir = Math.random() < .5 ? 1 : -1;
+    this.pauseUntil = 0; this.nextPause = performance.now() + 3000; this.hop = 0; this.spin = 0; this.bubUntil = 0; this.cool = 0; this.pokes = 0; this.lastPoke = 0;
+    this.phase = 0; this.drag = false; this.tilt = 0; this.shownState = null; this.lastZ = 0; this.zi = 0; this.sleepSince = 0; this.wasAwake = false; this.lastHop = 0;
+    this.el = document.createElement("div"); this.el.className = "walker";
+    this.el.innerHTML = `<div class="bub"></div><div class="sprite"></div>`;
+    this.bub = $(".bub", this.el); this.sprite = $(".sprite", this.el);
+    $("#walkers").appendChild(this.el);
+    this.el.addEventListener("pointerdown", e => this.down(e));
+    this.el.addEventListener("pointermove", e => this.move(e));
+    this.el.addEventListener("pointerup", e => this.up(e));
+    this.el.addEventListener("pointercancel", e => this.up(e));
+    this.draw();
+  }
+  get kind() { return S[this.kindKey]; }
+  get st() { return this.id === "cc" ? S.state : (S.second && S.state !== "sleeping" ? (S.state === "needsYou" ? "working" : S.state) : "sleeping"); }
+  draw() { const k = this.kind, s = this.st; if (this.drawn !== k + s) { this.sprite.innerHTML = avatar(k, s); this.drawn = k + s; } }
+  say(arr, secs = 1.6) { this.bub.textContent = Array.isArray(arr) ? pick(arr) : arr; this.bub.classList.add("on"); this.bubUntil = performance.now() + secs * 1000; }
+  down(e) { this.el.setPointerCapture(e.pointerId); this.downAt = { x: e.clientX, y: e.clientY }; const r = stage.getBoundingClientRect(); this.grab = { x: (e.clientX - r.left) / scale - this.x, y: (e.clientY - r.top) / scale - (FLOOR - 64 - this.air) }; this.moved = false; e.preventDefault(); }
+  move(e) {
+    if (!this.downAt) return;
+    if (!this.drag && Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) > 4) { this.drag = true; this.vy = 0; this.hop = 0; this.el.classList.add("grabbed"); this.say(lines.grab, 3); play("grab"); this.moved = true; }
+    if (!this.drag) return;
+    const r = stage.getBoundingClientRect(), mx = (e.clientX - r.left) / scale, my = (e.clientY - r.top) / scale;
+    this.x = Math.max(0, Math.min(960 - 64, mx - this.grab.x)); this.air = Math.max(0, Math.min(FLOOR - 40, FLOOR - 64 - (my - this.grab.y)));
+  }
+  up() {
+    if (!this.downAt) return; this.downAt = null; this.el.classList.remove("grabbed");
+    if (this.drag) { this.drag = false; this.nextPause = performance.now() + 3000; return; }
+    const now = performance.now(); this.pokes = now - this.lastPoke > 3000 ? 1 : this.pokes + 1; this.lastPoke = now; this.hop = now;
+    if (this.st === "sleeping") { play("poke"); this.say(lines.wake, 2); return; }
+    play(this.pokes >= 4 ? "dizzy" : "poke", 0.9 + 0.12 * Math.min(this.pokes, 4) + rnd(0, .05));
+    if (this.pokes === 1) this.say(lines.p1(this.kind)); else if (this.pokes < 4) this.say(lines.p2); else { this.spin = now; this.pokes = 0; this.say(lines.p4, 2); }
+  }
+  get onGround() { return !this.drag && this.air === 0 && this.vy === 0; }
+  react(kind, away, partner, victim) {
+    const now = performance.now();
+    if (kind === "bonk") { this.dir = away; this.x += away * 14; this.hop = now; this.say(lines.bonk); }
+    else if (kind === "greet") { this.dir = -away; this.pauseUntil = now + 2200; this.nextPause = this.pauseUntil + 4000; if (Math.random() < .5) this.hop = now; this.say(lines.greet(partner), 2); }
+    else if (kind === "dizzy") { this.dir = away; this.spin = now; this.pauseUntil = now + 1500; this.nextPause = this.pauseUntil + 4000; this.say(lines.dizzy); }
+    else { this.dir = away; if (victim) { this.vy = 520; this.air = .01; this.say(lines.whoa); } else { this.hop = now; this.say(lines.oops); } }
+  }
+  tick(dt, now) {
+    const st = this.st; this.draw();
+    if (st !== "sleeping") { this.wasAwake = true; this.sleepSince = 0; } else if (this.wasAwake && !this.sleepSince) this.sleepSince = now;
+    const visible = st !== "sleeping" || (this.sleepSince && now - this.sleepSince < 60000) || this.drag;
+    this.el.style.display = visible && (this.id === "cc" || S.second) ? "" : "none";
+    if (this.bubUntil && now > this.bubUntil) { this.bub.classList.remove("on"); this.bubUntil = 0; }
+    if (this.spin) { const u = (now - this.spin) / 700; if (u >= 1) { this.spin = 0; this.spinDeg = 0; } else this.spinDeg = 360 * (1 - (1 - u) * (1 - u)); }
+    let bob = 0, hop = 0, tilt = 0;
+    if (this.drag) { tilt = Math.sin(now / 1000 * 9) * 18; }
+    else if (this.air > 0 || this.vy > 0) {
+      this.vy -= 1800 * dt; this.air += this.vy * dt; tilt = Math.max(-15, Math.min(15, this.vy / 60));
+      if (this.air <= 0) { this.air = 0; if (this.vy < -300) { this.vy = -this.vy * .4; this.air = .01; if (!this.bubUntil) this.say(lines.oof); play("thud"); } else { this.vy = 0; tilt = 0; } }
+    } else {
+      const walking = st === "working" || st === "thinking" ;
+      const mid = this.x + 32, curious = walking && S.pointer && Math.abs(S.pointer.x - mid) < 160 && S.pointer.y > FLOOR - 240;
+      if (curious) this.dir = S.pointer.x >= mid ? 1 : -1;
+      if (walking && !curious && now >= this.nextPause) {
+        this.pauseUntil = now + rnd(1000, 3000); this.nextPause = this.pauseUntil + rnd(3000, 7000);
+        if (Math.random() < .5) this.dir = -this.dir; if (Math.random() < .3) this.hop = now;
+      }
+      if (this.shownState !== st) { this.shownState = st; if (st === "done") this.hop = now; }
+      if (st === "needsYou" && !this.hop && now - this.lastHop > 1400) this.hop = now;
+      const standing = !walking || curious || now < this.pauseUntil || reduce;
+      if (st === "sleeping") { tilt = -80; if (!this.bubUntil && now - this.lastZ > 1800) { this.say(lines.zzz[this.zi++ % 4], 1.2); this.lastZ = now; } }
+      else if (standing) tilt = 0;
+      else {
+        this.phase += dt * 9; bob = Math.abs(Math.sin(this.phase)) * 3; tilt = Math.sin(this.phase) * 4; this.x += this.dir * 70 * dt;
+        if (this.x < 0) { this.x = 0; this.dir = 1; } else if (this.x > 960 - 64) { this.x = 960 - 64; this.dir = -1; }
+        if (now >= this.cool) for (const o of walkers) if (o !== this && o.onGround && o.el.style.display !== "none" && Math.abs(o.x - this.x) < 48) { bump(this, o); break; }
+      }
+    }
+    if (this.hop) { const u = (now - this.hop) / 400; if (u < 1) hop = 24 * 4 * u * (1 - u); else { this.hop = 0; this.lastHop = now; } }
+    this.el.style.transform = `translate(${this.x}px, ${FLOOR - 64 - this.air - hop - bob}px)`;
+    this.sprite.style.transform = `scaleX(${this.dir < 0 ? -1 : 1}) rotate(${tilt + (this.spinDeg || 0)}deg)`;
+  }
+}
+function bump(a, b) {
+  const until = performance.now() + 3500; a.cool = b.cool = until;
+  const kind = pick(["bonk", "greet", "dizzy", "tumble"]); const away = a.x <= b.x ? -1 : 1;
+  play({ bonk: "bonk", greet: "greet", dizzy: "dizzy", tumble: "whoa" }[kind]);
+  a.react(kind, away, b.label, false); b.react(kind, -away, a.label, true);
+}
+function syncWalkers() {
+  if (!walkers.length) { walkers.push(new Walker("cc", "Claude Code", "kind1"), new Walker("oc", "OpenCode", "kind2")); walkers[1].x = rnd(500, 800); }
+}
+syncWalkers();
+S.pointer = null;
+stage.addEventListener("pointermove", e => { const r = stage.getBoundingClientRect(); S.pointer = { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; });
+stage.addEventListener("pointerleave", () => { S.pointer = null; });
+let last = performance.now(), visible = true;
+new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(stage);
+(function loop(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; if (visible) for (const w of walkers) w.tick(dt, now); requestAnimationFrame(loop); })(performance.now());
+
+/* ---------- gallery, minis, sound lab ---------- */
+const gallery = $("#gallery"), order = Object.keys(KINDS);
+const cycle = ["sleeping", "thinking", "working", "needsYou", "done", "error"];
+gallery.innerHTML = order.map(k => `<button class="tile" data-k="${k}" aria-pressed="${k === S.kind1}"><span class="av-slot">${avatar(k, "sleeping")}</span>${KINDS[k].name}<small>asleep</small></button>`).join("");
+gallery.addEventListener("click", e => {
+  const t = e.target.closest(".tile"); if (!t) return;
+  $$(".tile", gallery).forEach(x => x.setAttribute("aria-pressed", x === t));
+  S.kind1 = t.dataset.k; play("poke", 1.1); renderNotch();
+  document.getElementById("top").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  if (S.state === "sleeping") setState("working");
+});
+$$(".tile", gallery).forEach(t => {
+  let i = 0, h;
+  const step = () => { i = (i + 1) % cycle.length; $(".av-slot", t).innerHTML = avatar(t.dataset.k, cycle[i]); $("small", t).textContent = cycle[i] === "needsYou" ? "needs you" : cycle[i]; };
+  t.addEventListener("pointerenter", () => { step(); h = setInterval(step, 900); });
+  t.addEventListener("pointerleave", () => { clearInterval(h); i = 0; $(".av-slot", t).innerHTML = avatar(t.dataset.k, "sleeping"); $("small", t).textContent = "asleep"; });
+});
+$("#mini1").innerHTML = avatar("bolt", "working"); $("#mini2").innerHTML = avatar("byte", "done"); $("#mini3").innerHTML = avatar("quack", "needsYou"); $("#mini4").innerHTML = avatar("mochi", "done");
+
+const LAB = [["ask", "Needs you", "Rises like a question: bu-dwe-weee?"], ["done", "Done", "A happy trill that climbs."], ["error", "Error", "Wuh-woooh, sagging."], ["tick", "Working", "One small bip."], ["delivered", "Message delivered", "Bi-dup! It went in."], ["hello", "Good morning", "First agent of the day."]];
+function contour(name) {
+  let t = 0, pts = []; const total = SND[name].reduce((a, b) => a + b[2] + b[3], 0);
+  for (const [f0, f1, d, g] of SND[name]) { for (let i = 0; i <= 8; i++) pts.push([(t + d * i / 8) / total * 300, f0 + (f1 - f0) * i / 8]); t += d; pts.push(null); t += g; }
+  const all = pts.filter(Boolean).map(p => p[1]), lo = Math.min(...all), hi = Math.max(...all); let dpath = "", pen = false;
+  for (const p of pts) { if (!p) { pen = false; continue; } const y = 50 - (p[1] - lo) / Math.max(1, hi - lo) * 42; dpath += (pen ? "L" : "M") + p[0].toFixed(1) + " " + y.toFixed(1); pen = true; }
+  return dpath;
+}
+$("#lab").innerHTML = LAB.map(([n, t, d]) => `<button class="snd" data-s="${n}"><b>${t}</b><span>${d}</span><svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true"><path d="${contour(n)}"/></svg></button>`).join("");
+$("#lab").addEventListener("click", e => {
+  const b = e.target.closest(".snd"); if (!b) return;
+  if (!soundOn) { soundOn = true; soundBtn.setAttribute("aria-pressed", true); soundBtn.textContent = "🔊 Sound on"; }
+  play(b.dataset.s, 1, true); b.classList.remove("play"); void b.offsetWidth; b.classList.add("play");
+});
+
+/* ---------- copy ---------- */
+$("#copy").onclick = async e => {
+  const text = "./scripts/make-app.sh\nopen build/NotchBuddy.app\nswift test";
+  try { await navigator.clipboard.writeText(text); e.currentTarget.textContent = "Copied"; }
+  catch { const r = document.createRange(); r.selectNodeContents($("#term")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.currentTarget.textContent = "Selected"; }
+  setTimeout(() => { $("#copy").textContent = "Copy"; }, 1600);
+};
+
+/* ---------- opening sequence: the demo wakes up on its own ---------- */
+renderNotch();
+setTimeout(() => { if (S.state === "sleeping" && !S.touched) setState("working", true); }, 1400);
+document.addEventListener("pointerdown", () => { S.touched = true; }, { once: true });
+})();
+</script>
+</body>
+</html>
