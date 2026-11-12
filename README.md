@@ -59,3 +59,7 @@ git push origin v0.2.0
 ```
 
 Every push to `master` also runs the build, the tests and a DMG build.
+
+## License
+
+[MIT](LICENSE)
