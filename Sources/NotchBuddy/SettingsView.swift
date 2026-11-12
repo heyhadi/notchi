@@ -13,6 +13,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.soundPack) private var soundPack = "robot"
     @AppStorage(Prefs.dailyTokenLimitM) private var dailyTokenLimitM = 0
     @AppStorage(Prefs.roam) private var roam = false
+    @AppStorage(Prefs.avatarPerAgent) private var avatarPerAgent = false
     @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
 
     @State var selectedTab: SettingsTab = .avatar
@@ -160,6 +161,13 @@ struct SettingsView: View {
                     avatarTile(item)
                 }
             }
+
+            if avatarPerAgent {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L("Avatar per agent")).font(.system(size: 15, weight: .semibold)).foregroundColor(Color(hex: 0x1B1B1F))
+                    ForEach(AgentKind.allCases, id: \.self) { AgentAvatarRow(agent: $0) }
+                }
+            }
         }
     }
 
@@ -297,21 +305,19 @@ struct SettingsView: View {
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
 
-                HStack {
+                Toggle(isOn: $avatarPerAgent) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(L("One avatar per agent"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: 0x8D8C94))
-                        Text(L("Coming later"))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(L("The notch shows the avatar of the agent that is busiest right now. Pick each agent's avatar on the Avatar tab."))
                             .font(.system(size: 11))
-                            .foregroundColor(Color(hex: 0xA9A8B0))
+                            .foregroundColor(Color(hex: 0x5E5D66))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer()
-                    Toggle(L("One avatar per agent"), isOn: .constant(false))
-                        .labelsHidden()
-                        .toggleStyle(.switch)
-                        .disabled(true)
                 }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
 
@@ -573,5 +579,28 @@ private struct HistoryPane: View {
         if let d = e.duration { parts.append(d < 60 ? "<1 min" : "\(Int(d / 60)) min") }
         if let t = e.tokens, t > 0 { parts.append(String(format: L("%@ tokens"), TokenCount.short(t))) }
         return parts.joined(separator: " · ")
+    }
+}
+
+
+private struct AgentAvatarRow: View {
+    let agent: AgentKind
+    @AppStorage private var pick: String
+
+    init(agent: AgentKind) {
+        self.agent = agent
+        _pick = AppStorage(wrappedValue: AvatarKind.defaultFor(agent).rawValue, Prefs.avatarKey(for: agent))
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            AvatarView(kind: AvatarKind(rawValue: pick) ?? .bolt, state: .done, size: 32).frame(width: 32, height: 32)
+            Text(agent.displayName).font(.system(size: 13)).foregroundColor(Color(hex: 0x1B1B1F))
+            Spacer()
+            Picker(agent.displayName, selection: $pick) {
+                ForEach(AvatarKind.allCases) { Text($0.displayName).tag($0.rawValue) }
+            }
+            .labelsHidden().frame(width: 120)
+        }
     }
 }

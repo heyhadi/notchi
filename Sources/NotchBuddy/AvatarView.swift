@@ -6,6 +6,8 @@ import NotchBuddyCore
 enum AvatarKind: String, CaseIterable, Identifiable {
     case bolt, mochi, goo, boo, tofu, sprout, ember, nimbus, inky, bun, byte, quack
     var id: String { rawValue }
+    /// Each agent starts with a different avatar so "one per agent" is visible before anyone picks.
+    static func defaultFor(_ a: AgentKind) -> AvatarKind { allCases[(AgentKind.allCases.firstIndex(of: a) ?? 0) % allCases.count] }
     var displayName: String { rawValue.prefix(1).uppercased() + rawValue.dropFirst() }
 }
 

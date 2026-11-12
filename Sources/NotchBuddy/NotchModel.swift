@@ -64,6 +64,14 @@ public final class NotchModel: ObservableObject {
     var store = SessionStore()
     @Published var tokens: [String: Int] = [:]          // by SessionStore key (Claude Code only)
     @Published var tokensToday = 0
+    /// The avatar to draw: your one pick, or (with "one avatar per agent") the pick for the agent driving the notch right now.
+    func currentAvatar(fallback: String) -> AvatarKind {
+        let d = UserDefaults.standard
+        guard d.bool(forKey: Prefs.avatarPerAgent), let agent = pending.first?.event.agent ?? sessions.first?.agent else {
+            return AvatarKind(rawValue: fallback) ?? .bolt
+        }
+        return d.string(forKey: Prefs.avatarKey(for: agent)).flatMap(AvatarKind.init(rawValue:)) ?? .defaultFor(agent)
+    }
     var tokenLimit: Int { UserDefaults.standard.integer(forKey: Prefs.dailyTokenLimitM) * 1_000_000 }
     var overTokenLimit: Bool { tokenLimit > 0 && tokensToday >= tokenLimit }
     let tokenMeter = TokenMeter()

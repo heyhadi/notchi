@@ -51,7 +51,8 @@ public struct NotchView: View {
     @AppStorage(Prefs.language) private var language = "en" // re-render strings when the language changes
     @AppStorage(Prefs.avatar) private var avatar = "bolt"
     @AppStorage(Prefs.glow) private var glow = true
-    private var avatarKind: AvatarKind { AvatarKind(rawValue: avatar) ?? .bolt }
+    @State private var prefsTick = 0 // re-render when a per-agent avatar is changed in Settings
+    private var avatarKind: AvatarKind { _ = prefsTick; return model.currentAvatar(fallback: avatar) }
 
     @State private var hoverTask: Task<Void, Never>?
     @State private var leaveTask: Task<Void, Never>?
@@ -140,6 +141,7 @@ public struct NotchView: View {
             handleModeTransition()
         }
         .onAppear { handleModeTransition() }
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in prefsTick += 1 }
         .ignoresSafeArea() // the panel overlaps the notch; don't let the safe area push content down
         .onPreferenceChange(ContentHeightPreferenceKey.self) { height in
             if height > 0 {
