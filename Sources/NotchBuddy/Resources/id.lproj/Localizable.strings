@@ -138,3 +138,4 @@
 "A moving light runs around the notch while agents work, in the state color when one needs you." = "Cahaya bergerak mengelilingi notch selama agen bekerja, dengan warna state saat agen butuh kamu.";
 "%@ tokens" = "%@ token";
 "Today: %@ tokens" = "Hari ini: %@ token";
+"Open the app this session runs in" = "Buka aplikasi tempat sesi ini berjalan";

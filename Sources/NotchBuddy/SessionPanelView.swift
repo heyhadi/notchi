@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import NotchBuddyCore
 
 /// Expanded-panel body: the first pending approval card, then one row per session.
@@ -27,6 +28,9 @@ struct SessionPanelView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .top, spacing: 8) {
                         SessionRow(session: session, tokens: model.tokens[session.id])
+                            .contentShape(Rectangle())
+                            .onTapGesture { TerminalJump.activate(for: session) }
+                            .help(L("Open the app this session runs in"))
                         if session.agent.supportsChat {
                             let open = model.chats[session.id]?.open == true
                             Button { model.setChatOpen(session.id, !open) } label: {
@@ -331,5 +335,23 @@ func stateName(_ s: AgentState) -> String {
     case .needsYou: L("Needs you")
     case .done: L("Done")
     case .error: L("Error")
+    }
+}
+
+/// Brings the app a session runs in to the front. Hooks carry no tty/pid, so it can't pick the exact tab or window.
+enum TerminalJump {
+    private static let terminals = ["com.apple.Terminal", "com.googlecode.iterm2", "com.mitchellh.ghostty", "dev.warp.Warp-Stable",
+                                    "net.kovidgoyal.kitty", "com.github.wez.wezterm", "org.alacritty"]
+
+    static func activate(for s: AgentSession) {
+        let ids: [String]
+        if s.agentLabel.contains("VS Code") { ids = ["com.microsoft.VSCode"] }
+        else if s.agentLabel.contains("JetBrains") { ids = [] }
+        else if s.agentLabel.contains("Desktop") { ids = ["com.anthropic.claudefordesktop"] }
+        else { ids = terminals }
+        let apps = NSWorkspace.shared.runningApplications
+        let app = ids.lazy.compactMap { id in apps.first { $0.bundleIdentifier == id } }.first
+            ?? (s.agentLabel.contains("JetBrains") ? apps.first { $0.bundleIdentifier?.hasPrefix("com.jetbrains.") == true } : nil)
+        app?.activate()
     }
 }
