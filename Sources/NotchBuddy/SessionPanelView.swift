@@ -27,10 +27,7 @@ struct SessionPanelView: View {
             ForEach(model.sessions.prefix(5)) { session in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .top, spacing: 8) {
-                        SessionRow(session: session, tokens: model.tokens[session.id])
-                            .contentShape(Rectangle())
-                            .onTapGesture { TerminalJump.activate(for: session) }
-                            .help(L("Open the app this session runs in"))
+                        ClickableRow(session: session, tokens: model.tokens[session.id])
                         if session.agent.supportsChat {
                             let open = model.chats[session.id]?.open == true
                             Button { model.setChatOpen(session.id, !open) } label: {
@@ -51,6 +48,32 @@ struct SessionPanelView: View {
                 }
             }
         }
+    }
+}
+
+/// Row that jumps to the session's app on click; the highlight, arrow and pointer tell you it is clickable.
+private struct ClickableRow: View {
+    let session: AgentSession
+    let tokens: Int?
+    @State private var hovering = false
+
+    var body: some View {
+        SessionRow(session: session, tokens: tokens)
+            .padding(.vertical, 4)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(hovering ? 0.07 : 0)))
+            .overlay(alignment: .trailing) {
+                if hovering {
+                    Label(L("Open app"), systemImage: "arrow.up.forward.app")
+                        .font(.system(size: 11)).foregroundColor(Color(hex: 0x9BF2D0))
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(Capsule().fill(Color(hex: 0x1E1D23)))
+                        .padding(.trailing, 4)
+                }
+            }
+            .contentShape(Rectangle())
+            .onHover { hovering = $0; if $0 { NSCursor.pointingHand.push() } else { NSCursor.pop() } }
+            .onTapGesture { TerminalJump.activate(for: session) }
+            .help(L("Open the app this session runs in"))
     }
 }
 
