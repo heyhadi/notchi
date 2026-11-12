@@ -62,7 +62,15 @@ extension NotchModel {
         case "PermissionRequest", "Notification":
             respond(nil)
         default:
-            respond(nil)
+            let key = SessionStore.key(e)
+            if e.name == "PostToolUse", var c = chats[key], !c.queued.isEmpty,
+               let out = e.agent.midTurnOutput(c.queued.joined(separator: "\n\n")) {
+                respond(out) // queued chat reaches the agent after this tool call, not at the end of its turn
+                c.queued = []; c.sentAt = Date()
+                chats[key] = c
+            } else {
+                respond(nil)
+            }
             // Any further progress means the request was answered elsewhere (terminal) or abandoned.
             releasePending(key: SessionStore.key(e))
         }

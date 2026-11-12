@@ -34,3 +34,14 @@ final class SessionHistoryTests: XCTestCase {
         XCTAssertEqual(SessionHistory.load(Data("junk".utf8)), [])
     }
 }
+
+final class MidTurnChatTests: XCTestCase {
+    func testOnlyClaudeCodeGetsMidTurnContext() throws {
+        let out = try XCTUnwrap(AgentKind.claudeCode.midTurnOutput("hi"))
+        let o = try XCTUnwrap(JSONSerialization.jsonObject(with: out) as? [String: Any])
+        let h = try XCTUnwrap(o["hookSpecificOutput"] as? [String: Any])
+        XCTAssertEqual(h["hookEventName"] as? String, "PostToolUse")
+        XCTAssertTrue((h["additionalContext"] as? String ?? "").hasSuffix("hi"))
+        XCTAssertNil(AgentKind.codex.midTurnOutput("hi"))
+    }
+}

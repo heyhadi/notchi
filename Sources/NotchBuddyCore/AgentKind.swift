@@ -58,6 +58,15 @@ public enum AgentKind: String, CaseIterable, Sendable, Codable {
         }
     }
 
+    /// A chat message delivered in the middle of a turn (after a tool call) instead of at its end. Claude Code only: its PostToolUse hook
+    /// can add context the model reads before its next step. Others wait for the Stop hook.
+    public func midTurnOutput(_ text: String) -> Data? {
+        guard self == .claudeCode else { return nil }
+        let framed = "Message from the user, sent from Notch Buddy while you were working. Start your next reply text with the message quoted on one line as "
+            + "\"> From notch: <message>\", then act on it.\n\n" + text
+        return json(["hookSpecificOutput": ["hookEventName": "PostToolUse", "additionalContext": framed]])
+    }
+
     /// For a risky command: force the agent's own prompt where the hook format allows it (nil = leave the agent alone).
     public func forceAskOutput(reasons: [String]) -> Data? {
         let reason = "Notch Buddy: " + reasons.joined(separator: ", ") + ". Approve this yourself."
