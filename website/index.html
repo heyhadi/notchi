@@ -7,341 +7,337 @@
 <title>Notch Buddy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a live macOS desktop as the hero (notch, menu bar, Dock), then plain sections that each show one real feature. */
+/* Layout: the browser's own top edge gets a live notch that guides you; a dark "desk" hero, a pinned scroll story
+   on a scaled desktop, then a gallery, a playground and a sound lab. Motion: GSAP + ScrollTrigger, transforms only. */
 @property --a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 :root {
-  --bg: #E8ECF1; --surface: #F6F8FA; --ink: #0E1116; --muted: #566171; --line: #D2D9E2;
+  --bg: #E9EDF2; --surface: #F7F9FB; --ink: #0E1116; --muted: #536071; --line: #D3DAE3;
   --accent: #0C8A63; --accent-ink: #FFFFFF; --amber: #B96A00; --danger: #C23B3B;
-  --screen: #0D1116; --screen-ink: #E9EEF3; --notch: #000;
+  --desk: #0B0F13; --desk-2: #13202A; --desk-ink: #EAF0F5; --desk-muted: #93A1AF; --mint: #9BF2D0;
   --display: "Unbounded", "Arial Rounded MT Bold", system-ui, sans-serif;
   --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0A0C0F; --surface: #13171C; --ink: #E8EEF4; --muted: #99A4B1; --line: #232A33;
-    --accent: #9BF2D0; --accent-ink: #052217; --amber: #FFB020; --danger: #FF7B7B; color-scheme: dark;
-  }
+  :root:not([data-theme="light"]) { --bg: #090B0E; --surface: #12161B; --ink: #E8EEF4; --muted: #98A3B0; --line: #222932; --accent: #9BF2D0; --accent-ink: #052217; --amber: #FFB020; --danger: #FF7B7B; color-scheme: dark; }
 }
-:root[data-theme="dark"] {
-  --bg: #0A0C0F; --surface: #13171C; --ink: #E8EEF4; --muted: #99A4B1; --line: #232A33;
-  --accent: #9BF2D0; --accent-ink: #052217; --amber: #FFB020; --danger: #FF7B7B; color-scheme: dark;
-}
+:root[data-theme="dark"] { --bg: #090B0E; --surface: #12161B; --ink: #E8EEF4; --muted: #98A3B0; --line: #222932; --accent: #9BF2D0; --accent-ink: #052217; --amber: #FFB020; --danger: #FF7B7B; color-scheme: dark; }
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); margin: 0; }
-.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-a { color: inherit; }
-h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); margin: 0; overflow-x: hidden; }
+.wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.04; letter-spacing: -0.025em; text-wrap: balance; margin: 0; }
 p { margin: 0; text-wrap: pretty; }
+button { font: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.kicker { font: 500 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.sub { color: var(--muted); max-width: 58ch; font-size: clamp(16px, 1.6vw, 18px); }
+section { position: relative; }
 
-/* Header */
-header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 18px; }
-.brand { display: flex; align-items: center; gap: 10px; font: 700 15px var(--display); letter-spacing: -0.01em; text-decoration: none; }
-.brand .mark { width: 34px; height: 22px; background: #000; border-radius: 0 0 10px 10px; display: grid; place-items: center; border: 1px solid var(--line); border-top: none; }
-.brand .mark i { width: 6px; height: 6px; border-radius: 50%; background: #9BF2D0; box-shadow: 0 0 8px #9BF2D0; animation: pulse 1.8s ease-in-out infinite; }
-nav.links { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-nav.links a { text-decoration: none; font-size: 14px; color: var(--muted); padding: 7px 10px; border-radius: 8px; }
-nav.links a:hover { color: var(--ink); background: var(--surface); }
-.icon-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; font-size: 16px; }
-.icon-btn:hover { border-color: var(--accent); }
+/* ---------- the page's own notch ---------- */
+.pnotch { position: fixed; left: 50%; top: 0; z-index: 50; transform: translateX(-50%); width: 196px; height: 34px; isolation: isolate; transition: width .55s cubic-bezier(.3,1.35,.5,1), height .55s cubic-bezier(.3,1.35,.5,1); cursor: pointer; }
+.pnotch[data-mode="peek"] { width: min(380px, calc(100vw - 32px)); height: 70px; }
+.pnotch[data-mode="open"] { width: min(400px, calc(100vw - 24px)); height: var(--h, 330px); cursor: default; }
+.pnotch .bodyx { position: absolute; inset: 0; background: #000; border-radius: 0 0 20px 20px; overflow: hidden; box-shadow: 0 10px 30px -10px rgba(0,0,0,.6); }
+.pnotch .halo { position: absolute; inset: -3px; border-radius: 0 0 24px 24px; z-index: -1; filter: blur(7px); opacity: .85; background: conic-gradient(from var(--a), #4285F4, #34A853, #FBBC05, #EA4335, #4285F4); animation: spin 4s linear infinite; transition: opacity .4s; }
+.pnotch[data-state="sleeping"] .halo { opacity: 0; }
+.pnotch[data-state="needsYou"] .halo { background: conic-gradient(from var(--a), #FFB020, #FFB02033, #FFB020, #FFB02033, #FFB020); animation-duration: 2s; }
+.pnotch[data-state="done"] .halo { background: conic-gradient(from var(--a), #9BF2D0, #9BF2D033, #9BF2D0, #9BF2D033, #9BF2D0); animation-duration: 2.4s; }
+.pnotch[data-state="error"] .halo { background: conic-gradient(from var(--a), #FF6B6B, #FF6B6B33, #FF6B6B, #FF6B6B33, #FF6B6B); animation-duration: 2s; }
+.pnotch .ears { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: #cfd6de; font: 500 11px var(--mono); }
+.pnotch .ears .av-ear { width: 24px; height: 24px; }
+.pnotch .ears .r { display: flex; align-items: center; gap: 7px; }
+.pnotch .say { padding: 2px 16px 0; font-size: 13px; color: #e9eef3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity .25s; }
+.pnotch[data-mode="peek"] .say { opacity: 1; transition-delay: .15s; }
+.pnotch .menu { position: absolute; left: 0; right: 0; top: 34px; padding: 8px 14px 14px; display: grid; gap: 4px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.pnotch[data-mode="open"] .menu { opacity: 1; pointer-events: auto; transition: opacity .3s .2s; }
+.menu a, .menu button { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #e9eef3; text-decoration: none; background: none; border: 0; padding: 9px 10px; border-radius: 10px; cursor: pointer; font-size: 14px; text-align: left; }
+.menu a:hover, .menu button:hover { background: #1E1D23; }
+.menu small { color: #8D8C94; font: 11px var(--mono); }
+.menu hr { border: 0; border-top: 1px solid #26252c; margin: 6px 0; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c, #6b7280); flex: none; display: inline-block; }
+.dot.pulse { animation: pulse 1.2s ease-in-out infinite; }
 
-/* Hero */
-.hero { padding-top: 18px; display: grid; gap: 22px; }
-.hero h1 { font-size: clamp(34px, 6.4vw, 68px); max-width: 15ch; }
-.hero h1 em { font-style: normal; color: var(--accent); }
-.hero .lede { max-width: 62ch; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
-.stage-note { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font: 500 12px var(--mono); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
-.stage-note b { color: var(--accent); font-weight: 500; }
+/* ---------- hero: the desk ---------- */
+.hero { position: relative; background: radial-gradient(1000px 520px at 78% 30%, rgba(52,211,153,.16), transparent 60%), radial-gradient(800px 500px at 10% 100%, rgba(66,133,244,.14), transparent 60%), linear-gradient(170deg, var(--desk-2), var(--desk) 65%); color: var(--desk-ink); overflow: hidden; }
+.hero .grid-bg { position: absolute; inset: -40px; background-image: radial-gradient(rgba(255,255,255,.07) 1.2px, transparent 1.2px); background-size: 26px 26px; pointer-events: none; }
+.hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .9fr); gap: 24px; align-items: center; padding-block: clamp(96px, 13vw, 150px) clamp(56px, 8vw, 96px); }
+.brand { position: absolute; top: 18px; left: max(16px, env(safe-area-inset-left, 0px)); font: 700 14px var(--display); letter-spacing: -0.01em; color: var(--desk-ink); z-index: 1; }
+.hero h1 { font-size: clamp(40px, 7.2vw, 92px); font-weight: 800; }
+.hero h1 .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .06em; }
+.hero h1 .w > span { display: inline-block; }
+.hero h1 .hl { color: var(--mint); }
+.hero .lede { color: var(--desk-muted); margin-top: 22px; max-width: 54ch; font-size: clamp(16px, 1.7vw, 19px); }
+.ctas { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+.cta { display: inline-flex; align-items: center; gap: 10px; border-radius: 99px; padding: 14px 22px; font: 600 15px var(--body); text-decoration: none; border: 1px solid transparent; cursor: pointer; will-change: transform; }
+.cta.primary { background: var(--mint); color: #052217; }
+.cta.ghost { border-color: rgba(255,255,255,.22); color: var(--desk-ink); background: rgba(255,255,255,.04); }
+.cta span { display: inline-block; pointer-events: none; }
+.big-buddy { position: relative; justify-self: center; width: min(340px, 80vw); aspect-ratio: 1; cursor: pointer; touch-action: manipulation; }
+.big-buddy .shadow { position: absolute; left: 22%; right: 22%; bottom: 4%; height: 7%; border-radius: 50%; background: radial-gradient(rgba(0,0,0,.5), transparent 70%); }
+.big-buddy #bigAv { position: absolute; inset: 0; }
+.big-buddy .av { width: 100%; height: 100%; }
+.bubble { position: absolute; left: 50%; top: -2%; transform: translateX(-50%); background: #fff; color: #14171c; font: 700 15px var(--body); padding: 8px 16px; border-radius: 99px; white-space: nowrap; box-shadow: 0 8px 22px rgba(0,0,0,.35); opacity: 0; pointer-events: none; z-index: 1; }
+.hint-line { margin-top: 18px; font: 500 12px var(--mono); color: var(--desk-muted); letter-spacing: .06em; text-transform: uppercase; }
+.hint-line b { color: var(--mint); font-weight: 500; }
 
-/* The desktop stage: designed at 960x600, scaled to fit */
-.stage-frame { width: 100%; position: relative; margin-top: 20px; }
-.stage {
-  width: 960px; height: 600px; position: absolute; left: 0; top: 0; transform-origin: top left;
-  border-radius: 18px; overflow: hidden; color: var(--screen-ink); user-select: none; -webkit-user-select: none;
-  background:
-    radial-gradient(900px 420px at 18% 108%, rgba(52, 211, 153, .22), transparent 60%),
-    radial-gradient(700px 380px at 92% 8%, rgba(66, 133, 244, .16), transparent 60%),
-    linear-gradient(165deg, #18323A 0%, #0E1318 62%);
-  box-shadow: 0 30px 70px -28px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07) inset;
-  font: 400 13px/1.4 var(--body);
-}
-.stage::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px); background-size: 3px 3px; pointer-events: none; mix-blend-mode: screen; }
-.menubar { position: absolute; inset: 0 0 auto 0; height: 26px; background: rgba(0,0,0,.28); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12px; z-index: 1; }
+/* ---------- pinned story ---------- */
+.story { background: var(--bg); }
+.story .pin { min-height: 100vh; display: grid; align-content: center; padding-block: 72px 32px; }
+.story .cols { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 56px); align-items: center; }
+.stage-frame { width: 100%; position: relative; }
+.stage { width: 960px; height: 600px; position: absolute; left: 0; top: 0; transform-origin: top left; border-radius: 18px; overflow: hidden; color: var(--desk-ink); user-select: none; -webkit-user-select: none;
+  background: radial-gradient(900px 420px at 18% 108%, rgba(52,211,153,.22), transparent 60%), radial-gradient(700px 380px at 92% 8%, rgba(66,133,244,.16), transparent 60%), linear-gradient(165deg, #18323A 0%, #0E1318 62%);
+  box-shadow: 0 30px 70px -28px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07) inset; font: 400 13px/1.4 var(--body); }
+.menubar { position: absolute; inset: 0 0 auto 0; height: 26px; background: rgba(0,0,0,.28); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 12px; z-index: 1; }
 .menubar span { opacity: .85; margin-right: 14px; }
-.menubar .right { display: flex; gap: 14px; opacity: .85; }
-.dock { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); height: 54px; padding: 0 14px; display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; z-index: 1; }
+.dock { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); height: 54px; padding: 0 14px; display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.14); border-radius: 18px; z-index: 1; }
 .dock i { width: 36px; height: 36px; border-radius: 9px; display: block; }
-.floor-line { position: absolute; left: 0; right: 0; bottom: 70px; height: 1px; }
-
-/* Notch */
-.notch-shell { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 210px; height: 32px; z-index: 5; isolation: isolate; transition: width .55s cubic-bezier(.3,1.35,.5,1), height .55s cubic-bezier(.3,1.35,.5,1), opacity .5s; cursor: pointer; }
+.notch-shell { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 210px; height: 32px; z-index: 5; isolation: isolate; transition: width .5s cubic-bezier(.3,1.35,.5,1), height .5s cubic-bezier(.3,1.35,.5,1), opacity .5s; }
 .notch-shell[data-mode="peek"] { width: 360px; height: 84px; }
-.notch-shell[data-mode="expanded"] { width: 470px; height: var(--h, 360px); cursor: default; }
+.notch-shell[data-mode="expanded"] { width: 470px; height: var(--h, 300px); }
 .notch-shell[data-state="sleeping"] { opacity: .16; }
-.notch-body { position: absolute; inset: 0; background: var(--notch); border-radius: 0 0 20px 20px; overflow: hidden; }
+.notch-body { position: absolute; inset: 0; background: #000; border-radius: 0 0 20px 20px; overflow: hidden; }
 .notch-shell[data-mode="expanded"] .notch-body { border-radius: 0 0 26px 26px; }
-.glow { position: absolute; inset: -3px -3px -3px -3px; border-radius: 0 0 24px 24px; z-index: -1; background: conic-gradient(from var(--a), #4285F4, #34A853, #FBBC05, #EA4335, #4285F4); filter: blur(7px); opacity: 0; transition: opacity .4s; animation: spin 4s linear infinite; }
+.glow { position: absolute; inset: -3px; border-radius: 0 0 24px 24px; z-index: -1; background: conic-gradient(from var(--a), #4285F4, #34A853, #FBBC05, #EA4335, #4285F4); filter: blur(7px); opacity: 0; transition: opacity .4s; animation: spin 4s linear infinite; }
 .notch-shell[data-state="working"] .glow, .notch-shell[data-state="thinking"] .glow { opacity: .85; }
-.notch-shell[data-state="needsYou"] .glow { opacity: .95; background: conic-gradient(from var(--a), #FFB020, rgba(255,176,32,.2), #FFB020, rgba(255,176,32,.2), #FFB020); animation-duration: 2s; }
-.notch-shell[data-state="done"] .glow { opacity: .8; background: conic-gradient(from var(--a), #9BF2D0, rgba(155,242,208,.2), #9BF2D0, rgba(155,242,208,.2), #9BF2D0); animation-duration: 2s; }
-.notch-shell[data-state="error"] .glow { opacity: .9; background: conic-gradient(from var(--a), #FF6B6B, rgba(255,107,107,.2), #FF6B6B, rgba(255,107,107,.2), #FF6B6B); animation-duration: 2s; }
+.notch-shell[data-state="needsYou"] .glow { opacity: .95; background: conic-gradient(from var(--a), #FFB020, #FFB02033, #FFB020, #FFB02033, #FFB020); animation-duration: 2s; }
+.notch-shell[data-state="done"] .glow { opacity: .8; background: conic-gradient(from var(--a), #9BF2D0, #9BF2D033, #9BF2D0, #9BF2D033, #9BF2D0); animation-duration: 2s; }
 .ears { height: 32px; display: flex; align-items: center; justify-content: space-between; padding: 0 9px; }
 .ears .l { width: 24px; height: 24px; }
 .ears .r { display: flex; align-items: center; gap: 6px; font: 500 11px var(--mono); color: #cfd6de; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c, #6b7280); }
-.dot.pulse { animation: pulse 1.2s ease-in-out infinite; }
-.warn { color: #FFB020; font-size: 11px; }
-.peek-row { padding: 6px 16px 0; display: flex; align-items: center; gap: 10px; justify-content: space-between; opacity: 0; transition: opacity .3s .15s; }
+.peek-row { padding: 6px 16px 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity .3s .15s; }
 .notch-shell[data-mode="peek"] .peek-row { opacity: 1; }
-.peek-row .txt { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pill { border: 0; border-radius: 99px; padding: 3px 11px; font: 600 12px var(--body); cursor: pointer; background: #FFB020; color: #3D2600; }
-.panel { position: absolute; left: 0; right: 0; top: 32px; padding: 6px 16px 14px; opacity: 0; pointer-events: none; transition: opacity .25s; }
-.notch-shell[data-mode="expanded"] .panel { opacity: 1; pointer-events: auto; transition: opacity .35s .2s; }
+.panel { position: absolute; left: 0; right: 0; top: 32px; padding: 6px 16px 14px; opacity: 0; transition: opacity .25s; }
+.notch-shell[data-mode="expanded"] .panel { opacity: 1; transition: opacity .35s .2s; }
 .card { background: #1E1D23; border-radius: 14px; padding: 11px 13px; margin-top: 8px; }
 .card h4 { margin: 0 0 6px; font: 600 13px var(--body); }
 .code { font: 400 12px/1.45 var(--mono); background: #0f0f13; border-radius: 8px; padding: 8px 10px; color: #cfe8dd; overflow-wrap: anywhere; }
 .code.risky { color: #ffb4b4; }
 .risk { color: #FF9C9C; font-size: 12px; margin-top: 7px; }
 .btns { display: flex; gap: 8px; margin-top: 9px; }
-.btn { border: 0; border-radius: 9px; padding: 6px 14px; font: 600 12px var(--body); cursor: pointer; background: #2b2a31; color: #eee; }
+.btn { border: 0; border-radius: 9px; padding: 6px 14px; font: 600 12px var(--body); background: #2b2a31; color: #eee; }
 .btn.go { background: #9BF2D0; color: #052217; }
-.btn:hover { filter: brightness(1.15); }
-.row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 10px; cursor: pointer; }
-.row:hover { background: rgba(255,255,255,.06); }
+.btn.press { animation: press .9s ease-in-out infinite; }
+.row { display: flex; align-items: center; gap: 10px; padding: 7px 6px; border-radius: 10px; }
 .row .name { font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row .meta { font-size: 11.5px; color: #A9A8B0; white-space: nowrap; }
-.row .tok { font: 11px var(--mono); color: #8D8C94; }
-.chat-btn { background: none; border: 0; color: #A9A8B0; cursor: pointer; padding: 4px; border-radius: 6px; display: grid; place-items: center; }
-.chat-btn.open { color: #9BF2D0; }
-.chat { background: #1E1D23; border-radius: 14px; padding: 10px; margin: 2px 0 6px; }
-.chat .in { display: flex; gap: 8px; }
-.chat input { flex: 1; min-width: 0; background: #0f0f13; color: #eee; border: 1px solid #34333b; border-radius: 9px; padding: 7px 10px; font: 13px var(--body); }
-.chat .st { font-size: 11px; color: #8D8C94; margin-top: 7px; }
-.chat .st.idle { color: #FFB020; }
-.chat .you { font-size: 11px; color: #A9A8B0; margin-top: 3px; }
-.chat .agent { font-size: 12px; color: #cfe8dd; margin-top: 6px; border-left: 2px solid #9BF2D0; padding-left: 8px; }
+.chatbox { background: #1E1D23; border-radius: 14px; padding: 10px; margin-top: 8px; }
+.chatbox .field { background: #0f0f13; border: 1px solid #34333b; border-radius: 9px; padding: 7px 10px; font: 13px var(--body); min-height: 33px; color: #eee; }
+.chatbox .field .caret { display: inline-block; width: 1px; height: 14px; background: #9BF2D0; vertical-align: -2px; animation: blink2 1s steps(1) infinite; }
+.chatbox .st { font-size: 11px; color: #8D8C94; margin-top: 7px; }
+.chatbox .agent { font-size: 12px; color: #cfe8dd; margin-top: 6px; border-left: 2px solid #9BF2D0; padding-left: 8px; }
 .foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; padding-top: 9px; border-top: 1px solid #2A2A30; font-size: 11.5px; color: #8D8C94; }
 .foot .tk { font-family: var(--mono); color: #A9A8B0; }
-.foot .tk.over { color: #FFB020; }
-.toast { position: absolute; left: 50%; bottom: 84px; transform: translate(-50%, 10px); background: rgba(0,0,0,.8); color: #fff; padding: 7px 14px; border-radius: 99px; font-size: 12px; opacity: 0; transition: opacity .25s, transform .25s; z-index: 9; pointer-events: none; }
-.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.story-buddy { position: absolute; left: 0; top: 0; width: 64px; height: 64px; z-index: 4; }
+.story-buddy #sBuddyAv { width: 64px; height: 64px; transform-origin: 50% 70%; }
+.story-buddy .zz { position: absolute; left: 50%; bottom: 66px; transform: translateX(-50%); background: #fff; color: #14171c; font: 700 12px var(--body); padding: 3px 9px; border-radius: 99px; opacity: 0; white-space: nowrap; }
+.steps { display: grid; gap: 18px; }
+.steps .clock { font: 500 13px var(--mono); color: var(--accent); letter-spacing: .06em; }
+.steps h2 { font-size: clamp(26px, 3.4vw, 42px); }
+.steps .cap { position: relative; min-height: 13.5em; }
+.steps .cap > div { position: absolute; inset: 0; display: grid; gap: 12px; align-content: start; }
+.steps .cap > div:not(:first-child) { opacity: 0; visibility: hidden; }
+.steps .cap p { color: var(--muted); font-size: clamp(15px, 1.5vw, 17px); }
+.progress { display: flex; gap: 6px; }
+.progress i { height: 4px; flex: 1; border-radius: 99px; background: var(--line); overflow: hidden; position: relative; }
+.progress i b { position: absolute; inset: 0; background: var(--accent); transform-origin: left; transform: scaleX(0); }
 
-/* Walkers */
-.walker { position: absolute; width: 64px; height: 64px; z-index: 4; cursor: grab; touch-action: none; }
-.walker.grabbed { cursor: grabbing; }
-.walker .sprite { width: 64px; height: 64px; transform-origin: 50% 70%; }
-.walker .bub { position: absolute; left: 50%; bottom: 68px; transform: translateX(-50%); white-space: nowrap; background: #fff; color: #14171c; font: 600 12px var(--body); padding: 4px 10px; border-radius: 99px; box-shadow: 0 2px 8px rgba(0,0,0,.3); opacity: 0; transition: opacity .15s; pointer-events: none; }
-.walker .bub.on { opacity: 1; }
-
-/* Controls under the stage */
-.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
-.controls .grp { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.controls .label { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
-.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; padding: 7px 13px; font: 500 13px var(--body); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
-.chip:hover { border-color: var(--accent); }
-.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.chip .dot { --c: var(--chipc); }
-.sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
-
-/* Sections */
-section { padding-block: clamp(56px, 9vw, 104px); }
-section.alt { background: var(--surface); border-block: 1px solid var(--line); }
-.kicker { font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-h2 { font-size: clamp(26px, 4.2vw, 44px); max-width: 20ch; }
-.sub { color: var(--muted); max-width: 60ch; margin-top: 14px; }
-.grid { display: grid; gap: 16px; margin-top: 36px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
-.feat { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; align-content: start; min-width: 0; }
-section.alt .feat { background: var(--bg); }
-.feat h3 { font-size: 17px; letter-spacing: -0.01em; }
-.feat p { color: var(--muted); font-size: 15px; }
-.demo { background: #0D1116; color: #E9EEF3; border-radius: 12px; padding: 12px; min-height: 96px; display: grid; align-content: center; gap: 8px; overflow: hidden; }
-.demo .code { font-size: 12px; }
-.bar { height: 8px; border-radius: 99px; background: #232A33; overflow: hidden; }
-.bar i { display: block; height: 100%; width: 40%; background: linear-gradient(90deg, #34D399, #9BF2D0); border-radius: 99px; animation: fill 5s ease-in-out infinite; }
-.tag { display: inline-block; font: 500 11px var(--mono); padding: 3px 8px; border-radius: 6px; background: #1E1D23; color: #A9A8B0; margin: 2px 4px 2px 0; }
-.tag.on { background: #123127; color: #9BF2D0; }
-.tag.off { background: #2a1d1d; color: #ff9c9c; }
-
-/* Avatar gallery */
-.gallery { display: grid; gap: 12px; margin-top: 36px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); }
-.tile { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 16px; padding: 14px 8px 10px; cursor: pointer; display: grid; gap: 6px; justify-items: center; font: 500 13px var(--body); }
-.tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+/* ---------- buddies ---------- */
+.buddies { padding-block: clamp(72px, 10vw, 128px); background: var(--surface); border-block: 1px solid var(--line); }
+.buddies h2, .play h2, .sounds h2, .safety h2, .build h2 { font-size: clamp(28px, 4.4vw, 52px); max-width: 18ch; margin-top: 12px; }
+.gallery { display: grid; gap: 14px; margin-top: 40px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 156px), 1fr)); perspective: 900px; }
+.tile { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 18px; padding: 16px 8px 12px; cursor: pointer; display: grid; gap: 4px; justify-items: center; font: 600 14px var(--body); transform-style: preserve-3d; will-change: transform; }
 .tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
-.tile svg { width: 84px; height: 84px; }
+.tile .slot { width: 92px; height: 92px; transform: translateZ(30px); }
 .tile small { color: var(--muted); font: 400 11px var(--mono); }
 
-/* Sound lab */
-.lab { display: grid; gap: 14px; margin-top: 32px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
-.snd { border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 16px; display: grid; gap: 10px; text-align: left; color: var(--ink); cursor: pointer; font: inherit; }
+/* ---------- playground ---------- */
+.play { padding-block: clamp(72px, 10vw, 128px); }
+.play .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 99px; padding: 8px 14px; font: 500 14px var(--body); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.desk { position: relative; margin-top: 18px; height: clamp(280px, 38vw, 380px); border-radius: 22px; overflow: hidden; touch-action: pan-y; background: linear-gradient(180deg, #16242E, #0C1116); box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset; }
+.desk::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border-top: 1px solid rgba(255,255,255,.08); }
+.desk .label { position: absolute; left: 18px; top: 16px; color: #93A1AF; font: 500 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; z-index: 1; pointer-events: none; }
+.walker { position: absolute; left: 0; top: 0; width: 72px; height: 72px; z-index: 3; cursor: grab; touch-action: none; }
+.walker.grabbed { cursor: grabbing; z-index: 6; }
+.walker .sprite { width: 72px; height: 72px; transform-origin: 50% 70%; }
+.walker .bub { position: absolute; left: 50%; bottom: 76px; transform: translateX(-50%); white-space: nowrap; background: #fff; color: #14171c; font: 700 12px var(--body); padding: 4px 10px; border-radius: 99px; box-shadow: 0 2px 8px rgba(0,0,0,.3); opacity: 0; transition: opacity .15s; pointer-events: none; }
+.walker .bub.on { opacity: 1; }
+.walker .tagname { position: absolute; left: 50%; top: 74px; transform: translateX(-50%); font: 500 10px var(--mono); color: #93A1AF; white-space: nowrap; pointer-events: none; }
+
+/* ---------- sounds ---------- */
+.sounds { padding-block: clamp(72px, 10vw, 128px); background: var(--surface); border-block: 1px solid var(--line); }
+.sounds .layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(24px, 5vw, 64px); align-items: center; margin-top: 36px; }
+.singer { width: min(300px, 70vw); aspect-ratio: 1; justify-self: center; position: relative; }
+.singer #singerAv { position: absolute; inset: 0; }
+.singer .av { width: 100%; height: 100%; }
+.waves { position: absolute; inset: 0; pointer-events: none; }
+.waves i { position: absolute; left: 50%; top: 50%; width: 60%; aspect-ratio: 1; border: 2px solid var(--accent); border-radius: 50%; transform: translate(-50%, -50%) scale(.6); opacity: 0; }
+.lab { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.snd { border: 1px solid var(--line); background: var(--bg); border-radius: 16px; padding: 14px 16px; display: grid; gap: 6px; text-align: left; color: var(--ink); cursor: pointer; }
 .snd:hover { border-color: var(--accent); }
 .snd b { font: 600 15px var(--body); }
 .snd span { color: var(--muted); font-size: 13px; }
-.snd svg { width: 100%; height: 56px; }
-.snd path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 400; stroke-dashoffset: 0; }
-.snd.play path { animation: draw .9s ease-out; }
-.hint { color: var(--muted); font-size: 14px; margin-top: 16px; }
+.snd svg { width: 100%; height: 44px; }
+.snd path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
-/* Safety + build */
-.two { display: grid; gap: clamp(24px, 5vw, 64px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
-.rules { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+/* ---------- safety + build ---------- */
+.safety, .build { padding-block: clamp(72px, 10vw, 128px); }
+.two { display: grid; gap: clamp(28px, 5vw, 72px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
+.rules { display: grid; gap: 18px; margin: 30px 0 0; padding: 0; list-style: none; }
 .rules li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; }
-.rules li::before { content: ""; width: 10px; height: 10px; margin-top: 7px; border-radius: 50%; background: var(--accent); }
+.rules li::before { content: ""; width: 10px; height: 10px; margin-top: 8px; border-radius: 50%; background: var(--accent); }
 .rules b { font-weight: 600; }
 .rules span { color: var(--muted); }
-pre.term { background: #0D1116; color: #DDE6EE; border-radius: 14px; padding: 18px; overflow-x: auto; font: 400 13.5px/1.7 var(--mono); margin: 0; position: relative; }
-pre.term .c { color: #6C7A89; }
-.copy { position: absolute; right: 10px; top: 10px; background: #1b2229; color: #cfd8e1; border: 1px solid #2a343d; border-radius: 8px; padding: 5px 10px; font: 500 12px var(--body); cursor: pointer; }
-table.agents { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
-table.agents th, table.agents td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+.scroll-x { overflow-x: auto; }
+table.agents { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 14px; }
+table.agents th, table.agents td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); }
 table.agents th { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .yes { color: var(--accent); font-weight: 600; }
-.scroll-x { overflow-x: auto; }
-footer.end { padding-block: 40px 56px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+pre.term { background: #0D1116; color: #DDE6EE; border-radius: 16px; padding: 20px; overflow-x: auto; font: 400 14px/1.75 var(--mono); margin: 0; position: relative; min-width: 0; }
+pre.term .c { color: #6C7A89; }
+.copy { position: absolute; right: 12px; top: 12px; background: #1b2229; color: #cfd8e1; border: 1px solid #2a343d; border-radius: 8px; padding: 5px 10px; font: 500 12px var(--body); cursor: pointer; }
+footer.end { padding-block: 36px 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
 
-/* Avatars */
-.av { display: block; }
-.av .body { transform-origin: 50px 96px; animation: bob 2.4s ease-in-out infinite; }
-.av[data-state="working"] .body, .av[data-state="thinking"] .body { animation-duration: .7s; }
-.av[data-state="needsYou"] .body { animation: shake .5s ease-in-out infinite; }
-.av[data-state="sleeping"] .body { animation-duration: 4.5s; }
-.av .blink { animation: blink 4.2s infinite; transform-origin: center; transform-box: fill-box; }
+/* ---------- avatars ---------- */
+.av { display: block; overflow: visible; }
+.av .bodyg { transform-origin: 50px 92px; transform-box: view-box; animation: bob 2.4s ease-in-out infinite; }
+.av[data-state="working"] .bodyg, .av[data-state="thinking"] .bodyg { animation-duration: .7s; }
+.av[data-state="needsYou"] .bodyg { animation: shake .5s ease-in-out infinite; }
+.av[data-state="sleeping"] .bodyg { animation-duration: 4.5s; }
+.av .eyes { transition: transform .12s ease-out; }
+.av .lid { transform-box: fill-box; transform-origin: center; animation: blink 4.2s infinite; }
 
 @keyframes spin { to { --a: 360deg; } }
 @keyframes pulse { 50% { opacity: .35; } }
 @keyframes bob { 50% { transform: translateY(-2.5px) scale(1.02, .98); } }
 @keyframes shake { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
-@keyframes fill { 0% { width: 8%; } 70% { width: 92%; } 100% { width: 8%; } }
-@keyframes draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+@keyframes blink2 { 50% { opacity: 0; } }
+@keyframes press { 50% { transform: scale(.94); box-shadow: 0 0 0 6px rgba(155,242,208,.25); } }
+
+@media (max-width: 820px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .big-buddy { width: min(220px, 60vw); order: -1; }
+  .story .cols { grid-template-columns: 1fr; }
+  .steps .cap { min-height: 11.5em; }
+  .sounds .layout { grid-template-columns: 1fr; }
+  .singer { width: min(200px, 56vw); }
+}
+@media (max-width: 560px) { .brand { display: none; } } /* the page notch takes the top center; no room beside it */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
 }
-@media (max-width: 640px) { .sep { display: none; } nav.links a:not(.keep) { display: none; } }
 </style>
 </head>
 <body>
 <!--BODY-->
-<div class="wrap">
-  <header class="top">
-    <a class="brand" href="#top" aria-label="Notch Buddy"><span class="mark"><i></i></span>Notch Buddy</a>
-    <nav class="links" aria-label="Sections">
-      <a href="#features">Features</a><a href="#avatars">Avatars</a><a href="#sounds">Sounds</a><a href="#agents">Agents</a><a class="keep" href="#build">Build</a>
-      <button class="icon-btn" id="theme" aria-label="Toggle light and dark">◐</button>
+<div class="pnotch" id="pnotch" data-mode="compact" data-state="thinking" role="button" tabindex="0" aria-label="Open the page menu" aria-expanded="false">
+  <div class="halo"></div>
+  <div class="bodyx">
+    <div class="ears"><div class="av-ear" id="pEar"></div><div class="r"><span id="pTimer">0:00</span><i class="dot pulse" id="pDot" style="--c:#8AB4FF"></i></div></div>
+    <div class="say" id="pSay">Hi! Scroll, I'll show you around.</div>
+    <nav class="menu" id="pMenu" aria-label="Page sections">
+      <a href="#story">How it works <small>scroll story</small></a>
+      <a href="#buddies">The buddies <small>12 avatars</small></a>
+      <a href="#play">Playground <small>drag &amp; poke</small></a>
+      <a href="#sounds">Robot voice <small>sound lab</small></a>
+      <a href="#safety">Safety &amp; agents <small>what it touches</small></a>
+      <a href="#build">Build it <small>swift</small></a>
+      <hr>
+      <button id="mSound">Sound <small id="mSoundSt">off</small></button>
+      <button id="mTheme">Theme <small id="mThemeSt">system</small></button>
     </nav>
-  </header>
-
-  <div class="hero" id="top">
-    <h1>Your coding agents, <em>living</em> in the notch.</h1>
-    <p class="lede">Notch Buddy is a native macOS app that shows what Claude Code, Codex, OpenCode and Antigravity are doing, lets you approve or answer from the notch, and sends a little buddy walking along your Dock. This is the real thing, rebuilt for the browser. Poke it.</p>
-    <div class="stage-note"><b>Live demo</b><span>click the notch</span><span>·</span><span>drag the buddies</span><span>·</span><span>poke them</span><span>·</span><span>sound is off until you turn it on</span></div>
-  </div>
-
-  <div class="stage-frame" id="frame">
-    <div class="stage" id="stage" aria-label="Interactive desktop demo of Notch Buddy">
-      <div class="menubar"><div><span></span><span><b>Notch Buddy</b></span><span>File</span><span>Edit</span><span>View</span></div><div class="right"><span id="clock">9:41</span></div></div>
-      <div class="notch-shell" id="notch" data-mode="compact" data-state="sleeping" role="button" tabindex="0" aria-label="Notch Buddy panel">
-        <div class="glow"></div>
-        <div class="notch-body">
-          <div class="ears"><div class="l" id="earAv"></div><div class="r" id="earR"></div></div>
-          <div class="peek-row"><div class="txt" id="peekTxt"></div><button class="pill" id="peekBtn" hidden>Review</button></div>
-          <div class="panel" id="panel"></div>
-        </div>
-      </div>
-      <div class="dock" aria-hidden="true"><i style="background:#3b82f6"></i><i style="background:#f59e0b"></i><i style="background:#10b981"></i><i style="background:#ef4444"></i><i style="background:#8b5cf6"></i><i style="background:#64748b"></i></div>
-      <div id="walkers"></div>
-      <div class="toast" id="toast" role="status"></div>
-    </div>
-  </div>
-
-  <div class="controls" id="controls">
-    <div class="grp"><span class="label">Agent state</span>
-      <button class="chip" data-st="sleeping" aria-pressed="true" style="--chipc:#6b7280"><i class="dot"></i>Idle</button>
-      <button class="chip" data-st="thinking" aria-pressed="false" style="--chipc:#8AB4FF"><i class="dot"></i>Thinking</button>
-      <button class="chip" data-st="working" aria-pressed="false" style="--chipc:#34D399"><i class="dot"></i>Working</button>
-      <button class="chip" data-st="needsYou" aria-pressed="false" style="--chipc:#FFB020"><i class="dot"></i>Needs you</button>
-      <button class="chip" data-st="done" aria-pressed="false" style="--chipc:#9BF2D0"><i class="dot"></i>Done</button>
-      <button class="chip" data-st="error" aria-pressed="false" style="--chipc:#FF6B6B"><i class="dot"></i>Error</button>
-    </div>
-    <span class="sep"></span>
-    <div class="grp">
-      <button class="chip" id="risky" aria-pressed="false">Risky command</button>
-      <button class="chip" id="second" aria-pressed="false">+ OpenCode buddy</button>
-      <button class="chip" id="sound" aria-pressed="false">🔇 Sound off</button>
-    </div>
   </div>
 </div>
 
-<section id="features">
+<header class="hero" id="top">
+  <div class="grid-bg" id="gridBg"></div>
+  <div class="brand">Notch Buddy</div>
   <div class="wrap">
-    <div class="kicker">What it does</div>
-    <h2>Everything an agent wants from you, one glance away.</h2>
-    <p class="sub">The notch stays out of the way until something needs you. Approvals, replies and a daily token budget live in the same place, and nothing leaves your Mac.</p>
-    <div class="grid">
-      <article class="feat">
-        <div class="demo"><div class="code">$ curl https://get.example/install.sh | bash</div><div class="risk" style="color:#FF9C9C;font-size:12px">Risky: pipes a download into a shell. Answer it in your terminal.</div></div>
-        <h3>Approve from the notch, never the risky stuff</h3>
-        <p>Safe permission requests get Allow and Deny buttons for Claude Code, Codex and OpenCode. Commands that look dangerous are handed straight back to the agent's own prompt.</p>
-      </article>
-      <article class="feat">
-        <div class="demo"><span class="tag on">Claude Code → after its next tool call</span><span class="tag">Codex, OpenCode → when the turn ends</span><span class="tag off">Idle agent → waits for your next run</span></div>
-        <h3>Chat with a running agent</h3>
-        <p>Type in the notch and your message reaches Claude Code in the middle of its turn. The box tells you honestly when an agent is idle and your message can only wait.</p>
-      </article>
-      <article class="feat">
-        <div class="demo"><div style="display:flex;gap:10px;align-items:center"><div id="mini1" style="width:44px"></div><div id="mini2" style="width:44px"></div><div id="mini3" style="width:44px"></div><span style="font:12px var(--mono);color:#8D8C94">one avatar per agent</span></div></div>
-        <h3>Twelve buddies, one per agent</h3>
-        <p>Pick a buddy for each agent. The notch wears the avatar of whichever agent is busiest right now.</p>
-      </article>
-      <article class="feat">
-        <div class="demo"><div style="display:flex;justify-content:space-between;font:12px var(--mono);color:#A9A8B0"><span>Today: 1.8M of 5M tokens</span><span>Claude Code + OpenCode</span></div><div class="bar"><i></i></div></div>
-        <h3>A token meter with a daily limit</h3>
-        <p>Counts come from the transcripts already on your disk. Cross the limit you set and a warning triangle shows up in the notch, with one soft bwomp.</p>
-      </article>
-      <article class="feat">
-        <div class="demo" style="grid-template-columns:auto 1fr;align-items:center;gap:14px"><div id="mini4" style="width:54px"></div><div class="code" style="font-size:12px">Click a session → its exact Terminal tab comes to the front.</div></div>
-        <h3>Jump to the right window</h3>
-        <p>Click a session to bring its app forward: the exact Terminal.app tab, VS Code, Claude Desktop or Antigravity.</p>
-      </article>
-      <article class="feat">
-        <div class="demo"><div class="code">~/Library/Application Support/NotchBuddy/hook.sock</div><div style="font-size:12px;color:#A9A8B0">A local Unix socket. No server, no account, no network.</div></div>
-        <h3>Local by design</h3>
-        <p>Hooks talk to the app over a socket inside your home folder. Session history stays in a file you can delete from Settings.</p>
-      </article>
+    <div>
+      <h1 id="headline">Your coding agents, living in the notch.</h1>
+      <p class="lede">A native macOS app that shows what Claude Code, Codex, OpenCode and Antigravity are doing, lets you approve and reply from the notch, and sends a small buddy walking along your Dock.</p>
+      <div class="ctas"><a class="cta primary magnet" href="#story"><span>See it work ↓</span></a><a class="cta ghost magnet" href="#play"><span>Poke the buddies</span></a></div>
+      <p class="hint-line"><b>Psst.</b> Click the buddy. Then try the notch at the top of this page.</p>
+    </div>
+    <div class="big-buddy" id="bigBuddy" role="button" tabindex="0" aria-label="Poke the buddy"><div class="shadow"></div><div id="bigAv"></div><div class="bubble" id="bigBub"></div></div>
+  </div>
+</header>
+
+<section class="story" id="story">
+  <div class="pin" id="pin">
+    <div class="wrap cols">
+      <div class="stage-frame" id="frame">
+        <div class="stage" id="stage" aria-label="A desktop playing the story">
+          <div class="menubar"><div><span></span><span><b>Notch Buddy</b></span><span>File</span><span>Edit</span></div><div><span id="sClock">09:02</span></div></div>
+          <div class="notch-shell" id="sNotch" data-mode="compact" data-state="thinking">
+            <div class="glow"></div>
+            <div class="notch-body"><div class="ears"><div class="l" id="sEar"></div><div class="r" id="sEarR"></div></div><div class="peek-row" id="sPeek"></div><div class="panel" id="sPanel"></div></div>
+          </div>
+          <div class="dock" aria-hidden="true"><i style="background:#3b82f6"></i><i style="background:#f59e0b"></i><i style="background:#10b981"></i><i style="background:#ef4444"></i><i style="background:#8b5cf6"></i><i style="background:#64748b"></i></div>
+          <div class="story-buddy" id="sBuddy"><div class="zz" id="sZz">Zzz…</div><div id="sBuddyAv"></div></div>
+        </div>
+      </div>
+      <div class="steps">
+        <div class="progress" id="prog"></div>
+        <div class="cap" id="caps"></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="alt" id="avatars">
+<section class="buddies" id="buddies">
   <div class="wrap">
     <div class="kicker">The buddies</div>
-    <h2>Pick one. Watch it react.</h2>
-    <p class="sub">Every buddy has the same moods: asleep, thinking, working, needs you, done and error. Tap one to move it into the demo above.</p>
+    <h2>Twelve of them. One per agent, if you like.</h2>
+    <p class="sub" style="margin-top:14px">They watch your cursor. Hover to cycle their moods, click to adopt one: it moves into the notch up top and into the playground below.</p>
     <div class="gallery" id="gallery"></div>
   </div>
 </section>
 
-<section id="sounds">
+<section class="play" id="play">
   <div class="wrap">
-    <div class="kicker">The robot voice</div>
-    <h2>Beeps that sound like a mood, not a notification.</h2>
-    <p class="sub">The default sound pack is wordless droid babble, synthesized from gliding blips. Press a card to hear it. Needs-you rises like a question, done trills upward, errors sag.</p>
-    <div class="lab" id="lab"></div>
-    <p class="hint">Turns on after your first press. In the app, sounds are off until you enable them and mute themselves while your microphone is in use.</p>
+    <div class="kicker">Playground</div>
+    <h2>Grab one. Drop it. Make them collide.</h2>
+    <p class="sub" style="margin-top:14px">In the app they walk along your Dock while an agent works. Here they're all yours: drag and let go, poke a few times, add friends and watch them bump.</p>
+    <div class="tools">
+      <button class="chip" id="addB">+ Add a buddy</button>
+      <button class="chip" data-mood="working" aria-pressed="true">Working</button>
+      <button class="chip" data-mood="needsYou" aria-pressed="false">Needs you</button>
+      <button class="chip" data-mood="done" aria-pressed="false">Done</button>
+      <button class="chip" data-mood="sleeping" aria-pressed="false">Asleep</button>
+    </div>
+    <div class="desk" id="desk"><div class="label">Your Dock, roughly</div></div>
   </div>
 </section>
 
-<section class="alt" id="agents">
+<section class="sounds" id="sounds">
+  <div class="wrap">
+    <div class="kicker">The robot voice</div>
+    <h2>Beeps that sound like a mood.</h2>
+    <p class="sub" style="margin-top:14px">The default sound pack is wordless droid babble built from gliding blips, synthesized live. In the app sounds are opt-in and go quiet while your microphone is in use.</p>
+    <div class="layout">
+      <div class="singer" id="singer"><div class="waves" id="waves"><i></i><i></i><i></i></div><div id="singerAv"></div></div>
+      <div class="lab" id="lab"></div>
+    </div>
+  </div>
+</section>
+
+<section class="safety" id="safety">
   <div class="wrap two">
     <div>
       <div class="kicker">Safety first</div>
-      <h2>It never approves what it should not.</h2>
-      <ul class="rules" style="margin-top:28px">
-        <li><div><b>Risky commands are never approvable here.</b><br><span>The hook answers immediately with no decision, so the agent asks in its own terminal.</span></div></li>
-        <li><div><b>Only agents with a real permission hook can be approved.</b><br><span>Everywhere else Notch Buddy only shows status.</span></div></li>
-        <li><div><b>Every file it writes is labelled and reversible.</b><br><span>Settings changes carry a marker and a timestamped backup, and removal only touches its own entries.</span></div></li>
+      <h2>It never approves what it shouldn't.</h2>
+      <ul class="rules">
+        <li><div><b>Risky commands can't be approved here.</b><br><span>The hook answers right away with no decision, so the agent asks in its own terminal.</span></div></li>
+        <li><div><b>Only agents with a real permission hook get buttons.</b><br><span>Everywhere else Notch Buddy only shows status.</span></div></li>
+        <li><div><b>Local by design.</b><br><span>Hooks talk to the app over a Unix socket in your home folder. No server, no account.</span></div></li>
+        <li><div><b>Every file it writes is labelled and reversible.</b><br><span>A marker and a timestamped backup on every settings change.</span></div></li>
       </ul>
     </div>
     <div>
@@ -349,10 +345,10 @@ footer.end { padding-block: 40px 56px; color: var(--muted); font-size: 14px; bor
       <div class="scroll-x"><table class="agents">
         <thead><tr><th>Agent</th><th>Status</th><th>Approve</th><th>Chat</th></tr></thead>
         <tbody>
-          <tr><td>Claude Code</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
-          <tr><td>Codex</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
-          <tr><td>OpenCode</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
-          <tr><td>Antigravity</td><td class="yes">yes</td><td>no</td><td class="yes">yes</td></tr>
+          <tr><td>Claude Code</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">mid-turn</td></tr>
+          <tr><td>Codex</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">end of turn</td></tr>
+          <tr><td>OpenCode</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">end of turn</td></tr>
+          <tr><td>Antigravity</td><td class="yes">yes</td><td>no</td><td class="yes">end of turn</td></tr>
           <tr><td>Gemini CLI, Cursor, Copilot, Cline</td><td class="yes">yes</td><td>no</td><td>no</td></tr>
         </tbody>
       </table></div>
@@ -360,14 +356,13 @@ footer.end { padding-block: 40px 56px; color: var(--muted); font-size: 14px; bor
   </div>
 </section>
 
-<section id="build">
+<section class="build" id="build">
   <div class="wrap two">
     <div>
       <div class="kicker">Run it</div>
-      <h2>A Swift package. Build it in a minute.</h2>
-      <p class="sub">Needs macOS 14 or later and the Swift toolchain. A Mac with a notch looks best; others get the same panel under the menu bar.</p>
+      <h2>A Swift package. Up in a minute.</h2>
+      <p class="sub" style="margin-top:14px">macOS 14 or later with the Swift toolchain. Notch Macs look best; others get the same panel under the menu bar.</p>
     </div>
-    <div>
 <pre class="term" id="term"><button class="copy" id="copy">Copy</button><span class="c"># build and open the app</span>
 ./scripts/make-app.sh
 open build/NotchBuddy.app
@@ -376,359 +371,422 @@ open build/NotchBuddy.app
 swift test
 
 <span class="c"># then: menu bar icon → Settings → Agents → Connect</span></pre>
-    </div>
   </div>
 </section>
 
-<div class="wrap"><footer class="end">Notch Buddy · SwiftUI · everything stays on your Mac. This page is a browser re-creation of the app's behavior; sounds are synthesized live with the Web Audio API.</footer></div>
+<div class="wrap"><footer class="end">Notch Buddy · SwiftUI · everything stays on your Mac. This page re-creates the app's behavior in the browser; sounds are synthesized live with Web Audio.</footer></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
 (() => {
 "use strict";
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const G = window.gsap, ST = window.ScrollTrigger; // the page still works, unanimated, if the CDN is blocked
+if (G && ST) G.registerPlugin(ST);
 const rnd = (a, b) => a + Math.random() * (b - a);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-/* ---------- theme ---------- */
-const root = document.documentElement;
-const saved = store.get("nb-theme");
-if (saved) root.dataset.theme = saved;
-$("#theme").onclick = () => {
-  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-  root.dataset.theme = dark ? "light" : "dark"; store.set("nb-theme", root.dataset.theme);
-};
-
-/* ---------- robot voice (Web Audio) ---------- */
-// [startHz, endHz, seconds, gapAfter, warbleHz]  same tables as the app's synthesizer
+/* ================= robot voice ================= */
 const SND = {
-  tick: [[900, 1300, .05, 0, 0]],
-  ask: [[600, 760, .07, .04, 0], [780, 520, .08, .04, 0], [520, 1500, .20, 0, 25]],
+  tick: [[900, 1300, .05, 0, 0]], ask: [[600, 760, .07, .04, 0], [780, 520, .08, .04, 0], [520, 1500, .20, 0, 25]],
   done: [[800, 1000, .06, .02, 0], [1000, 1250, .06, .02, 0], [1250, 1700, .07, .03, 0], [1500, 2100, .22, 0, 40]],
-  error: [[700, 420, .16, .05, 0], [480, 220, .30, 0, 18]],
-  poke: [[1100, 1600, .06, 0, 0]], grab: [[500, 900, .12, .02, 0], [900, 1300, .15, 0, 30]], thud: [[260, 120, .12, 0, 0]],
+  error: [[700, 420, .16, .05, 0], [480, 220, .30, 0, 18]], poke: [[1100, 1600, .06, 0, 0]],
+  grab: [[500, 900, .12, .02, 0], [900, 1300, .15, 0, 30]], thud: [[260, 120, .12, 0, 0]],
   bonk: [[400, 200, .08, .02, 0], [700, 350, .12, 0, 20]], greet: [[900, 1200, .07, .04, 0], [1200, 1600, .10, 0, 0]],
   dizzy: [[1200, 500, .35, 0, 60]], whoa: [[600, 1400, .20, .02, 0], [1400, 300, .30, 0, 0]],
   queued: [[800, 1000, .06, 0, 0]], delivered: [[700, 900, .06, .03, 0], [900, 1500, .10, 0, 0]],
   hello: [[700, 900, .07, .03, 0], [900, 1200, .07, .03, 0], [1200, 1600, .07, .03, 0], [1500, 2200, .20, 0, 35]]
 };
 let ac = null, soundOn = false, lastBlip = 0;
-function ensureAudio() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch { ac = null; } return ac; }
+function audio() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch { ac = null; } return ac; }
 function play(name, pitch = 1, force = false) {
-  if ((!soundOn && !force) || !ensureAudio()) return;
-  const now = performance.now(); if (!force && now - lastBlip < 300) return; lastBlip = now;
-  let t = ac.currentTime + 0.01;
+  if ((!soundOn && !force) || !audio()) return 0;
+  const now = performance.now(); if (!force && now - lastBlip < 250) return 0; lastBlip = now;
+  let t = ac.currentTime + .01; const t0 = t;
   for (const [f0, f1, dur, gap, warble] of SND[name]) {
-    const osc = ac.createOscillator(), osc2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
-    osc.frequency.setValueAtTime(f0 * pitch, t); osc.frequency.linearRampToValueAtTime(f1 * pitch, t + dur);
-    osc2.frequency.setValueAtTime(f0 * pitch * 2, t); osc2.frequency.linearRampToValueAtTime(f1 * pitch * 2, t + dur);
-    g2.gain.value = .25;
-    if (warble) { const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 28; lg.gain.value = warble * pitch; lfo.connect(lg); lg.connect(osc.frequency); lfo.start(t); lfo.stop(t + dur + .05); }
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22, t + .006); g.gain.setValueAtTime(.22, t + dur - .02); g.gain.linearRampToValueAtTime(0, t + dur);
-    osc.connect(g); osc2.connect(g2); g2.connect(g); g.connect(ac.destination);
-    osc.start(t); osc2.start(t); osc.stop(t + dur + .02); osc2.stop(t + dur + .02);
+    const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
+    o.frequency.setValueAtTime(f0 * pitch, t); o.frequency.linearRampToValueAtTime(f1 * pitch, t + dur);
+    o2.frequency.setValueAtTime(f0 * pitch * 2, t); o2.frequency.linearRampToValueAtTime(f1 * pitch * 2, t + dur); g2.gain.value = .25;
+    if (warble) { const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = 28; lg.gain.value = warble * pitch; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + dur + .05); }
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.2, t + .006); g.gain.setValueAtTime(.2, t + dur - .02); g.gain.linearRampToValueAtTime(0, t + dur);
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(ac.destination); o.start(t); o2.start(t); o.stop(t + dur + .02); o2.stop(t + dur + .02);
     t += dur + gap;
   }
+  return t - t0;
 }
-const soundBtn = $("#sound");
-function setSound(on) { soundOn = on; soundBtn.setAttribute("aria-pressed", on); soundBtn.textContent = on ? "🔊 Sound on" : "🔇 Sound off"; if (on) { ensureAudio(); play("hello", 1, true); } }
-soundBtn.onclick = () => setSound(!soundOn);
+function setSound(on) { soundOn = on; $("#mSoundSt").textContent = on ? "on" : "off"; if (on) play("hello", 1, true); }
 
-/* ---------- avatars (procedural, 100x100) ---------- */
+/* ================= buddies (procedural SVG) ================= */
 const KINDS = {
-  bolt:   { name: "Bolt",   ey: 52, body: c => `<circle cx="50" cy="54" r="34" fill="#FFD84D"/><polygon points="52,8 38,30 49,30 44,46 62,24 51,24" fill="#FFB020"/>` },
-  mochi:  { name: "Mochi",  ey: 58, body: c => `<ellipse cx="50" cy="62" rx="40" ry="31" fill="#FFE3EC"/><circle cx="26" cy="68" r="5" fill="#FFB8CB" opacity=".8"/><circle cx="74" cy="68" r="5" fill="#FFB8CB" opacity=".8"/>` },
-  goo:    { name: "Goo",    ey: 56, body: c => `<path d="M14 80 C10 50 30 24 50 24 C72 24 90 48 86 80 C84 92 74 90 72 82 C70 92 58 92 56 82 C52 94 40 94 38 82 C34 92 18 92 14 80Z" fill="#6EE7A8"/>` },
-  boo:    { name: "Boo",    ey: 46, body: c => `<path d="M18 86 V46 C18 24 32 12 50 12 C68 12 82 24 82 46 V86 L72 78 L62 88 L50 78 L38 88 L28 78Z" fill="#F4F6FA"/>` },
-  tofu:   { name: "Tofu",   ey: 54, body: c => `<rect x="16" y="22" width="68" height="64" rx="16" fill="#FFF3D6"/><rect x="16" y="70" width="68" height="16" rx="8" fill="#F1DFB4"/>` },
-  sprout: { name: "Sprout", ey: 62, body: c => `<circle cx="50" cy="64" r="30" fill="#8FD36B"/><path d="M50 36 C48 22 38 16 28 18 C30 30 38 36 50 36Z" fill="#4CAF50"/><path d="M50 36 C52 20 64 14 74 18 C72 30 62 36 50 36Z" fill="#6CC24A"/>` },
-  ember:  { name: "Ember",  ey: 62, body: c => `<path d="M50 8 C58 26 78 34 78 62 C78 82 66 92 50 92 C34 92 22 82 22 62 C22 48 32 42 36 30 C42 38 44 40 46 44 C50 32 46 22 50 8Z" fill="#FF8A3D"/><path d="M50 44 C58 54 64 60 64 72 C64 84 58 90 50 90 C42 90 36 84 36 72 C36 62 46 56 50 44Z" fill="#FFC857"/>` },
-  nimbus: { name: "Nimbus", ey: 56, body: c => `<g fill="#B9D6FF"><circle cx="34" cy="62" r="22"/><circle cx="58" cy="50" r="26"/><circle cx="72" cy="66" r="20"/><rect x="26" y="62" width="58" height="24" rx="12"/></g>` },
-  inky:   { name: "Inky",   ey: 62, body: c => `<path d="M50 8 C60 30 80 44 80 66 C80 84 66 94 50 94 C34 94 20 84 20 66 C20 44 40 30 50 8Z" fill="#2B3A67"/><ellipse cx="38" cy="60" rx="5" ry="9" fill="#fff" opacity=".18"/>` },
-  bun:    { name: "Bun",    ey: 62, body: c => `<ellipse cx="34" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="66" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="34" cy="28" rx="4" ry="14" fill="#F7B6C5"/><ellipse cx="66" cy="28" rx="4" ry="14" fill="#F7B6C5"/><circle cx="50" cy="66" r="30" fill="#F2E4D4"/>` },
-  byte:   { name: "Byte",   ey: 56, body: c => `<line x1="50" y1="14" x2="50" y2="26" stroke="#2DD4BF" stroke-width="4"/><circle cx="50" cy="12" r="5" fill="#9BF2D0"/><path d="M22 28 H78 V40 H86 V80 H78 V88 H22 V80 H14 V40 H22Z" fill="#2DD4BF"/>` },
-  quack:  { name: "Quack",  ey: 50, body: c => `<circle cx="50" cy="58" r="32" fill="#FFD84D"/><path d="M40 62 H76 Q80 68 76 72 H40Z" fill="#FF8A3D"/>` }
+  bolt:   { name: "Bolt",   ey: 52, cheer: "Zzzap!",  body: `<circle cx="50" cy="54" r="34" fill="#FFD84D"/><polygon points="52,8 38,30 49,30 44,46 62,24 51,24" fill="#FFB020"/>` },
+  mochi:  { name: "Mochi",  ey: 58, cheer: "Mochi~",  body: `<ellipse cx="50" cy="62" rx="40" ry="31" fill="#FFE3EC"/><circle cx="26" cy="68" r="5" fill="#FFB8CB" opacity=".8"/><circle cx="74" cy="68" r="5" fill="#FFB8CB" opacity=".8"/>` },
+  goo:    { name: "Goo",    ey: 56, cheer: "Blorp!",  body: `<path d="M14 80 C10 50 30 24 50 24 C72 24 90 48 86 80 C84 92 74 90 72 82 C70 92 58 92 56 82 C52 94 40 94 38 82 C34 92 18 92 14 80Z" fill="#6EE7A8"/>` },
+  boo:    { name: "Boo",    ey: 46, cheer: "Boo!",    body: `<path d="M18 86 V46 C18 24 32 12 50 12 C68 12 82 24 82 46 V86 L72 78 L62 88 L50 78 L38 88 L28 78Z" fill="#F4F6FA"/>` },
+  tofu:   { name: "Tofu",   ey: 54, cheer: "Tofu!",   body: `<rect x="16" y="22" width="68" height="64" rx="16" fill="#FFF3D6"/><rect x="16" y="70" width="68" height="16" rx="8" fill="#F1DFB4"/>` },
+  sprout: { name: "Sprout", ey: 62, cheer: "Sprout!", body: `<circle cx="50" cy="64" r="30" fill="#8FD36B"/><path d="M50 36 C48 22 38 16 28 18 C30 30 38 36 50 36Z" fill="#4CAF50"/><path d="M50 36 C52 20 64 14 74 18 C72 30 62 36 50 36Z" fill="#6CC24A"/>` },
+  ember:  { name: "Ember",  ey: 62, cheer: "Hot hot!", body: `<path d="M50 8 C58 26 78 34 78 62 C78 82 66 92 50 92 C34 92 22 82 22 62 C22 48 32 42 36 30 C42 38 44 40 46 44 C50 32 46 22 50 8Z" fill="#FF8A3D"/><path d="M50 44 C58 54 64 60 64 72 C64 84 58 90 50 90 C42 90 36 84 36 72 C36 62 46 56 50 44Z" fill="#FFC857"/>` },
+  nimbus: { name: "Nimbus", ey: 56, cheer: "Puff!",   body: `<g fill="#B9D6FF"><circle cx="34" cy="62" r="22"/><circle cx="58" cy="50" r="26"/><circle cx="72" cy="66" r="20"/><rect x="26" y="62" width="58" height="24" rx="12"/></g>` },
+  inky:   { name: "Inky",   ey: 62, cheer: "Splat!",  body: `<path d="M50 8 C60 30 80 44 80 66 C80 84 66 94 50 94 C34 94 20 84 20 66 C20 44 40 30 50 8Z" fill="#2B3A67"/><ellipse cx="38" cy="60" rx="5" ry="9" fill="#fff" opacity=".18"/>` },
+  bun:    { name: "Bun",    ey: 62, cheer: "Bun bun!", body: `<ellipse cx="34" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="66" cy="26" rx="9" ry="22" fill="#F2E4D4"/><ellipse cx="34" cy="28" rx="4" ry="14" fill="#F7B6C5"/><ellipse cx="66" cy="28" rx="4" ry="14" fill="#F7B6C5"/><circle cx="50" cy="66" r="30" fill="#F2E4D4"/>` },
+  byte:   { name: "Byte",   ey: 56, cheer: "01010!",  body: `<line x1="50" y1="14" x2="50" y2="26" stroke="#2DD4BF" stroke-width="4"/><circle cx="50" cy="12" r="5" fill="#9BF2D0"/><path d="M22 28 H78 V40 H86 V80 H78 V88 H22 V80 H14 V40 H22Z" fill="#2DD4BF"/>` },
+  quack:  { name: "Quack",  ey: 50, cheer: "Quack!",  body: `<circle cx="50" cy="58" r="32" fill="#FFD84D"/><path d="M40 62 H76 Q80 68 76 72 H40Z" fill="#FF8A3D"/>` }
 };
-function face(kind, state) {
-  const y = KINDS[kind].ey, ink = kind === "inky" || kind === "boo" ? (kind === "inky" ? "#fff" : "#1b1f2a") : "#1b1f2a";
-  const eye = (x) => {
+const ORDER = Object.keys(KINDS);
+const COLORS = { sleeping: "#6b7280", thinking: "#8AB4FF", working: "#34D399", needsYou: "#FFB020", done: "#9BF2D0", error: "#FF6B6B" };
+function face(kind, state, mouthOpen = 0) {
+  const y = KINDS[kind].ey, ink = kind === "inky" ? "#fff" : "#1b1f2a";
+  const eye = x => {
     switch (state) {
       case "sleeping": return `<path d="M${x - 5} ${y} q5 5 10 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
       case "done": return `<path d="M${x - 5} ${y + 2} q5 -7 10 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
       case "error": return `<path d="M${x - 4} ${y - 4} l8 8 M${x + 4} ${y - 4} l-8 8" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`;
-      case "needsYou": return `<circle cx="${x}" cy="${y}" r="6" fill="#fff"/><circle cx="${x}" cy="${y}" r="3" fill="${ink}"/>`;
-      case "thinking": return `<g class="blink"><circle cx="${x + 2}" cy="${y - 2}" r="4" fill="${ink}"/></g>`;
-      default: return `<g class="blink"><circle cx="${x}" cy="${y}" r="${state === "working" ? 3.2 : 4.2}" fill="${ink}"/></g>`;
+      case "needsYou": return `<circle cx="${x}" cy="${y}" r="6.5" fill="#fff"/><g class="eyes"><circle cx="${x}" cy="${y}" r="3.2" fill="${ink}"/></g>`;
+      default: return `<g class="eyes"><ellipse class="lid" cx="${x}" cy="${y}" rx="${state === "working" ? 3.4 : 4.4}" ry="${state === "working" ? 3.2 : 4.6}" fill="${ink}"/></g>`;
     }
   };
-  const mouth = { sleeping: `<circle cx="50" cy="${y + 14}" r="2.4" fill="${ink}" opacity=".6"/>`,
+  const mouths = {
+    sleeping: `<circle cx="50" cy="${y + 14}" r="2.4" fill="${ink}" opacity=".6"/>`,
     done: `<path d="M42 ${y + 10} q8 9 16 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
     error: `<path d="M42 ${y + 15} q4 -5 8 0 t8 0" stroke="${ink}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
     needsYou: `<ellipse cx="50" cy="${y + 13}" rx="3.4" ry="4.4" fill="${ink}"/>`,
     thinking: `<path d="M45 ${y + 13} h10" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`,
     working: `<path d="M44 ${y + 12} h12" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`
-  }[state] || `<path d="M44 ${y + 11} q6 5 12 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-  const extra = state === "needsYou" ? `<text x="50" y="12" text-anchor="middle" font-size="20" font-weight="700" fill="#FFB020" font-family="Unbounded,sans-serif">!</text>`
-    : state === "working" ? `<path d="M76 ${y - 18} q4 6 0 9 q-4 -3 0 -9z" fill="#7FC8FF"/>`
-    : state === "sleeping" ? `<text x="78" y="22" font-size="13" font-weight="700" fill="currentColor" opacity=".6" font-family="Unbounded,sans-serif">z</text>` : "";
-  return eye(38) + eye(62) + mouth + extra;
+  };
+  const mouth = mouthOpen ? `<ellipse cx="50" cy="${y + 13}" rx="${(4 + mouthOpen * 3).toFixed(1)}" ry="${(2 + mouthOpen * 6).toFixed(1)}" fill="${ink}"/>` : (mouths[state] || `<path d="M44 ${y + 11} q6 5 12 0" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+  const extra = state === "needsYou" ? `<text x="50" y="10" text-anchor="middle" font-size="20" font-weight="800" fill="#FFB020" font-family="Unbounded,sans-serif">!</text>`
+    : state === "working" ? `<path d="M78 ${y - 18} q4 6 0 9 q-4 -3 0 -9z" fill="#7FC8FF"/>`
+    : state === "sleeping" ? `<text x="80" y="20" font-size="13" font-weight="800" fill="#9BF2D0" opacity=".8" font-family="Unbounded,sans-serif">z</text>` : "";
+  return eye(38) + eye(62) + `<g class="mouth">${mouth}</g>` + extra;
 }
-function avatar(kind, state, pxClass = "") {
-  return `<svg class="av ${pxClass}" data-state="${state}" viewBox="0 0 100 100" role="img" aria-label="${KINDS[kind].name}, ${state}"><g class="body">${KINDS[kind].body()}${face(kind, state)}</g></svg>`;
-}
-const COLORS = { sleeping: "#6b7280", thinking: "#8AB4FF", working: "#34D399", needsYou: "#FFB020", done: "#9BF2D0", error: "#FF6B6B" };
+const avatar = (kind, state, mouthOpen = 0) => `<svg class="av" data-state="${state}" viewBox="0 0 100 100" role="img" aria-label="${KINDS[kind].name}, ${state === "needsYou" ? "needs you" : state}"><g class="bodyg">${KINDS[kind].body}${face(kind, state, mouthOpen)}</g></svg>`;
 
-/* ---------- state ---------- */
-const S = { state: "sleeping", mode: "compact", risky: false, second: false, chat: null, tokens: 1_780_000, limit: 2_000_000, greeted: false, kind1: "bolt", kind2: "byte", started: Date.now() };
-const sessions = () => [
-  { id: "cc", label: "Claude Code", project: "notch-buddy", state: S.state, tokens: "48.2k", idle: S.state === "sleeping" || S.state === "done" || S.state === "error" },
-  { id: "oc", label: "OpenCode", project: "api", state: S.second ? (S.state === "sleeping" ? "sleeping" : "working") : "sleeping", tokens: "9.6k", idle: !(S.second && S.state !== "sleeping") },
-  { id: "ag", label: "Antigravity", project: "docs", state: "sleeping", tokens: "", idle: true }
+/* eyes follow the cursor, everywhere on the page (one rAF per pointer move) */
+let ptr = null, eyeRaf = 0;
+addEventListener("pointermove", e => { ptr = { x: e.clientX, y: e.clientY }; if (!eyeRaf) eyeRaf = requestAnimationFrame(trackEyes); }, { passive: true });
+function trackEyes() {
+  eyeRaf = 0; if (!ptr || reduce) return;
+  for (const svg of document.querySelectorAll("svg.av")) {
+    const r = svg.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight || r.width < 20) continue;
+    const dx = ptr.x - (r.left + r.width / 2), dy = ptr.y - (r.top + r.height * .45), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 260) * 2.6;
+    const flip = svg.closest(".sprite")?.dataset.flip === "1" ? -1 : 1;
+    for (const g of svg.querySelectorAll(".eyes")) g.style.transform = `translate(${(dx / d * k * flip).toFixed(2)}px, ${(dy / d * k).toFixed(2)}px)`;
+  }
+}
+
+/* ================= state shared across the page ================= */
+const S = { kind: KINDS[store.get("nb-kind")] ? store.get("nb-kind") : "bolt", mood: "working" };
+
+/* ================= the page notch ================= */
+const pn = $("#pnotch");
+const SECTION_NOTCH = {
+  top: ["thinking", "Hi! Scroll, I'll show you around."],
+  story: ["working", "This is a day with Notch Buddy. Keep scrolling."],
+  buddies: ["done", "Pick a buddy. I'll wear it up here."],
+  play: ["needsYou", "Go on, grab one and let go."],
+  sounds: ["working", "Turn the sound on. I'm chatty."],
+  safety: ["done", "Risky stuff goes back to your terminal."],
+  build: ["done", "Ready when you are."]
+};
+let peekT = 0;
+function pnRender(state, say, peek = true) {
+  pn.dataset.state = state;
+  $("#pEar").innerHTML = avatar(S.kind, state);
+  $("#pDot").style.setProperty("--c", COLORS[state]); $("#pDot").classList.toggle("pulse", state === "working" || state === "needsYou");
+  if (say) $("#pSay").textContent = say;
+  if (pn.dataset.mode !== "open" && peek) { pn.dataset.mode = "peek"; clearTimeout(peekT); peekT = setTimeout(() => { if (pn.dataset.mode === "peek") pn.dataset.mode = "compact"; }, 2600); }
+  trackEyes();
+}
+function pnOpen(open) {
+  pn.dataset.mode = open ? "open" : "compact"; pn.setAttribute("aria-expanded", open);
+  if (open) { requestAnimationFrame(() => pn.style.setProperty("--h", ($("#pMenu").offsetHeight + 40) + "px")); play("greet"); }
+}
+pn.addEventListener("click", e => { if (e.target.closest("a")) { pnOpen(false); return; } if (e.target.closest("button")) return; pnOpen(pn.dataset.mode !== "open"); });
+pn.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === pn) { e.preventDefault(); pnOpen(pn.dataset.mode !== "open"); } });
+document.addEventListener("pointerdown", e => { if (pn.dataset.mode === "open" && !e.target.closest("#pnotch")) pnOpen(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && pn.dataset.mode === "open") pnOpen(false); });
+$("#mSound").onclick = () => setSound(!soundOn);
+const root = document.documentElement;
+function themeLabel() { $("#mThemeSt").textContent = root.dataset.theme || "system"; }
+if (store.get("nb-theme")) root.dataset.theme = store.get("nb-theme");
+themeLabel();
+$("#mTheme").onclick = () => { const order = [undefined, "dark", "light"], i = order.indexOf(root.dataset.theme), n = order[(i + 1) % 3]; if (n) root.dataset.theme = n; else delete root.dataset.theme; store.set("nb-theme", n || ""); themeLabel(); };
+const pageStart = Date.now();
+setInterval(() => { const s = Math.floor((Date.now() - pageStart) / 1000); $("#pTimer").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }, 1000);
+pnRender("thinking", SECTION_NOTCH.top[1]);
+
+/* ================= hero ================= */
+const h1 = $("#headline");
+h1.innerHTML = h1.textContent.split(" ").map(w => `<span class="w"><span${/living/.test(w) ? ' class="hl"' : ""}>${w}</span></span>`).join(" ");
+let bigState = "awake"; // "awake" has round eyes that follow the cursor
+const bigAv = $("#bigAv"), bigBub = $("#bigBub"), big = $("#bigBuddy");
+function drawBig(m = 0) { bigAv.innerHTML = avatar(S.kind, bigState, m); trackEyes(); }
+drawBig();
+let pokes = 0, lastPoke = 0;
+function bigSay(t) { bigBub.textContent = t; if (G) { G.killTweensOf(bigBub); G.fromTo(bigBub, { opacity: 0, y: 10, scale: .8 }, { opacity: 1, y: 0, scale: 1, duration: .35, ease: "back.out(2)" }); G.to(bigBub, { opacity: 0, delay: 1.6, duration: .3 }); } else bigBub.style.opacity = 1; }
+function pokeBig() {
+  const now = performance.now(); pokes = now - lastPoke > 2500 ? 1 : pokes + 1; lastPoke = now;
+  const moods = ["done", "thinking", "needsYou", "working", "awake"];
+  if (pokes >= 5) { bigState = "error"; bigSay("Okay, that's enough 😵"); play("dizzy"); if (G) G.fromTo(bigAv, { rotate: 0 }, { rotate: 360, duration: .8, ease: "power3.out" }); pokes = 0; }
+  else { bigState = moods[pokes % moods.length]; bigSay(pokes === 1 ? KINDS[S.kind].cheer : pick(["Hehe!", "Tickles!", "Hey!", "Again?"])); play("poke", .9 + .12 * pokes); }
+  drawBig();
+  if (G) G.fromTo(bigAv, { scaleX: 1.18, scaleY: .82, y: 10 }, { scaleX: 1, scaleY: 1, y: 0, duration: .7, ease: "elastic.out(1.1, .35)" });
+  clearTimeout(pokeBig.t); pokeBig.t = setTimeout(() => { bigState = "awake"; drawBig(); }, 2600);
+}
+big.addEventListener("click", pokeBig);
+big.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pokeBig(); } });
+
+if (G && !reduce) {
+  G.from("#headline .w > span", { yPercent: 110, rotate: 4, duration: .9, ease: "power4.out", stagger: .06, delay: .1 });
+  G.from(".hero .lede, .hero .ctas, .hero .hint-line", { y: 24, opacity: .2, duration: .8, ease: "power3.out", stagger: .1, delay: .45 });
+  G.from(big, { scale: .4, y: 60, duration: 1.1, ease: "elastic.out(1, .5)", delay: .3 });
+  // the dot grid leans away from the pointer, the buddy leans toward it
+  const gx = G.quickTo("#gridBg", "x", { duration: .8, ease: "power3" }), gy = G.quickTo("#gridBg", "y", { duration: .8, ease: "power3" });
+  const bx = G.quickTo(big, "x", { duration: .9, ease: "power3" }), by = G.quickTo(big, "y", { duration: .9, ease: "power3" });
+  $(".hero").addEventListener("pointermove", e => { const r = e.currentTarget.getBoundingClientRect(), nx = (e.clientX - r.left) / r.width - .5, ny = (e.clientY - r.top) / r.height - .5; gx(nx * -24); gy(ny * -24); bx(nx * 18); by(ny * 12); });
+  // magnetic buttons
+  for (const m of $$(".magnet")) {
+    const mx = G.quickTo(m, "x", { duration: .5, ease: "elastic.out(1, .4)" }), my = G.quickTo(m, "y", { duration: .5, ease: "elastic.out(1, .4)" });
+    m.addEventListener("pointermove", e => { const r = m.getBoundingClientRect(); mx((e.clientX - r.left - r.width / 2) * .35); my((e.clientY - r.top - r.height / 2) * .45); });
+    m.addEventListener("pointerleave", () => { mx(0); my(0); });
+  }
+}
+for (const a of $$('a[href^="#"]')) a.addEventListener("click", e => { const t = document.getElementById(a.getAttribute("href").slice(1)); if (!t) return; e.preventDefault(); t.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); });
+
+/* ================= scroll story ================= */
+const STEPS = [
+  { t: "09:02", h: "It wakes up with you.", p: "You give Claude Code a prompt. The notch wakes, says good morning in robot, and the light starts to run.", state: "thinking", sound: "hello" },
+  { t: "09:03", h: "It works where you can see it.", p: "Tool calls tick by, a step counter climbs, and today's tokens add up in the footer. Your buddy walks along the Dock.", state: "working", sound: "tick" },
+  { t: "09:11", h: "It asks, you answer.", p: "A permission request opens right in the notch. Allow or deny without hunting for the terminal.", state: "needsYou", sound: "ask" },
+  { t: "09:12", h: "Risky? It won't even offer.", p: "Something like piping a download into a shell is never approvable here. The agent asks in its own terminal.", state: "needsYou", risky: true, sound: "ask" },
+  { t: "09:20", h: "Reply mid-turn.", p: "Type in the notch. Claude Code reads it after its next tool call, no waiting for the turn to end.", state: "working", chat: true },
+  { t: "09:24", h: "Done, with a little trill.", p: "The turn ends, the notch peeks out to tell you, and the buddy hops.", state: "done", sound: "done" },
+  { t: "09:40", h: "Then it gets out of the way.", p: "Nothing running? The notch fades and your buddy curls up for a nap.", state: "sleeping" }
 ];
-const short = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k" : "" + n;
-const stateName = { sleeping: "Idle", thinking: "Thinking", working: "Working", needsYou: "Needs you", done: "Done just now", error: "Error" };
-
-const notch = $("#notch"), panel = $("#panel");
-function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 1900); }
-
-function renderNotch() {
-  const peekStates = ["needsYou", "done", "error"];
-  if (S.mode === "expanded" && S.state === "sleeping") S.mode = "compact";
-  const mode = S.mode === "expanded" ? "expanded" : peekStates.includes(S.state) ? "peek" : "compact";
-  notch.dataset.state = S.state; notch.dataset.mode = mode;
-  $("#earAv").innerHTML = S.state === "sleeping" ? "" : avatar(S.kind1, S.state);
-  const over = S.tokens >= S.limit;
-  $("#earR").innerHTML = (over ? `<span class="warn" title="Daily token limit">⚠</span>` : "") +
-    (S.state !== "sleeping" ? `<i class="dot ${["working", "needsYou"].includes(S.state) ? "pulse" : ""}" style="--c:${COLORS[S.state]}"></i>` : "") +
-    (S.state === "working" ? `<span id="elapsed">${elapsed()}</span>` : "");
-  const txt = { needsYou: S.risky ? "Risky command, answer it in the terminal" : "Claude Code wants to run a command", done: "Done just now", error: "Error: 2 tests failed" }[S.state] || "";
-  $("#peekTxt").textContent = txt; $("#peekBtn").hidden = S.state !== "needsYou";
-  if (mode === "expanded") renderPanel(); else panel.innerHTML = "";
-  if (mode === "expanded") requestAnimationFrame(() => { notch.style.setProperty("--h", (panel.offsetHeight + 40) + "px"); });
+$("#prog").innerHTML = STEPS.map(() => "<i><b></b></i>").join("");
+$("#caps").innerHTML = STEPS.map(s => `<div><div class="clock">${s.t}</div><h2>${s.h}</h2><p>${s.p}</p></div>`).join("");
+const caps = $$("#caps > div"), bars = $$("#prog b");
+const sN = $("#sNotch"), sPanel = $("#sPanel");
+let storyStep = -1, storyPos = [0, 0], chatSent = false;
+const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : (n / 1e3).toFixed(1) + "k";
+function storyRender(i, local) {
+  storyPos = [i, local];
+  const s = STEPS[i];
+  if (i !== storyStep) {
+    const prev = storyStep; storyStep = i;
+    caps.forEach((c, k) => {
+      if (k === i) { c.style.visibility = "visible"; if (G && !reduce) G.fromTo(c, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: .45, ease: "power3.out", overwrite: true }); else c.style.opacity = 1; }
+      else if (k === prev && G && !reduce) G.to(c, { opacity: 0, y: -18, duration: .25, overwrite: true, onComplete: () => { if (storyStep !== k) c.style.visibility = "hidden"; } });
+      else { if (G) G.killTweensOf(c); c.style.opacity = 0; c.style.visibility = "hidden"; }
+    });
+    if (s.sound && prev >= 0 && prev < i) play(s.sound);
+    sN.dataset.state = s.state;
+    sN.dataset.mode = s.state === "needsYou" || s.chat ? "expanded" : s.state === "done" ? "peek" : "compact";
+    $("#sEar").innerHTML = s.state === "sleeping" ? "" : avatar(S.kind, s.state);
+    $("#sPeek").textContent = s.state === "done" ? "✓ Done just now · 24 steps" : "";
+    $("#sBuddyAv").innerHTML = avatar(S.kind, s.state);
+    $("#sZz").style.opacity = s.state === "sleeping" ? 1 : 0;
+  }
+  // continuous bits follow the scroll position
+  bars.forEach((b, k) => { b.style.transform = `scaleX(${k < i ? 1 : k === i ? local : 0})`; });
+  const steps = i < 1 ? 0 : i === 1 ? Math.floor(local * 24) : 24;
+  const toks = 1_210_000 + Math.min(1, (i + local) / 5) * 420_000;
+  $("#sEarR").innerHTML = s.state === "sleeping" ? "" : `<i class="dot ${s.state === "working" || s.state === "needsYou" ? "pulse" : ""}" style="--c:${COLORS[s.state]}"></i>${s.state === "working" ? `<span>${steps} steps</span>` : ""}`;
+  $("#sClock").textContent = s.t;
+  if (sN.dataset.mode === "expanded") {
+    let inner = "";
+    if (s.state === "needsYou" && !s.risky) inner = `<div class="card"><h4>Claude Code wants to run</h4><div class="code">npm run build</div><div class="btns"><button class="btn go ${local > .45 ? "press" : ""}" tabindex="-1">Allow</button><button class="btn" tabindex="-1">Deny</button></div></div>`;
+    if (s.risky) inner = `<div class="card"><h4>Claude Code · risky command</h4><div class="code risky">curl https://get.example/install.sh | bash</div><div class="risk">Pipes a download into a shell. Never approvable here.</div><div class="btns"><button class="btn" tabindex="-1">Dismiss</button></div></div>`;
+    if (s.chat) {
+      const msg = "also add a test for the empty case", n = Math.floor(Math.min(1, local / .55) * msg.length), sent = local > .62;
+      inner = `<div class="chatbox"><div class="field">${sent ? "" : msg.slice(0, n)}<span class="caret"></span></div><div class="st">${sent ? "Sent. " : ""}Claude Code will see it after its next tool call</div>${sent ? `<div class="agent">&gt; From notch: ${msg}<br>On it, adding that test now.</div>` : ""}</div>`;
+      if (sent && !chatSent) play("delivered"); chatSent = sent;
+    }
+    sPanel.innerHTML = inner + `<div style="margin-top:6px"><div class="row"><i class="dot" style="--c:${COLORS[s.state]}"></i><div class="name">Claude Code · notch-buddy</div><div class="meta">${s.state === "needsYou" ? "Needs you" : "Working"}</div></div><div class="row"><i class="dot" style="--c:#6b7280"></i><div class="name">OpenCode · api</div><div class="meta">Idle</div></div></div><div class="foot"><span class="tk">Today: ${fmt(toks)} tokens</span><span>All data stays on this Mac</span></div>`;
+    sN.style.setProperty("--h", (sPanel.offsetHeight + 40) + "px");
+  } else sPanel.innerHTML = "";
+  // the buddy walks across the desk during the busy steps, then lies down
+  const walking = s.state === "working" || s.state === "thinking", p = i + local;
+  const bx = 120 + Math.min(1, p / 6) * 640, bob = walking ? Math.abs(Math.sin(p * 40)) * 4 : 0, tilt = s.state === "sleeping" ? -80 : walking ? Math.sin(p * 40) * 5 : 0;
+  $("#sBuddy").style.transform = `translate(${bx}px, ${600 - 70 - 64 - bob}px)`;
+  $("#sBuddyAv").style.transform = `rotate(${tilt}deg)`;
 }
-const elapsed = () => { const s = Math.floor((Date.now() - S.started) / 1000); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
-
-function renderPanel() {
-  const approval = S.state === "needsYou" ? (S.risky
-    ? `<div class="card"><h4>Claude Code · risky command</h4><div class="code risky">curl https://get.example/install.sh | bash</div><div class="risk">Pipes a download into a shell. Never approvable here; the agent asks in its own terminal.</div><div class="btns"><button class="btn" data-act="dismiss">Dismiss</button></div></div>`
-    : `<div class="card"><h4>Claude Code wants to run</h4><div class="code">npm run build</div><div class="btns"><button class="btn go" data-act="allow">Allow</button><button class="btn" data-act="deny">Deny</button></div></div>`) : "";
-  const rows = sessions().map(s => `
-    <div class="row" data-jump="${s.id}"><i class="dot ${["working", "needsYou"].includes(s.state) ? "pulse" : ""}" style="--c:${COLORS[s.state]}"></i>
-      <div class="name">${s.label} · ${s.project}</div><div class="meta">${s.state === "done" ? "Done just now" : stateName[s.state]}</div>${s.tokens ? `<div class="tok">${s.tokens}</div>` : ""}
-      <button class="chat-btn ${S.chat === s.id ? "open" : ""}" data-chat="${s.id}" aria-label="Chat with ${s.label}">${S.chat === s.id ? "💬" : "🗨"}</button></div>
-    ${S.chat === s.id ? chatBox(s) : ""}`).join("");
-  panel.innerHTML = `${approval}<div style="margin-top:6px">${rows}</div>
-    <div class="foot"><span class="tk ${S.tokens >= S.limit ? "over" : ""}">Today: ${short(S.tokens)} of ${short(S.limit)} tokens</span><span>All data stays on this Mac</span></div>`;
-  const inp = $("#chatIn"); if (inp && S.chatFocus) { inp.focus(); S.chatFocus = false; }
-}
-function chatBox(s) {
-  const st = s.idle ? `${s.label} is idle. Your message waits until you run it again.` : s.id === "cc" ? `${s.label} will see it after its next tool call` : `Will be sent when ${s.label} finishes this turn`;
-  return `<div class="chat"><div class="in"><input id="chatIn" placeholder="Message ${s.label}…" maxlength="120" autocomplete="off"><button class="btn go" data-act="send">Send</button></div>
-    <div class="st ${s.idle ? "idle" : ""}">${st}</div>${S.sent ? `<div class="you">You: ${esc(S.sent)}</div>` : ""}${S.reply ? `<div class="agent">${S.reply}</div>` : ""}</div>`;
-}
-const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-
-function setState(next, quiet) {
-  const prev = S.state; S.state = next;
-  if (next === "working" && prev !== "working") S.started = Date.now();
-  if (prev === "sleeping" && next !== "sleeping" && !S.greeted) { S.greeted = true; play("hello"); }
-  else if (!quiet) { const m = { working: "tick", needsYou: "ask", done: "done", error: "error" }[next]; if (m) play(m); }
-  $$(".chip[data-st]").forEach(b => b.setAttribute("aria-pressed", b.dataset.st === next));
-  renderNotch(); syncWalkers();
-}
-
-$$(".chip[data-st]").forEach(b => b.onclick = () => setState(b.dataset.st));
-$("#risky").onclick = e => { S.risky = !S.risky; e.currentTarget.setAttribute("aria-pressed", S.risky); if (S.state !== "needsYou") setState("needsYou"); else renderNotch(); };
-$("#second").onclick = e => { S.second = !S.second; e.currentTarget.setAttribute("aria-pressed", S.second); syncWalkers(); renderNotch(); if (S.second && S.state === "sleeping") setState("working"); };
-
-notch.addEventListener("click", e => {
-  const t = e.target.closest("[data-act],[data-chat],[data-jump],#peekBtn");
-  if (!t) { if (S.state !== "sleeping" && S.mode !== "expanded") { S.mode = "expanded"; renderNotch(); } return; }
-  if (t.id === "peekBtn") { S.mode = "expanded"; renderNotch(); return; }
-  if (t.dataset.act === "allow" || t.dataset.act === "deny") { toast(t.dataset.act === "allow" ? "Allowed. Claude Code carries on." : "Denied."); setState("working", true); play("tick"); return; }
-  if (t.dataset.act === "dismiss") { setState("working", true); return; }
-  if (t.dataset.act === "send") { sendChat(); return; }
-  if (t.dataset.chat) { S.chat = S.chat === t.dataset.chat ? null : t.dataset.chat; S.sent = S.reply = null; S.chatFocus = true; renderNotch(); return; }
-  if (t.dataset.jump) { toast("Brought its Terminal tab to the front"); }
-});
-notch.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === notch) { e.preventDefault(); notch.click(); } if (e.key === "Enter" && e.target.id === "chatIn") sendChat(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && S.mode === "expanded") { S.mode = "compact"; S.chat = null; renderNotch(); } });
-$("#stage").addEventListener("pointerdown", e => { if (!e.target.closest("#notch") && !e.target.closest(".walker") && S.mode === "expanded") { S.mode = "compact"; S.chat = null; renderNotch(); } });
-
-function sendChat() {
-  const inp = $("#chatIn"); const text = inp ? inp.value.trim() : ""; if (!text) return;
-  const s = sessions().find(x => x.id === S.chat);
-  S.sent = text; S.reply = null;
-  play(s.idle ? "queued" : "delivered", 1, soundOn);
-  if (!s.idle) setTimeout(() => { S.reply = `> From notch: ${esc(text)}<br>On it. Picking that up right after this step.`; if (S.mode === "expanded") renderPanel(); }, 1300);
-  renderPanel();
-}
-$("#peekBtn").hidden = true;
-
-/* tokens tick up while an agent works */
-setInterval(() => { if (["working", "thinking"].includes(S.state)) { const was = S.tokens >= S.limit; S.tokens += Math.round(rnd(900, 3200)); if (!was && S.tokens >= S.limit) play("error"); renderNotch(); } else if (S.state === "working") renderNotch(); }, 1000);
-setInterval(() => { const el = $("#elapsed"); if (el) el.textContent = elapsed(); const d = new Date(); $("#clock").textContent = d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0"); }, 1000);
-
-/* ---------- stage scaling ---------- */
 const frame = $("#frame"), stage = $("#stage");
-let scale = 1;
-function fit() { scale = Math.min(1, frame.clientWidth / 960); stage.style.transform = `scale(${scale})`; frame.style.height = 600 * scale + "px"; }
+function fit() { const sc = Math.min(1, frame.clientWidth / 960); stage.style.transform = `scale(${sc})`; frame.style.height = 600 * sc + "px"; }
 new ResizeObserver(fit).observe(frame); fit();
+storyRender(0, 0);
+if (G && ST) {
+  ST.create({ trigger: "#pin", start: "top top", end: () => "+=" + innerHeight * STEPS.length * .9, pin: true, scrub: true,
+    onUpdate: self => { const x = Math.min(STEPS.length - 1e-6, self.progress * STEPS.length), i = Math.floor(x); storyRender(i, x - i); } });
+  for (const id of Object.keys(SECTION_NOTCH)) ST.create({ trigger: "#" + id, start: "top 45%", end: "bottom 45%", onToggle: self => { if (self.isActive) pnRender(...SECTION_NOTCH[id]); } });
+  if (!reduce) {
+    // reveals start from a visible resting state and only move things
+    ST.batch(".tile, .snd, .rules li, table.agents tbody tr, .tools .chip", { start: "top 92%", once: true, onEnter: els => G.from(els, { y: 34, opacity: .25, scale: .96, duration: .7, ease: "power3.out", stagger: .05 }) });
+    for (const h of $$(".buddies h2, .play h2, .sounds h2, .safety h2, .build h2")) G.from(h, { scrollTrigger: { trigger: h, start: "top 88%", once: true }, y: 40, opacity: .2, duration: .9, ease: "power4.out" });
+  }
+} else { let i = 0; setInterval(() => { i = (i + 1) % STEPS.length; storyRender(i, .8); }, 3500); }
 
-/* ---------- roaming buddies ---------- */
-const FLOOR = 600 - 70;           // y of the Dock top in stage space
-const lines = {
-  grab: ["Wooaah!", "Put me down!", "Heeelp!", "I can fly?!"], oof: ["Oof!", "Ouch!", "Bonk!"],
-  p1: k => [CATCH[k], "Hehe!", "Hi!"], p2: ["Tickles!", "Hey!", "That's my nose!", "Stop it, hehe"], p4: ["Dizzy… 🌀", "You're making me spin!"],
-  bonk: ["Bonk!", "Ow!", "Hey, watch it!", "Sorry!"], greet: n => [`Hi ${n}!`, "Hello!", "Oh, hi!"], dizzy: ["Dizzy…", "Whoa…"], whoa: ["Whoa!", "Waaah!"], oops: ["Oops!", "Sorry!", "My bad!"],
+/* ================= gallery ================= */
+const gal = $("#gallery"), cycle = ["sleeping", "thinking", "working", "needsYou", "done", "error"];
+gal.innerHTML = ORDER.map(k => `<button class="tile" data-k="${k}" aria-pressed="${k === S.kind}"><span class="slot">${avatar(k, "awake")}</span>${KINDS[k].name}<small>${KINDS[k].cheer}</small></button>`).join("");
+for (const t of $$(".tile", gal)) {
+  let i = 0, h = 0;
+  const step = () => { i = (i + 1) % cycle.length; $(".slot", t).innerHTML = avatar(t.dataset.k, cycle[i]); $("small", t).textContent = cycle[i] === "needsYou" ? "needs you" : cycle[i]; trackEyes(); };
+  const tx = G && !reduce ? G.quickTo(t, "rotationY", { duration: .5, ease: "power3" }) : null, ty = G && !reduce ? G.quickTo(t, "rotationX", { duration: .5, ease: "power3" }) : null;
+  t.addEventListener("pointerenter", () => { step(); h = setInterval(step, 850); });
+  t.addEventListener("pointermove", e => { if (!tx) return; const r = t.getBoundingClientRect(); tx(((e.clientX - r.left) / r.width - .5) * 26); ty(((e.clientY - r.top) / r.height - .5) * -26); });
+  t.addEventListener("pointerleave", () => { clearInterval(h); i = 0; $(".slot", t).innerHTML = avatar(t.dataset.k, "awake"); $("small", t).textContent = KINDS[t.dataset.k].cheer; if (tx) { tx(0); ty(0); } });
+  t.addEventListener("click", () => adopt(t.dataset.k, t));
+}
+function adopt(k, tile) {
+  S.kind = k; store.set("nb-kind", k);
+  $$(".tile", gal).forEach(x => x.setAttribute("aria-pressed", x.dataset.k === k));
+  play("greet", 1.1); pnRender("done", `${KINDS[k].name} is your buddy now. ${KINDS[k].cheer}`);
+  drawBig(); drawSinger(); storyStep = -1; storyRender(storyPos[0], storyPos[1]);
+  if (walkers[0]) { walkers[0].kind = k; walkers[0].drawn = ""; walkers[0].say(KINDS[k].cheer); }
+  if (G && tile) G.fromTo($(".slot", tile), { y: 0 }, { y: -24, duration: .25, yoyo: true, repeat: 1, ease: "power2.out" });
+}
+
+/* ================= playground ================= */
+const desk = $("#desk");
+const LINES = {
+  grab: ["Wooaah!", "Put me down!", "Heeelp!", "I can fly?!"], oof: ["Oof!", "Ouch!", "Bonk!"], p2: ["Tickles!", "Hey!", "That's my nose!", "Stop it, hehe"], p4: ["Dizzy… 🌀", "You're making me spin!"],
+  bonk: ["Bonk!", "Ow!", "Hey, watch it!", "Sorry!"], dizzy: ["Dizzy…", "Whoa…"], whoa: ["Whoa!", "Waaah!", "Mayday!"], oops: ["Oops!", "Sorry!", "My bad!"],
   zzz: ["z", "zZ", "zZz", "Zzz…"], wake: ["Huh?! Five more minutes…", "Zzz… who's there?", "Mmm… not now"]
 };
-const CATCH = { bolt: "Zzzap!", mochi: "Mochi~", goo: "Blorp!", boo: "Boo!", tofu: "Tofu!", sprout: "Sprout!", ember: "Hot hot!", nimbus: "Puff!", inky: "Splat!", bun: "Bun bun!", byte: "01010!", quack: "Quack!" };
+const AGENTS = ["Claude Code", "OpenCode", "Codex", "Antigravity", "Gemini CLI", "Cursor"];
 const walkers = [];
+let dw = 0, dh = 0;
+function measure() { dw = desk.clientWidth; dh = desk.clientHeight; }
+new ResizeObserver(measure).observe(desk); measure();
+const SIZE = 72, FLOOR = () => dh - 64;
 class Walker {
-  constructor(id, label, kindKey) {
-    this.id = id; this.label = label; this.kindKey = kindKey; this.x = rnd(80, 760); this.air = 0; this.vy = 0; this.dir = Math.random() < .5 ? 1 : -1;
-    this.pauseUntil = 0; this.nextPause = performance.now() + 3000; this.hop = 0; this.spin = 0; this.bubUntil = 0; this.cool = 0; this.pokes = 0; this.lastPoke = 0;
-    this.phase = 0; this.drag = false; this.tilt = 0; this.shownState = null; this.lastZ = 0; this.zi = 0; this.sleepSince = 0; this.wasAwake = false; this.lastHop = 0;
+  constructor(kind, label) {
+    Object.assign(this, { kind, label, x: rnd(20, Math.max(40, dw - 100)), air: 0, vy: 0, dir: Math.random() < .5 ? 1 : -1, pauseUntil: 0, nextPause: performance.now() + rnd(2000, 4000), hop: 0, spin: 0, spinDeg: 0, bubUntil: 0, cool: 0, pokes: 0, lastPoke: 0, phase: rnd(0, 6), drag: false, lastHop: 0, lastZ: 0, zi: 0, drawn: "", lastSt: "" });
     this.el = document.createElement("div"); this.el.className = "walker";
-    this.el.innerHTML = `<div class="bub"></div><div class="sprite"></div>`;
-    this.bub = $(".bub", this.el); this.sprite = $(".sprite", this.el);
-    $("#walkers").appendChild(this.el);
-    this.el.addEventListener("pointerdown", e => this.down(e));
-    this.el.addEventListener("pointermove", e => this.move(e));
-    this.el.addEventListener("pointerup", e => this.up(e));
-    this.el.addEventListener("pointercancel", e => this.up(e));
-    this.draw();
+    this.el.innerHTML = `<div class="bub"></div><div class="sprite"></div><div class="tagname">${label}</div>`;
+    this.bub = $(".bub", this.el); this.sprite = $(".sprite", this.el); desk.appendChild(this.el);
+    this.el.addEventListener("pointerdown", e => this.down(e)); this.el.addEventListener("pointermove", e => this.move(e));
+    this.el.addEventListener("pointerup", () => this.up()); this.el.addEventListener("pointercancel", () => this.up());
+    if (G && !reduce) G.from(this.el, { scale: 0, duration: .6, ease: "back.out(2.5)" });
   }
-  get kind() { return S[this.kindKey]; }
-  get st() { return this.id === "cc" ? S.state : (S.second && S.state !== "sleeping" ? (S.state === "needsYou" ? "working" : S.state) : "sleeping"); }
-  draw() { const k = this.kind, s = this.st; if (this.drawn !== k + s) { this.sprite.innerHTML = avatar(k, s); this.drawn = k + s; } }
-  say(arr, secs = 1.6) { this.bub.textContent = Array.isArray(arr) ? pick(arr) : arr; this.bub.classList.add("on"); this.bubUntil = performance.now() + secs * 1000; }
-  down(e) { this.el.setPointerCapture(e.pointerId); this.downAt = { x: e.clientX, y: e.clientY }; const r = stage.getBoundingClientRect(); this.grab = { x: (e.clientX - r.left) / scale - this.x, y: (e.clientY - r.top) / scale - (FLOOR - 64 - this.air) }; this.moved = false; e.preventDefault(); }
+  get st() { return S.mood; }
+  draw() { const key = this.kind + this.st; if (this.drawn !== key) { this.sprite.innerHTML = avatar(this.kind, this.st); this.drawn = key; } }
+  say(a, secs = 1.6) { this.bub.textContent = Array.isArray(a) ? pick(a) : a; this.bub.classList.add("on"); this.bubUntil = performance.now() + secs * 1000; }
+  down(e) { this.el.setPointerCapture(e.pointerId); this.downAt = { x: e.clientX, y: e.clientY }; const r = desk.getBoundingClientRect(); this.grab = { x: e.clientX - r.left - this.x, y: e.clientY - r.top - (FLOOR() - SIZE - this.air) }; e.preventDefault(); }
   move(e) {
     if (!this.downAt) return;
-    if (!this.drag && Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) > 4) { this.drag = true; this.vy = 0; this.hop = 0; this.el.classList.add("grabbed"); this.say(lines.grab, 3); play("grab"); this.moved = true; }
+    if (!this.drag && Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) > 4) { this.drag = true; this.vy = 0; this.hop = 0; this.el.classList.add("grabbed"); this.say(LINES.grab, 3); play("grab"); }
     if (!this.drag) return;
-    const r = stage.getBoundingClientRect(), mx = (e.clientX - r.left) / scale, my = (e.clientY - r.top) / scale;
-    this.x = Math.max(0, Math.min(960 - 64, mx - this.grab.x)); this.air = Math.max(0, Math.min(FLOOR - 40, FLOOR - 64 - (my - this.grab.y)));
+    const r = desk.getBoundingClientRect();
+    this.x = Math.max(0, Math.min(dw - SIZE, e.clientX - r.left - this.grab.x)); this.air = Math.max(0, Math.min(FLOOR() - 30, FLOOR() - SIZE - (e.clientY - r.top - this.grab.y)));
   }
   up() {
     if (!this.downAt) return; this.downAt = null; this.el.classList.remove("grabbed");
     if (this.drag) { this.drag = false; this.nextPause = performance.now() + 3000; return; }
     const now = performance.now(); this.pokes = now - this.lastPoke > 3000 ? 1 : this.pokes + 1; this.lastPoke = now; this.hop = now;
-    if (this.st === "sleeping") { play("poke"); this.say(lines.wake, 2); return; }
-    play(this.pokes >= 4 ? "dizzy" : "poke", 0.9 + 0.12 * Math.min(this.pokes, 4) + rnd(0, .05));
-    if (this.pokes === 1) this.say(lines.p1(this.kind)); else if (this.pokes < 4) this.say(lines.p2); else { this.spin = now; this.pokes = 0; this.say(lines.p4, 2); }
+    if (this.st === "sleeping") { play("poke"); this.say(LINES.wake, 2); return; }
+    play(this.pokes >= 4 ? "dizzy" : "poke", .9 + .12 * Math.min(this.pokes, 4) + rnd(0, .05));
+    if (this.pokes === 1) this.say([KINDS[this.kind].cheer, "Hehe!", "Hi!"]); else if (this.pokes < 4) this.say(LINES.p2); else { this.spin = now; this.pokes = 0; this.say(LINES.p4, 2); }
   }
   get onGround() { return !this.drag && this.air === 0 && this.vy === 0; }
   react(kind, away, partner, victim) {
     const now = performance.now();
-    if (kind === "bonk") { this.dir = away; this.x += away * 14; this.hop = now; this.say(lines.bonk); }
-    else if (kind === "greet") { this.dir = -away; this.pauseUntil = now + 2200; this.nextPause = this.pauseUntil + 4000; if (Math.random() < .5) this.hop = now; this.say(lines.greet(partner), 2); }
-    else if (kind === "dizzy") { this.dir = away; this.spin = now; this.pauseUntil = now + 1500; this.nextPause = this.pauseUntil + 4000; this.say(lines.dizzy); }
-    else { this.dir = away; if (victim) { this.vy = 520; this.air = .01; this.say(lines.whoa); } else { this.hop = now; this.say(lines.oops); } }
+    if (kind === "bonk") { this.dir = away; this.x += away * 16; this.hop = now; this.say(LINES.bonk); }
+    else if (kind === "greet") { this.dir = -away; this.pauseUntil = now + 2200; this.nextPause = this.pauseUntil + 4000; if (Math.random() < .5) this.hop = now; this.say([`Hi ${partner}!`, "Hello!", "Oh, hi!"], 2); }
+    else if (kind === "dizzy") { this.dir = away; this.spin = now; this.pauseUntil = now + 1500; this.nextPause = this.pauseUntil + 4000; this.say(LINES.dizzy); }
+    else { this.dir = away; if (victim) { this.vy = 560; this.air = .01; this.say(LINES.whoa); } else { this.hop = now; this.say(LINES.oops); } }
   }
   tick(dt, now) {
     const st = this.st; this.draw();
-    if (st !== "sleeping") { this.wasAwake = true; this.sleepSince = 0; } else if (this.wasAwake && !this.sleepSince) this.sleepSince = now;
-    const visible = st !== "sleeping" || (this.sleepSince && now - this.sleepSince < 60000) || this.drag;
-    this.el.style.display = visible && (this.id === "cc" || S.second) ? "" : "none";
     if (this.bubUntil && now > this.bubUntil) { this.bub.classList.remove("on"); this.bubUntil = 0; }
     if (this.spin) { const u = (now - this.spin) / 700; if (u >= 1) { this.spin = 0; this.spinDeg = 0; } else this.spinDeg = 360 * (1 - (1 - u) * (1 - u)); }
     let bob = 0, hop = 0, tilt = 0;
-    if (this.drag) { tilt = Math.sin(now / 1000 * 9) * 18; }
+    if (this.drag) tilt = Math.sin(now / 1000 * 9) * 18;
     else if (this.air > 0 || this.vy > 0) {
       this.vy -= 1800 * dt; this.air += this.vy * dt; tilt = Math.max(-15, Math.min(15, this.vy / 60));
-      if (this.air <= 0) { this.air = 0; if (this.vy < -300) { this.vy = -this.vy * .4; this.air = .01; if (!this.bubUntil) this.say(lines.oof); play("thud"); } else { this.vy = 0; tilt = 0; } }
+      if (this.air <= 0) { this.air = 0; if (this.vy < -300) { this.vy = -this.vy * .4; this.air = .01; if (!this.bubUntil) this.say(LINES.oof); play("thud"); } else { this.vy = 0; tilt = 0; } }
     } else {
-      const walking = st === "working" || st === "thinking" ;
-      const mid = this.x + 32, curious = walking && S.pointer && Math.abs(S.pointer.x - mid) < 160 && S.pointer.y > FLOOR - 240;
-      if (curious) this.dir = S.pointer.x >= mid ? 1 : -1;
-      if (walking && !curious && now >= this.nextPause) {
-        this.pauseUntil = now + rnd(1000, 3000); this.nextPause = this.pauseUntil + rnd(3000, 7000);
-        if (Math.random() < .5) this.dir = -this.dir; if (Math.random() < .3) this.hop = now;
-      }
-      if (this.shownState !== st) { this.shownState = st; if (st === "done") this.hop = now; }
+      const walking = st === "working";
+      if (walking && now >= this.nextPause) { this.pauseUntil = now + rnd(1000, 3000); this.nextPause = this.pauseUntil + rnd(3000, 7000); if (Math.random() < .5) this.dir = -this.dir; if (Math.random() < .3) this.hop = now; }
       if (st === "needsYou" && !this.hop && now - this.lastHop > 1400) this.hop = now;
-      const standing = !walking || curious || now < this.pauseUntil || reduce;
-      if (st === "sleeping") { tilt = -80; if (!this.bubUntil && now - this.lastZ > 1800) { this.say(lines.zzz[this.zi++ % 4], 1.2); this.lastZ = now; } }
-      else if (standing) tilt = 0;
-      else {
+      if (st === "done" && this.lastSt !== "done") this.hop = now;
+      this.lastSt = st;
+      const standing = !walking || now < this.pauseUntil || reduce;
+      if (st === "sleeping") { tilt = -80; if (!this.bubUntil && now - this.lastZ > 1800) { this.say(LINES.zzz[this.zi++ % 4], 1.2); this.lastZ = now; } }
+      else if (!standing) {
         this.phase += dt * 9; bob = Math.abs(Math.sin(this.phase)) * 3; tilt = Math.sin(this.phase) * 4; this.x += this.dir * 70 * dt;
-        if (this.x < 0) { this.x = 0; this.dir = 1; } else if (this.x > 960 - 64) { this.x = 960 - 64; this.dir = -1; }
-        if (now >= this.cool) for (const o of walkers) if (o !== this && o.onGround && o.el.style.display !== "none" && Math.abs(o.x - this.x) < 48) { bump(this, o); break; }
+        if (this.x < 0) { this.x = 0; this.dir = 1; } else if (this.x > dw - SIZE) { this.x = dw - SIZE; this.dir = -1; }
+        if (now >= this.cool) for (const o of walkers) if (o !== this && o.onGround && Math.abs(o.x - this.x) < 54) { bump(this, o); break; }
       }
     }
-    if (this.hop) { const u = (now - this.hop) / 400; if (u < 1) hop = 24 * 4 * u * (1 - u); else { this.hop = 0; this.lastHop = now; } }
-    this.el.style.transform = `translate(${this.x}px, ${FLOOR - 64 - this.air - hop - bob}px)`;
-    this.sprite.style.transform = `scaleX(${this.dir < 0 ? -1 : 1}) rotate(${tilt + (this.spinDeg || 0)}deg)`;
+    if (this.hop) { const u = (now - this.hop) / 400; if (u < 1) hop = 28 * 4 * u * (1 - u); else { this.hop = 0; this.lastHop = now; } }
+    this.el.style.transform = `translate(${this.x}px, ${FLOOR() - SIZE - this.air - hop - bob}px)`;
+    this.sprite.dataset.flip = this.dir < 0 ? "1" : "0";
+    this.sprite.style.transform = `scaleX(${this.dir < 0 ? -1 : 1}) rotate(${tilt + this.spinDeg}deg)`;
   }
 }
 function bump(a, b) {
   const until = performance.now() + 3500; a.cool = b.cool = until;
-  const kind = pick(["bonk", "greet", "dizzy", "tumble"]); const away = a.x <= b.x ? -1 : 1;
+  const kind = pick(["bonk", "greet", "dizzy", "tumble"]), away = a.x <= b.x ? -1 : 1;
   play({ bonk: "bonk", greet: "greet", dizzy: "dizzy", tumble: "whoa" }[kind]);
   a.react(kind, away, b.label, false); b.react(kind, -away, a.label, true);
 }
-function syncWalkers() {
-  if (!walkers.length) { walkers.push(new Walker("cc", "Claude Code", "kind1"), new Walker("oc", "OpenCode", "kind2")); walkers[1].x = rnd(500, 800); }
+function addWalker() {
+  if (walkers.length >= 6) { walkers[0].say("It's getting crowded!"); return; }
+  const used = new Set(walkers.map(w => w.kind)), k = walkers.length === 0 ? S.kind : pick(ORDER.filter(x => !used.has(x)));
+  walkers.push(new Walker(k, AGENTS[walkers.length]));
+  $("#addB").textContent = walkers.length >= 6 ? "Desk is full" : "+ Add a buddy";
 }
-syncWalkers();
-S.pointer = null;
-stage.addEventListener("pointermove", e => { const r = stage.getBoundingClientRect(); S.pointer = { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; });
-stage.addEventListener("pointerleave", () => { S.pointer = null; });
-let last = performance.now(), visible = true;
-new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(stage);
-(function loop(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; if (visible) for (const w of walkers) w.tick(dt, now); requestAnimationFrame(loop); })(performance.now());
+addWalker(); addWalker(); addWalker();
+$("#addB").onclick = () => { addWalker(); play("greet"); };
+for (const c of $$("[data-mood]")) c.onclick = () => { S.mood = c.dataset.mood; $$("[data-mood]").forEach(x => x.setAttribute("aria-pressed", x === c)); play({ working: "tick", needsYou: "ask", done: "done", sleeping: "queued" }[S.mood]); };
+let deskVisible = false, last = performance.now();
+new IntersectionObserver(es => { deskVisible = es[0].isIntersecting; }).observe(desk);
+(function loop(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; if (deskVisible) for (const w of walkers) w.tick(dt, now); requestAnimationFrame(loop); })(performance.now());
+for (const w of walkers) w.tick(0, performance.now()); // place them before the first frame so the desk is complete at rest
 
-/* ---------- gallery, minis, sound lab ---------- */
-const gallery = $("#gallery"), order = Object.keys(KINDS);
-const cycle = ["sleeping", "thinking", "working", "needsYou", "done", "error"];
-gallery.innerHTML = order.map(k => `<button class="tile" data-k="${k}" aria-pressed="${k === S.kind1}"><span class="av-slot">${avatar(k, "sleeping")}</span>${KINDS[k].name}<small>asleep</small></button>`).join("");
-gallery.addEventListener("click", e => {
-  const t = e.target.closest(".tile"); if (!t) return;
-  $$(".tile", gallery).forEach(x => x.setAttribute("aria-pressed", x === t));
-  S.kind1 = t.dataset.k; play("poke", 1.1); renderNotch();
-  document.getElementById("top").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-  if (S.state === "sleeping") setState("working");
-});
-$$(".tile", gallery).forEach(t => {
-  let i = 0, h;
-  const step = () => { i = (i + 1) % cycle.length; $(".av-slot", t).innerHTML = avatar(t.dataset.k, cycle[i]); $("small", t).textContent = cycle[i] === "needsYou" ? "needs you" : cycle[i]; };
-  t.addEventListener("pointerenter", () => { step(); h = setInterval(step, 900); });
-  t.addEventListener("pointerleave", () => { clearInterval(h); i = 0; $(".av-slot", t).innerHTML = avatar(t.dataset.k, "sleeping"); $("small", t).textContent = "asleep"; });
-});
-$("#mini1").innerHTML = avatar("bolt", "working"); $("#mini2").innerHTML = avatar("byte", "done"); $("#mini3").innerHTML = avatar("quack", "needsYou"); $("#mini4").innerHTML = avatar("mochi", "done");
-
-const LAB = [["ask", "Needs you", "Rises like a question: bu-dwe-weee?"], ["done", "Done", "A happy trill that climbs."], ["error", "Error", "Wuh-woooh, sagging."], ["tick", "Working", "One small bip."], ["delivered", "Message delivered", "Bi-dup! It went in."], ["hello", "Good morning", "First agent of the day."]];
+/* ================= sound lab ================= */
+const LAB = [["ask", "Needs you", "Rises like a question."], ["done", "Done", "A happy trill that climbs."], ["error", "Error", "Wuh-woooh, sagging."], ["tick", "Working", "One small bip."], ["delivered", "Message delivered", "Bi-dup! It went in."], ["hello", "Good morning", "First agent of the day."]];
+const LAB_MOOD = { ask: "needsYou", done: "done", error: "error", tick: "working", delivered: "done", hello: "thinking" };
 function contour(name) {
-  let t = 0, pts = []; const total = SND[name].reduce((a, b) => a + b[2] + b[3], 0);
+  let t = 0; const pts = [], total = SND[name].reduce((a, b) => a + b[2] + b[3], 0);
   for (const [f0, f1, d, g] of SND[name]) { for (let i = 0; i <= 8; i++) pts.push([(t + d * i / 8) / total * 300, f0 + (f1 - f0) * i / 8]); t += d; pts.push(null); t += g; }
-  const all = pts.filter(Boolean).map(p => p[1]), lo = Math.min(...all), hi = Math.max(...all); let dpath = "", pen = false;
-  for (const p of pts) { if (!p) { pen = false; continue; } const y = 50 - (p[1] - lo) / Math.max(1, hi - lo) * 42; dpath += (pen ? "L" : "M") + p[0].toFixed(1) + " " + y.toFixed(1); pen = true; }
-  return dpath;
+  const all = pts.filter(Boolean).map(p => p[1]), lo = Math.min(...all), hi = Math.max(...all); let d = "", pen = false;
+  for (const p of pts) { if (!p) { pen = false; continue; } d += (pen ? "L" : "M") + p[0].toFixed(1) + " " + (40 - (p[1] - lo) / Math.max(1, hi - lo) * 34).toFixed(1); pen = true; }
+  return d;
 }
-$("#lab").innerHTML = LAB.map(([n, t, d]) => `<button class="snd" data-s="${n}"><b>${t}</b><span>${d}</span><svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true"><path d="${contour(n)}"/></svg></button>`).join("");
+let singerMood = "awake";
+function drawSinger(m = 0) { $("#singerAv").innerHTML = avatar(S.kind, singerMood, m); }
+drawSinger();
+$("#lab").innerHTML = LAB.map(([n, t, d]) => `<button class="snd" data-s="${n}"><b>${t}</b><span>${d}</span><svg viewBox="0 0 300 44" preserveAspectRatio="none" aria-hidden="true"><path d="${contour(n)}"/></svg></button>`).join("");
 $("#lab").addEventListener("click", e => {
   const b = e.target.closest(".snd"); if (!b) return;
-  if (!soundOn) { soundOn = true; soundBtn.setAttribute("aria-pressed", true); soundBtn.textContent = "🔊 Sound on"; }
-  play(b.dataset.s, 1, true); b.classList.remove("play"); void b.offsetWidth; b.classList.add("play");
+  if (!soundOn) { soundOn = true; $("#mSoundSt").textContent = "on"; }
+  const name = b.dataset.s, dur = play(name, 1, true) || .5;
+  singerMood = LAB_MOOD[name];
+  const path = $("path", b), len = path.getTotalLength();
+  if (G && !reduce) {
+    G.fromTo(path, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: dur, ease: "none" });
+    G.fromTo("#waves i", { scale: .6, opacity: .7 }, { scale: 1.6, opacity: 0, duration: 1.1, stagger: .18, ease: "power2.out" });
+    // the mouth flaps along with the blips
+    const o = { v: 0 }, n = SND[name].length;
+    G.to(o, { v: 1, duration: dur / n / 2, yoyo: true, repeat: n * 2 - 1, ease: "sine.inOut", onUpdate: () => drawSinger(o.v), onComplete: () => drawSinger(0) });
+    G.fromTo("#singerAv", { scale: .9 }, { scale: 1, duration: .6, ease: "elastic.out(1, .4)" });
+  } else drawSinger();
+  pnRender(singerMood === "thinking" ? "working" : singerMood, `Playing “${$("b", b).textContent}”`);
 });
 
-/* ---------- copy ---------- */
+/* ================= copy ================= */
 $("#copy").onclick = async e => {
-  const text = "./scripts/make-app.sh\nopen build/NotchBuddy.app\nswift test";
-  try { await navigator.clipboard.writeText(text); e.currentTarget.textContent = "Copied"; }
-  catch { const r = document.createRange(); r.selectNodeContents($("#term")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.currentTarget.textContent = "Selected"; }
-  setTimeout(() => { $("#copy").textContent = "Copy"; }, 1600);
+  const btn = e.currentTarget;
+  try { await navigator.clipboard.writeText("./scripts/make-app.sh\nopen build/NotchBuddy.app\nswift test"); btn.textContent = "Copied"; }
+  catch { const r = document.createRange(); r.selectNodeContents($("#term")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected"; }
+  setTimeout(() => { btn.textContent = "Copy"; }, 1600);
 };
-
-/* ---------- opening sequence: the demo wakes up on its own ---------- */
-renderNotch();
-setTimeout(() => { if (S.state === "sleeping" && !S.touched) setState("working", true); }, 1400);
-document.addEventListener("pointerdown", () => { S.touched = true; }, { once: true });
 })();
 </script>
 </body>
