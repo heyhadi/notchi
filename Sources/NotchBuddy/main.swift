@@ -5,7 +5,7 @@ import NotchBuddyCore
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem?
     private var notchPanel: NotchPanel?
-    private var roamPanel: RoamPanel?
+    private var roamManager: RoamManager?
     private let model = NotchModel()
     private var debugSubmenu: NSMenu?
     private let hookServer = HookServer()
@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let panel = NotchPanel(model: model)
         self.notchPanel = panel
         panel.orderFrontRegardless()
-        roamPanel = RoamPanel(model: model)
+        roamManager = RoamManager(model: model)
 
         hookServer.onEvent = { [model] event, respond in model.handle(event, respond: respond) }
         do { try hookServer.start() } catch { NSLog("Notch Buddy: hook socket failed: \(error)") }

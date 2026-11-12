@@ -3,13 +3,42 @@ import SwiftUI
 import Combine
 import NotchBuddyCore
 
-final class RoamLook: ObservableObject { @Published var flipped = false; @Published var tilt = 0.0 }
+final class RoamLook: ObservableObject {
+    @Published var flipped = false
+    @Published var tilt = 0.0
+    @Published var spin = 0.0
+    @Published var bubble: String?
+}
 
-/// The avatar walking along the bottom of the screen (above the Dock) while an agent is busy.
+/// What happens when two walkers run into each other.
+private enum Bump: CaseIterable { case bonk, greet, dizzy, tumble }
+
+private extension AvatarKind {
+    /// What each buddy squeaks when poked.
+    var catchphrase: String {
+        switch self {
+        case .bolt: "Zzzap!"
+        case .mochi: "Mochi~"
+        case .goo: "Blorp!"
+        case .boo: "Boo!"
+        case .tofu: "Tofu!"
+        case .sprout: "Sprout!"
+        case .ember: "Hot hot!"
+        case .nimbus: "Puff!"
+        case .inky: "Splat!"
+        case .bun: "Bun bun!"
+        case .byte: "01010!"
+        case .quack: "Quack!"
+        }
+    }
+}
+
+/// An avatar walking along the bottom of the screen (above the Dock) while its agent is busy (`agent` nil: one avatar for all agents).
 /// Off by default (Settings → Behavior). A small borderless panel; only the avatar itself takes clicks.
 @MainActor
 final class RoamPanel: NSPanel {
     private let model: NotchModel
+    let agent: AgentKind?
     private let side: CGFloat = 64
     private var timer: Timer?
     private var observer: AnyCancellable?
@@ -23,46 +52,104 @@ final class RoamPanel: NSPanel {
     private var hopStart: Date?
     private var lastHop = Date.distantPast
     private var lastShown = AgentState.sleeping
+    private var airY: CGFloat = 0               // height above the ground: dragged up, bounced, tumbled
+    private var vy: CGFloat = 0
+    private var ground: CGFloat = 0
+    private var dragging = false
+    private var grab = NSPoint.zero             // where on the avatar the mouse took hold
+    private var downPoint = NSPoint.zero
+    private var pokes = 0
+    private var lastPoke = Date.distantPast
+    private var bubbleUntil = Date.distantPast
+    private var spinStart: Date?
+    private var bumpCooldownUntil = Date.distantPast
+    var peers: () -> [RoamPanel] = { [] }       // the other walkers, set by RoamManager
 
-    init(model: NotchModel) {
+    init(model: NotchModel, agent: AgentKind?) {
         self.model = model
+        self.agent = agent
         super.init(contentRect: NSRect(x: 0, y: 0, width: 64, height: 64), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = .floating
         isOpaque = false; backgroundColor = .clear; hasShadow = false
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         alphaValue = 0
-        contentView = RoamHost(rootView: RoamAvatar(model: model, look: look))
+        let host = RoamHost(rootView: RoamAvatar(model: model, agent: agent, look: look))
+        host.owner = self
+        contentView = host
         observer = model.objectWillChange.sink { [weak self] in DispatchQueue.main.async { self?.sync() } }
-        NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
+        defaultsObserver = NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.sync() }
         }
         sync()
     }
 
+    private var defaultsObserver: NSObjectProtocol?
+
+    override func close() {
+        timer?.invalidate(); timer = nil; observer = nil
+        defaultsObserver.map(NotificationCenter.default.removeObserver)
+        super.close()
+    }
+
     override var canBecomeKey: Bool { false }
 
+    private var retired = false
+    /// The agent is gone: fade out, then the manager drops this panel.
+    func retire() { retired = true; sync() }
+
     private var enabled: Bool { UserDefaults.standard.bool(forKey: Prefs.roam) }
-    private var walking: Bool { [.working, .thinking].contains(model.shown) }
+    private var shownState: AgentState { model.shown(for: agent) }
+    private var walking: Bool { [.working, .thinking].contains(shownState) }
 
     /// Show/hide and start/stop the walk timer from the current pref and agent state.
     private func sync() {
-        let visible = enabled && model.shown != .sleeping
+        let visible = enabled && !retired && shownState != .sleeping
         if visible, timer == nil {
-            if let f = screen?.visibleFrame ?? NSScreen.main?.visibleFrame { x = f.midX - side / 2; setFrameOrigin(NSPoint(x: x, y: f.minY)) }
+            if let f = screen?.visibleFrame ?? NSScreen.main?.visibleFrame { x = .random(in: f.minX...(f.maxX - side)); setFrameOrigin(NSPoint(x: x, y: f.minY)) }
             last = Date()
             orderFrontRegardless()
             timer = Timer.scheduledTimer(withTimeInterval: 1 / 30, repeats: true) { [weak self] _ in MainActor.assumeIsolated { self?.tick() } }
         }
         NSAnimationContext.runAnimationGroup { $0.duration = 0.4; animator().alphaValue = visible ? 1 : 0 } completionHandler: {
-            MainActor.assumeIsolated { if !(self.enabled && self.model.shown != .sleeping) { self.timer?.invalidate(); self.timer = nil; self.orderOut(nil) } }
+            MainActor.assumeIsolated { if !(self.enabled && !self.retired && self.shownState != .sleeping) { self.timer?.invalidate(); self.timer = nil; self.orderOut(nil) } }
         }
     }
 
-    /// Walks with a bob and tilt, stops now and then to look around or hop, turns to watch the cursor when it is near the Dock,
-    /// hops for joy when an agent finishes and keeps hopping for attention while one needs you.
+    private var isOnGround: Bool { !dragging && airY == 0 && vy == 0 }
+
+    private func say(_ lines: [String], for seconds: TimeInterval = 1.6) {
+        look.bubble = lines.randomElement()
+        bubbleUntil = Date().addingTimeInterval(seconds)
+    }
+
+    /// Moves the panel to the avatar's spot; it grows upward while a speech bubble is showing.
+    private func place(hop: Double = 0, bob: Double = 0) {
+        let wide = look.bubble != nil
+        let w: CGFloat = wide ? 160 : side, h: CGFloat = wide ? 104 : side
+        setFrame(NSRect(x: x - (w - side) / 2, y: ground + airY + hop + bob, width: w, height: h), display: true)
+    }
+
+    /// Walks with a bob and tilt, stops now and then to look around or hop, watches a cursor near the Dock, hops for joy when an
+    /// agent finishes and for attention while one needs you. Can be picked up and dropped (it falls and bounces), and bumps into other walkers.
     private func tick() {
         let now = Date(); let dt = now.timeIntervalSince(last); last = now
         guard let f = NSScreen.main?.visibleFrame else { return }
+        ground = f.minY
+        if look.bubble != nil, now > bubbleUntil { look.bubble = nil }
+        if let s0 = spinStart {
+            let u = now.timeIntervalSince(s0) / 0.7
+            if u >= 1 { spinStart = nil; look.spin = 0 } else { look.spin = 360 * (1 - (1 - u) * (1 - u)) }
+        }
+        if dragging { look.tilt = sin(now.timeIntervalSinceReferenceDate * 9) * 18; place(); return } // dangling from the mouse
+        if airY > 0 || vy > 0 {
+            vy -= 1800 * CGFloat(dt); airY += vy * CGFloat(dt)
+            look.tilt = Double(max(-15, min(15, vy / 60)))
+            if airY <= 0 {
+                airY = 0
+                if vy < -300 { vy = -vy * 0.4; airY = 0.01; if look.bubble == nil { say(["Oof!", "Ouch!", "Bonk!"]) } } else { vy = 0; look.tilt = 0 }
+            }
+            place(); return
+        }
         let mouse = NSEvent.mouseLocation, mid = x + side / 2
         let curious = walking && abs(mouse.x - mid) < 160 && mouse.y < f.minY + 240
         if curious { direction = mouse.x >= mid ? 1 : -1 }
@@ -72,8 +159,8 @@ final class RoamPanel: NSPanel {
             if Bool.random() { direction = -direction }
             if Int.random(in: 0..<10) < 3 { hopStart = now }
         }
-        if model.shown != lastShown { lastShown = model.shown; if lastShown == .done { hopStart = now } }
-        if model.shown == .needsYou, hopStart == nil, now.timeIntervalSince(lastHop) > 1.4 { hopStart = now }
+        if shownState != lastShown { lastShown = shownState; if lastShown == .done { hopStart = now } }
+        if shownState == .needsYou, hopStart == nil, now.timeIntervalSince(lastHop) > 1.4 { hopStart = now }
         let standing = !walking || curious || now < pauseUntil
         var bob = 0.0
         if standing {
@@ -84,33 +171,148 @@ final class RoamPanel: NSPanel {
             look.tilt = sin(phase) * 4
             x += direction * 70 * CGFloat(dt)
             if x < f.minX { x = f.minX; direction = 1 } else if x > f.maxX - side { x = f.maxX - side; direction = -1 }
+            if now >= bumpCooldownUntil,
+               let o = peers().first(where: { $0 !== self && $0.isOnGround && $0.alphaValue > 0.5 && abs($0.x - x) < 48 }) {
+                bump(with: o)
+            }
         }
         var hop = 0.0
         if let h = hopStart {
             let u = now.timeIntervalSince(h) / 0.4
             if u < 1 { hop = 24 * 4 * u * (1 - u) } else { hopStart = nil; lastHop = now }
         }
-        setFrameOrigin(NSPoint(x: x, y: f.minY + hop + bob))
+        place(hop: hop, bob: bob)
+    }
+
+    // MARK: Bumping into each other
+
+    private func bump(with o: RoamPanel) {
+        let until = Date().addingTimeInterval(3.5)
+        bumpCooldownUntil = until; o.bumpCooldownUntil = until
+        let kind = Bump.allCases.randomElement()!
+        let away: CGFloat = x <= o.x ? -1 : 1 // I bounce left if I'm the left one
+        // tumble: the one who got hit goes flying, the one who ran into it says sorry
+        react(kind, away: away, partner: o.agent?.displayName ?? "friend", victim: false)
+        o.react(kind, away: -away, partner: agent?.displayName ?? "friend", victim: true)
+    }
+
+    private func react(_ kind: Bump, away: CGFloat, partner: String, victim: Bool) {
+        let now = Date()
+        switch kind {
+        case .bonk:
+            direction = away; x += away * 14; hopStart = now
+            say(["Bonk!", "Ow!", "Hey, watch it!", "Sorry!"])
+        case .greet:
+            direction = -away; pauseUntil = now.addingTimeInterval(2.2); nextPauseAt = pauseUntil.addingTimeInterval(4)
+            if Bool.random() { hopStart = now }
+            say(["Hi \(partner)!", "Hello!", "Oh, hi!", "\(partner)! Long time!"], for: 2)
+        case .dizzy:
+            direction = away; spinStart = now; pauseUntil = now.addingTimeInterval(1.5); nextPauseAt = pauseUntil.addingTimeInterval(4)
+            say(["Dizzy…", "Whoa…", "Everything is spinning"])
+        case .tumble:
+            direction = away
+            if victim { vy = 520; airY = 0.01; say(["Whoa!", "Waaah!", "Mayday!"]) }
+            else { hopStart = now; say(["Oops!", "Sorry!", "My bad!"]) }
+        }
+    }
+
+    // MARK: Mouse: drag, poke, double-click
+
+    fileprivate func grabDown(_ e: NSEvent) {
+        let m = NSEvent.mouseLocation
+        downPoint = m; grab = NSPoint(x: m.x - x, y: m.y - (ground + airY))
+        if e.clickCount == 2 { withAnimation(.spring(response: 0.55, dampingFraction: 0.68)) { model.mode = .expanded } }
+    }
+
+    fileprivate func grabDrag(_ e: NSEvent) {
+        let m = NSEvent.mouseLocation
+        if !dragging, hypot(m.x - downPoint.x, m.y - downPoint.y) > 4 {
+            dragging = true; vy = 0; hopStart = nil
+            say(["Wooaah!", "Put me down!", "Heeelp!", "I can fly?!"], for: 3)
+        }
+        guard dragging, let f = NSScreen.main?.visibleFrame else { return }
+        x = max(f.minX, min(f.maxX - side, m.x - grab.x))
+        airY = max(0, min(f.height - 130, m.y - grab.y - f.minY))
+    }
+
+    fileprivate func grabUp(_ e: NSEvent) {
+        if dragging { dragging = false; nextPauseAt = Date().addingTimeInterval(3); return } // let go: gravity takes over
+        guard e.clickCount < 2 else { return }
+        let now = Date()
+        pokes = now.timeIntervalSince(lastPoke) > 3 ? 1 : pokes + 1
+        lastPoke = now; hopStart = now
+        let mine = model.currentAvatar(fallback: UserDefaults.standard.string(forKey: Prefs.avatar) ?? "bolt", for: agent)
+        switch pokes {
+        case 1: say([mine.catchphrase, "Hehe!", "Hi!"])
+        case 2, 3: say(["Tickles!", "Hey!", "That's my nose!", "Stop it, hehe"])
+        default: spinStart = now; pokes = 0; say(["Dizzy… 🌀", "You're making me spin!"], for: 2)
+        }
     }
 }
 
 private final class RoamHost<Content: View>: NSHostingView<Content> {
+    weak var owner: RoamPanel?
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+    override func mouseDown(with event: NSEvent) { MainActor.assumeIsolated { owner?.grabDown(event) } }
+    override func mouseDragged(with event: NSEvent) { MainActor.assumeIsolated { owner?.grabDrag(event) } }
+    override func mouseUp(with event: NSEvent) { MainActor.assumeIsolated { owner?.grabUp(event) } }
 }
 
 private struct RoamAvatar: View {
     @ObservedObject var model: NotchModel
+    let agent: AgentKind?
     @ObservedObject var look: RoamLook
     @AppStorage(Prefs.avatar) private var avatar = "bolt"
     @State private var prefsTick = 0
 
     var body: some View {
-        AvatarView(kind: { _ = prefsTick; return model.currentAvatar(fallback: avatar) }(), state: model.shown, size: 56)
-            .scaleEffect(x: look.flipped ? -1 : 1, y: 1)
-            .rotationEffect(.degrees(look.tilt))
-            .frame(width: 64, height: 64)
-            .contentShape(Rectangle())
-            .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in prefsTick += 1 }
-            .onTapGesture { withAnimation(.spring(response: 0.55, dampingFraction: 0.68)) { model.mode = .expanded } }
+        VStack(spacing: 2) {
+            if let text = look.bubble {
+                Text(text)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded)).foregroundColor(Color(hex: 0x1B1B1F))
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .background(Capsule().fill(Color.white).shadow(color: .black.opacity(0.25), radius: 3, y: 1))
+                    .fixedSize()
+            }
+            AvatarView(kind: { _ = prefsTick; return model.currentAvatar(fallback: avatar, for: agent) }(), state: model.shown(for: agent), size: 56)
+                .scaleEffect(x: look.flipped ? -1 : 1, y: 1)
+                .rotationEffect(.degrees(look.tilt + look.spin))
+                .frame(width: 64, height: 64)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .contentShape(Rectangle())
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in prefsTick += 1 }
+    }
+}
+
+/// Keeps one walker for all agents, or (with "one avatar per agent") one per agent that has a session.
+@MainActor
+final class RoamManager {
+    private let model: NotchModel
+    private var walkers: [AgentKind?: RoamPanel] = [:]
+    private var observer: AnyCancellable?
+
+    init(model: NotchModel) {
+        self.model = model
+        observer = model.objectWillChange.sink { [weak self] in DispatchQueue.main.async { self?.sync() } }
+        NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.sync() }
+        }
+        sync()
+    }
+
+    private func sync() {
+        let perAgent = UserDefaults.standard.bool(forKey: Prefs.avatarPerAgent)
+        let want: Set<AgentKind?> = perAgent ? Set(model.sessions.map { Optional($0.agent) } + model.pending.map { Optional($0.event.agent) }) : [nil]
+        for key in want where walkers[key] == nil {
+            let w = RoamPanel(model: model, agent: key)
+            w.peers = { [weak self] in Array(self?.walkers.values ?? [:].values) }
+            walkers[key] = w
+        }
+        for (key, panel) in walkers where !want.contains(key) {
+            walkers[key] = nil
+            panel.retire()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { panel.close() }
+        }
     }
 }

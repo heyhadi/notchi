@@ -294,7 +294,7 @@ struct SettingsView: View {
                         Text(L("Allowed to roam the desktop"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Color(hex: 0x1B1B1F))
-                        Text(L("Your avatar walks along the bottom of the screen while an agent is busy. Click it to open the notch."))
+                        Text(L("Your avatar walks along the bottom of the screen while an agent is busy. Drag it, poke it, double-click to open the notch."))
                             .font(.system(size: 11))
                             .foregroundColor(Color(hex: 0x5E5D66))
                             .fixedSize(horizontal: false, vertical: true)
