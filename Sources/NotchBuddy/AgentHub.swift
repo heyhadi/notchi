@@ -79,8 +79,10 @@ extension NotchModel {
             held(agent.chatOutput(text))
             c.held = nil; c.heldSince = nil; c.sentAt = Date()
             store.markThinking(key: key)
+            SoundPlayer.shared.react(.delivered)
         } else {
             c.queued.append(text)
+            SoundPlayer.shared.react(.queued)
         }
         chats[key] = c
         refresh(after: nil)
