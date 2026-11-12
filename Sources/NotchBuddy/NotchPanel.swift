@@ -3,8 +3,13 @@ import SwiftUI
 import Combine
 
 /// The panel isn't key until clicked; without this the first click only focuses it and a second one reaches the buttons.
+enum PointerState { @MainActor static var overRow = false }
+
 private final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+    // SwiftUI's own cursor update resets the arrow after ours; keep the hand while a clickable row is hovered.
+    override func cursorUpdate(with event: NSEvent) { PointerState.overRow ? NSCursor.pointingHand.set() : super.cursorUpdate(with: event) }
+    override func mouseMoved(with event: NSEvent) { super.mouseMoved(with: event); if PointerState.overRow { NSCursor.pointingHand.set() } }
 }
 
 @_silgen_name("CGSMainConnectionID") private func CGSMainConnectionID() -> Int32
