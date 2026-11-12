@@ -10,7 +10,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.glow) private var glow = true
     @AppStorage(Prefs.soundsOn) private var soundsOn = false
     @AppStorage(Prefs.volume) private var volume = 0.6
-    @AppStorage(Prefs.soundPack) private var soundPack = "soft"
+    @AppStorage(Prefs.soundPack) private var soundPack = "robot"
     @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
 
     @State var selectedTab: SettingsTab = .avatar
@@ -371,6 +371,7 @@ struct SettingsView: View {
                         Text(L("Soft")).tag("soft")
                         Text(L("Retro 8-bit")).tag("retro")
                         Text(L("Chirpy")).tag("chirpy")
+                        Text(L("Robot")).tag("robot")
                     }
                     .labelsHidden()
                     .frame(width: 140)

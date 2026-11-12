@@ -10,13 +10,13 @@ enum Prefs {
     static let glow = "glow"                    // Bool, default true: moving light around the notch edge while agents are active
     static let soundsOn = "soundsOn"            // Bool, default false (sounds are opt-in)
     static let volume = "volume"                // Double 0...1, default 0.6
-    static let soundPack = "soundPack"          // "soft" | "retro" | "chirpy"
+    static let soundPack = "soundPack"          // "soft" | "retro" | "chirpy" | "robot"
     static let muteWhenBusy = "muteWhenBusy"    // Bool, default true: mute while the mic is in use (calls, meetings)
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
     static func register() {
         var d: [String: Any] = [language: "en", avatar: "bolt", openOnHover: true, holdForReply: false, glow: true, soundsOn: false,
-                                volume: 0.6, soundPack: "soft", muteWhenBusy: true]
+                                volume: 0.6, soundPack: "robot", muteWhenBusy: true]
         for s in AgentState.allCases { d[sound(for: s)] = SoundName.default(for: s).rawValue }
         UserDefaults.standard.register(defaults: d)
     }

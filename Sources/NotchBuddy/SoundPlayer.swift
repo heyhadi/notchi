@@ -24,7 +24,7 @@ final class SoundPlayer {
     /// Previews a sound directly. Always plays, ignores master toggle and gate.
     func preview(_ name: SoundName) {
         guard name != .off else { return }
-        let pack = UserDefaults.standard.string(forKey: Prefs.soundPack) ?? "soft"
+        let pack = UserDefaults.standard.string(forKey: Prefs.soundPack) ?? "robot"
         let key = CacheKey(name: name, pack: pack)
         let buffer: AVAudioPCMBuffer
         if let cached = cache[key] {
@@ -131,6 +131,7 @@ final class SoundPlayer {
             return nil
         }
 
+        if pack == "robot" { return robotBuffer(name, format: format) }
         let isRetro = (pack == "retro")
         let isChirpy = (pack == "chirpy")
         let pitchMultiplier: Double = isChirpy ? 1.5 : 1.0
@@ -337,5 +338,38 @@ final class SoundPlayer {
             }
             return buffer
         }
+    }
+
+    /// "Robot" pack: wordless babble made of gliding blips, like a droid reacting. Each sound has a mood.
+    private func robotBuffer(_ name: SoundName, format: AVAudioFormat) -> AVAudioPCMBuffer? {
+        // (start Hz, end Hz, seconds, gap after, warble depth in Hz)
+        typealias Blip = (f0: Double, f1: Double, dur: Double, gap: Double, warble: Double)
+        let blips: [Blip]
+        switch name {
+        case .off: return nil
+        case .softTick: blips = [(900, 1300, 0.05, 0, 0)]                                   // tiny "bip"
+        case .beepBeep: blips = [(600, 760, 0.07, 0.04, 0), (780, 520, 0.08, 0.04, 0), (520, 1500, 0.20, 0, 25)] // "bu-dwe-weee?" a question
+        case .ding: blips = [(800, 1000, 0.06, 0.02, 0), (1000, 1250, 0.06, 0.02, 0), (1250, 1700, 0.07, 0.03, 0), (1500, 2100, 0.22, 0, 40)] // happy trill
+        case .bwomp: blips = [(700, 420, 0.16, 0.05, 0), (480, 220, 0.30, 0, 18)]           // sad "wuh-woooh"
+        }
+        let sr = format.sampleRate
+        let total = blips.reduce(0) { $0 + $1.dur + $1.gap }
+        let frames = Int(total * sr)
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(frames)),
+              let out = buffer.floatChannelData?[0] else { return nil }
+        buffer.frameLength = AVAudioFrameCount(frames)
+        var i = 0, phase = 0.0
+        for b in blips {
+            let n = Int(b.dur * sr)
+            for k in 0..<n where i + k < frames {
+                let t = Double(k) / sr, x = Double(k) / Double(n)
+                let f = b.f0 + (b.f1 - b.f0) * x + b.warble * sin(2 * .pi * 28 * t)
+                phase += 2 * .pi * f / sr
+                let env = Float(min(1, t / 0.006) * min(1, (b.dur - t) / 0.02)) // soft edges, no clicks
+                out[i + k] = Float(sin(phase) + 0.25 * sin(2 * phase)) / 1.25 * env * 0.7
+            }
+            i += n + Int(b.gap * sr)
+        }
+        return buffer
     }
 }
