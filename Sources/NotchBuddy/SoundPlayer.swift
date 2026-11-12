@@ -12,6 +12,7 @@ final class SoundPlayer {
     private let playerNode = AVAudioPlayerNode()
     private var isEngineStarted = false
     private var gate = SoundGate()
+    private var needsYouGate = SoundGate(interval: 10) // someone is waiting on you: don't make them wait a minute for the next chirp
     private var cache: [CacheKey: AVAudioPCMBuffer] = [:]
 
     private struct CacheKey: Hashable {
@@ -52,7 +53,7 @@ final class SoundPlayer {
             return
         }
 
-        guard gate.allow() else { return }
+        guard state == .needsYou ? needsYouGate.allow() : gate.allow() else { return }
         preview(soundName)
     }
 
