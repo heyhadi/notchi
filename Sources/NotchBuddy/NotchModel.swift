@@ -86,6 +86,7 @@ public final class NotchModel: ObservableObject {
     var tokensRead = Date.distantPast
     static let sessionsFile = URL(fileURLWithPath: HookServer.directory + "/sessions.json")
     var sessionsSaved = Date.distantPast
+    var sessionsSavePending = false
     static let historyFile = URL(fileURLWithPath: HookServer.directory + "/history.json")
     @Published public var workingStartTime: Date?
 

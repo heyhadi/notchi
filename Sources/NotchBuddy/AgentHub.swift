@@ -150,17 +150,26 @@ extension NotchModel {
             if store.sessions[k] == nil { c.held?(nil); chats[k] = nil }
         }
         sessions = store.current()
-        if Date().timeIntervalSince(sessionsSaved) > 5, let data = store.encoded() { // throttled; owner-only like the socket dir
-            sessionsSaved = Date()
-            try? data.write(to: Self.sessionsFile, options: .atomic)
-            try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: Self.sessionsFile.path)
-        }
+        saveSessions()
         state = pending.isEmpty ? store.topState() : .needsYou
         if let e { peekText = peek(for: e) }
         if Date().timeIntervalSince(tokensRead) > 5 { // hooks fire many times a second during a turn
             tokensRead = Date()
             tokenMeter.update { [weak self] bySession, today in self?.tokens = bySession; self?.tokensToday = today; self?.alertIfOverLimit() }
         }
+    }
+
+    /// At most every 5 s; a change inside that window is written by one trailing save, so the last events aren't lost.
+    private func saveSessions() {
+        let wait = 5 - Date().timeIntervalSince(sessionsSaved)
+        guard wait <= 0 else {
+            if !sessionsSavePending { sessionsSavePending = true; DispatchQueue.main.asyncAfter(deadline: .now() + wait) { [weak self] in self?.sessionsSavePending = false; self?.saveSessions() } }
+            return
+        }
+        guard let data = store.encoded() else { return }
+        sessionsSaved = Date()
+        try? data.write(to: Self.sessionsFile, options: .atomic)
+        try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: Self.sessionsFile.path) // owner-only like the socket dir
     }
 
     private func recordHistory(_ s: AgentSession) {
