@@ -84,7 +84,7 @@ public struct NotchView: View {
     private var currentHeight: CGFloat {
         switch model.mode {
         case .compact:
-            return model.geometry.height
+            return model.compactHeight
         case .peek:
             return 68
         case .expanded:
@@ -175,7 +175,7 @@ public struct NotchView: View {
             }
             .padding(.trailing, 8)
         }
-        .frame(height: model.geometry.height)
+        .frame(height: model.compactHeight)
     }
 
     // MARK: - Peek Mode
