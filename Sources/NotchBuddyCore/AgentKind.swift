@@ -118,6 +118,7 @@ extension HookEvent {
             e = cline(o, event: event)
         }
         e?.agent = agent
+        e?.tty = validTTY(kv["tty"])
         if agent == .claudeCode { e?.surface = surfaceLabel(kv["entry"] ?? "") } // other agents inherit a stray env var
         return e
     }

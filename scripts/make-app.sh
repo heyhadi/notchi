@@ -40,6 +40,8 @@ cat << 'EOF' > "$APP_DIR/Contents/Info.plist"
     <string>NotchBuddy</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Notch Buddy brings the Terminal tab of a session to the front when you click it.</string>
     <key>LSUIElement</key>
     <true/>
     <key>LSMinimumSystemVersion</key>

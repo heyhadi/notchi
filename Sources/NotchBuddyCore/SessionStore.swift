@@ -12,6 +12,7 @@ public struct AgentSession: Identifiable, Sendable, Equatable, Codable {
     public var message: String?
     public var steps = 0          // tool calls since the last prompt ("progress")
     public var updated: Date
+    public var tty: String?        // terminal the agent runs in, when its hook could tell
     public var started: Date?      // first event we saw for it (nil for sessions saved before this existed)
 }
 
@@ -43,6 +44,7 @@ public struct SessionStore: Sendable {
         s.agentLabel = e.agentLabel
         s.updated = now
         s.started = s.started ?? now
+        if let t = e.tty { s.tty = t }
         switch e.name {
         case "SessionStart": s.state = .sleeping
         case "UserPromptSubmit": s.state = .thinking; s.steps = 0; s.message = nil

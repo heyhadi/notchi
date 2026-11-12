@@ -45,3 +45,19 @@ final class MidTurnChatTests: XCTestCase {
         XCTAssertNil(AgentKind.codex.midTurnOutput("hi"))
     }
 }
+
+final class TTYTests: XCTestCase {
+    func testOnlyPlainTTYPathsPass() {
+        XCTAssertEqual(validTTY("/dev/ttys003"), "/dev/ttys003")
+        for bad in ["/dev/ttys003\" & do shell script \"x", "/dev/null", "ttys003", "/dev/ttys", "/dev/ttys00x", ""] { XCTAssertNil(validTTY(bad), bad) }
+        XCTAssertNil(validTTY(nil))
+    }
+
+    func testHeaderTTYReachesTheEvent() throws {
+        let body = #"{"hook_event_name":"Stop","session_id":"s","cwd":"/p"}"#
+        let ok = try XCTUnwrap(HookEvent.parse(message: Data("NB1 agent=claude-code entry= event= tty=/dev/ttys004\n\(body)".utf8)))
+        XCTAssertEqual(ok.tty, "/dev/ttys004")
+        let bad = try XCTUnwrap(HookEvent.parse(message: Data("NB1 agent=claude-code entry= event= tty=/etc/passwd\n\(body)".utf8)))
+        XCTAssertNil(bad.tty)
+    }
+}

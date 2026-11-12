@@ -390,20 +390,46 @@ func stateName(_ s: AgentState) -> String {
     }
 }
 
-/// Brings the app a session runs in to the front. Hooks carry no tty/pid, so it can't pick the exact tab or window.
+/// Brings the app a session runs in to the front; for Terminal.app, the exact tab (the hook reports the session's tty).
 enum TerminalJump {
     private static let terminals = ["com.apple.Terminal", "com.googlecode.iterm2", "com.mitchellh.ghostty", "dev.warp.Warp-Stable",
                                     "net.kovidgoyal.kitty", "com.github.wez.wezterm", "org.alacritty"]
 
     static func activate(for s: AgentSession) {
-        let ids: [String]
-        if s.agentLabel.contains("VS Code") { ids = ["com.microsoft.VSCode"] }
-        else if s.agentLabel.contains("JetBrains") { ids = [] }
-        else if s.agentLabel.contains("Desktop") { ids = ["com.anthropic.claudefordesktop"] }
-        else { ids = terminals }
         let apps = NSWorkspace.shared.runningApplications
-        let app = ids.lazy.compactMap { id in apps.first { $0.bundleIdentifier == id } }.first
-            ?? (s.agentLabel.contains("JetBrains") ? apps.first { $0.bundleIdentifier?.hasPrefix("com.jetbrains.") == true } : nil)
-        app?.activate()
+        func running(_ ids: [String]) -> NSRunningApplication? { ids.lazy.compactMap { id in apps.first { $0.bundleIdentifier == id } }.first }
+
+        // Where it runs, most specific first: the editor named in its label, then the agent's own desktop app, then a terminal.
+        var ids: [String]
+        if s.agentLabel.contains("VS Code") { ids = ["com.microsoft.VSCode"] }
+        else if s.agentLabel.contains("Desktop") { ids = ["com.anthropic.claudefordesktop"] }
+        else if s.agent == .antigravity { ids = ["com.google.antigravity"] + terminals } // IDE session, or agy in a terminal
+        else if s.agent == .copilot || s.agent == .cline { ids = ["com.microsoft.VSCode"] + terminals }
+        else { ids = terminals }
+        if s.agentLabel.contains("JetBrains") { apps.first { $0.bundleIdentifier?.hasPrefix("com.jetbrains.") == true }?.activate(); return }
+
+        if let tty = validTTY(s.tty), running(["com.apple.Terminal"]) != nil, focusTerminalTab(tty: tty) { return }
+        running(ids)?.activate()
+    }
+
+    /// Selects the Terminal.app tab on `tty` and raises its window. False if no such tab (or Automation isn't allowed).
+    private static func focusTerminalTab(tty: String) -> Bool {
+        let script = """
+        tell application "Terminal"
+            repeat with w in windows
+                repeat with t in tabs of w
+                    if tty of t is "\(tty)" then
+                        set selected of t to true
+                        set index of w to 1
+                        activate
+                        return true
+                    end if
+                end repeat
+            end repeat
+        end tell
+        return false
+        """
+        var err: NSDictionary?
+        return NSAppleScript(source: script)?.executeAndReturnError(&err).booleanValue ?? false
     }
 }

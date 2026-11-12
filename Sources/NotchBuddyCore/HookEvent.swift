@@ -13,6 +13,7 @@ public struct HookEvent: Sendable, Equatable {
     public var toolInputJSON: String?    // full tool_input, for the approval card when it is not Bash
     public var message: String?          // Notification message, Stop last_assistant_message, failure error
     public var notificationType: String?
+    public var tty: String?              // /dev/ttysNNN of the terminal the agent runs in (sent by the hook helper), for jumping to its tab
 
     public init(name: String, sessionID: String, cwd: String = "", toolName: String? = nil, command: String? = nil,
                 filePath: String? = nil, toolInputJSON: String? = nil, message: String? = nil, notificationType: String? = nil) {
@@ -64,4 +65,10 @@ public enum PermissionDecision: Sendable {
         let out = ["hookSpecificOutput": ["hookEventName": "PermissionRequest", "decision": decision]]
         return (try? JSONSerialization.data(withJSONObject: out, options: [.sortedKeys])) ?? Data()
     }
+}
+
+/// Only a plain /dev/ttysNNN is ever kept: the value ends up in an AppleScript, so nothing else may pass.
+public func validTTY(_ s: String?) -> String? {
+    guard let s, s.range(of: #"^/dev/ttys[0-9]{1,4}$"#, options: .regularExpression) != nil else { return nil }
+    return s
 }

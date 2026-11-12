@@ -53,7 +53,21 @@ guard connected else { finish(Data()) }
 // Where a Claude Code session runs (cli, claude-vscode, claude-desktop…), so the notch can label it.
 let entry = (ProcessInfo.processInfo.environment["CLAUDE_CODE_ENTRYPOINT"] ?? "").filter { $0.isLetter || $0.isNumber || $0 == "-" }
 let event = (arg("--event") ?? "").filter { $0.isLetter }
-let message = Data("NB1 agent=\(agent) entry=\(entry) event=\(event)\n".utf8) + input
+/// The terminal the agent runs in: the first ancestor process with a controlling tty (hooks themselves have piped stdio).
+func ancestorTTY() -> String {
+    var pid = getppid()
+    for _ in 0..<10 where pid > 1 {
+        var info = kinfo_proc(), size = MemoryLayout<kinfo_proc>.stride
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
+        guard sysctl(&mib, 4, &info, &size, nil, 0) == 0, size > 0 else { return "" }
+        let dev = info.kp_eproc.e_tdev
+        if dev != -1, let name = devname(dev, S_IFCHR) { return "/dev/" + String(cString: name) }
+        pid = info.kp_eproc.e_ppid
+    }
+    return ""
+}
+let tty = ancestorTTY()
+let message = Data("NB1 agent=\(agent) entry=\(entry) event=\(event)\(tty.isEmpty ? "" : " tty=\(tty)")\n".utf8) + input
 _ = message.withUnsafeBytes { buf -> Bool in
     var off = 0
     while off < buf.count {
