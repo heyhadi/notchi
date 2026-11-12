@@ -146,7 +146,8 @@ final class RoamPanel: NSPanel {
             look.tilt = Double(max(-15, min(15, vy / 60)))
             if airY <= 0 {
                 airY = 0
-                if vy < -300 { vy = -vy * 0.4; airY = 0.01; if look.bubble == nil { say(["Oof!", "Ouch!", "Bonk!"]) } } else { vy = 0; look.tilt = 0 }
+                if vy < -300 { vy = -vy * 0.4; airY = 0.01; if look.bubble == nil { say(["Oof!", "Ouch!", "Bonk!"]) }
+                    SoundPlayer.shared.react(.thud) } else { vy = 0; look.tilt = 0 }
             }
             place(); return
         }
@@ -190,6 +191,7 @@ final class RoamPanel: NSPanel {
         let until = Date().addingTimeInterval(3.5)
         bumpCooldownUntil = until; o.bumpCooldownUntil = until
         let kind = Bump.allCases.randomElement()!
+        SoundPlayer.shared.react([.bonk: .bonk, .greet: .greet, .dizzy: .dizzy, .tumble: .whoa][kind]!) // once, not once per walker
         let away: CGFloat = x <= o.x ? -1 : 1 // I bounce left if I'm the left one
         // tumble: the one who got hit goes flying, the one who ran into it says sorry
         react(kind, away: away, partner: o.agent?.displayName ?? "friend", victim: false)
@@ -229,6 +231,7 @@ final class RoamPanel: NSPanel {
         if !dragging, hypot(m.x - downPoint.x, m.y - downPoint.y) > 4 {
             dragging = true; vy = 0; hopStart = nil
             say(["Wooaah!", "Put me down!", "Heeelp!", "I can fly?!"], for: 3)
+            SoundPlayer.shared.react(.grab)
         }
         guard dragging, let f = NSScreen.main?.visibleFrame else { return }
         x = max(f.minX, min(f.maxX - side, m.x - grab.x))
@@ -242,6 +245,7 @@ final class RoamPanel: NSPanel {
         pokes = now.timeIntervalSince(lastPoke) > 3 ? 1 : pokes + 1
         lastPoke = now; hopStart = now
         let mine = model.currentAvatar(fallback: UserDefaults.standard.string(forKey: Prefs.avatar) ?? "bolt", for: agent)
+        SoundPlayer.shared.react(pokes >= 4 ? .dizzy : .poke(level: pokes))
         switch pokes {
         case 1: say([mine.catchphrase, "Hehe!", "Hi!"])
         case 2, 3: say(["Tickles!", "Hey!", "That's my nose!", "Stop it, hehe"])

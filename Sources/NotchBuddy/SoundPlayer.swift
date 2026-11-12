@@ -57,6 +57,27 @@ final class SoundPlayer {
         preview(soundName)
     }
 
+    /// Little noises for the roaming avatar's reactions. Follows the master sound switch, volume and mic mute; always the robot voice.
+    enum Reaction { case poke(level: Int), grab, thud, bonk, greet, dizzy, whoa }
+    private var reactGate = SoundGate(interval: 0.3) // pokes can come fast; don't machine-gun
+
+    func react(_ r: Reaction) {
+        guard UserDefaults.standard.bool(forKey: Prefs.soundsOn), reactGate.allow(),
+              !(UserDefaults.standard.object(forKey: Prefs.muteWhenBusy) as? Bool ?? true && isInputDeviceInUse()),
+              let format = AVAudioFormat(standardFormatWithSampleRate: 44100.0, channels: 1) else { return }
+        let blips: [Blip]; var pitch = 1.0
+        switch r {
+        case .poke(let level): blips = [(1100, 1600, 0.06, 0, 0)]; pitch = 0.9 + 0.12 * Double(min(level, 4)) + .random(in: 0...0.05) // each poke a bit higher
+        case .grab: blips = [(500, 900, 0.12, 0.02, 0), (900, 1300, 0.15, 0, 30)]
+        case .thud: blips = [(260, 120, 0.12, 0, 0)]
+        case .bonk: blips = [(400, 200, 0.08, 0.02, 0), (700, 350, 0.12, 0, 20)]
+        case .greet: blips = [(900, 1200, 0.07, 0.04, 0), (1200, 1600, 0.10, 0, 0)]
+        case .dizzy: blips = [(1200, 500, 0.35, 0, 60)]
+        case .whoa: blips = [(600, 1400, 0.20, 0.02, 0), (1400, 300, 0.30, 0, 0)]
+        }
+        if let buffer = render(blips, pitch: pitch, format: format) { playBuffer(buffer) }
+    }
+
     private func ensureEngineStarted() {
         guard !isEngineStarted else { return }
         engine.attach(playerNode)
@@ -343,8 +364,6 @@ final class SoundPlayer {
 
     /// "Robot" pack: wordless babble made of gliding blips, like a droid reacting. Each sound has a mood.
     private func robotBuffer(_ name: SoundName, format: AVAudioFormat) -> AVAudioPCMBuffer? {
-        // (start Hz, end Hz, seconds, gap after, warble depth in Hz)
-        typealias Blip = (f0: Double, f1: Double, dur: Double, gap: Double, warble: Double)
         let blips: [Blip]
         switch name {
         case .off: return nil
@@ -353,6 +372,13 @@ final class SoundPlayer {
         case .ding: blips = [(800, 1000, 0.06, 0.02, 0), (1000, 1250, 0.06, 0.02, 0), (1250, 1700, 0.07, 0.03, 0), (1500, 2100, 0.22, 0, 40)] // happy trill
         case .bwomp: blips = [(700, 420, 0.16, 0.05, 0), (480, 220, 0.30, 0, 18)]           // sad "wuh-woooh"
         }
+        return render(blips, pitch: 1, format: format)
+    }
+
+    // (start Hz, end Hz, seconds, gap after, warble depth in Hz)
+    private typealias Blip = (f0: Double, f1: Double, dur: Double, gap: Double, warble: Double)
+
+    private func render(_ blips: [Blip], pitch: Double, format: AVAudioFormat) -> AVAudioPCMBuffer? {
         let sr = format.sampleRate
         let total = blips.reduce(0) { $0 + $1.dur + $1.gap }
         let frames = Int(total * sr)
@@ -364,7 +390,7 @@ final class SoundPlayer {
             let n = Int(b.dur * sr)
             for k in 0..<n where i + k < frames {
                 let t = Double(k) / sr, x = Double(k) / Double(n)
-                let f = b.f0 + (b.f1 - b.f0) * x + b.warble * sin(2 * .pi * 28 * t)
+                let f = (b.f0 + (b.f1 - b.f0) * x + b.warble * sin(2 * .pi * 28 * t)) * pitch
                 phase += 2 * .pi * f / sr
                 let env = Float(min(1, t / 0.006) * min(1, (b.dur - t) / 0.02)) // soft edges, no clicks
                 out[i + k] = Float(sin(phase) + 0.25 * sin(2 * phase)) / 1.25 * env * 0.7
