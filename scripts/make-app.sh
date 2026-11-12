@@ -2,10 +2,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "Building release configuration..."
-swift build -c release
+VERSION="${VERSION:-0.1.0}"
+# UNIVERSAL=1 builds for Apple Silicon and Intel in one binary (what the release DMG ships).
+ARCH_FLAGS=()
+if [[ "${UNIVERSAL:-0}" == 1 ]]; then ARCH_FLAGS=(--arch arm64 --arch x86_64); fi
 
-BIN_DIR="$(swift build -c release --show-bin-path)"
+echo "Building release configuration..."
+swift build -c release ${ARCH_FLAGS[@]+"${ARCH_FLAGS[@]}"}
+
+BIN_DIR="$(swift build -c release ${ARCH_FLAGS[@]+"${ARCH_FLAGS[@]}"} --show-bin-path)"
 echo "Build output directory: $BIN_DIR"
 
 APP_DIR="build/NotchBuddy.app"
@@ -27,7 +32,7 @@ cp -R "$BIN_DIR/NotchBuddy_NotchBuddy.bundle" "$APP_DIR/Contents/Resources/"
 
 # Write Info.plist
 echo "Writing Info.plist..."
-cat << 'EOF' > "$APP_DIR/Contents/Info.plist"
+cat << EOF > "$APP_DIR/Contents/Info.plist"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -47,7 +52,9 @@ cat << 'EOF' > "$APP_DIR/Contents/Info.plist"
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1.0</string>
+    <string>$VERSION</string>
+    <key>CFBundleVersion</key>
+    <string>$VERSION</string>
 </dict>
 </plist>
 EOF

@@ -1,0 +1,21 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+    paths-ignore: [website/**]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build
+      - run: swift test
+      - run: ./scripts/make-app.sh && ./scripts/make-dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Notchi-dmg
+          path: build/Notchi.dmg
+          retention-days: 7

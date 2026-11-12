@@ -1,0 +1,27 @@
+name: Release
+
+# Push a tag like v0.2.0 to build a universal DMG and publish it as a GitHub release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+      - name: Build Notchi.dmg
+        run: UNIVERSAL=1 VERSION="${GITHUB_REF_NAME#v}" ./scripts/make-app.sh && ./scripts/make-dmg.sh
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/Notchi.dmg \
+            --title "Notchi $GITHUB_REF_NAME" --generate-notes \
+            --notes "Open Notchi.dmg and drag Notchi into Applications. macOS 14 or later, Apple Silicon or Intel.
+
+          The app is not notarized yet, so macOS blocks the first launch. Open Notchi once, then go to System Settings → Privacy & Security and click Open Anyway next to Notchi. You only do this once."
