@@ -28,9 +28,6 @@
 ## Cleanup you may want
 - `~/nb-playground` (test folder with `notes.txt`, `hello.txt`) can be deleted.
 
-## Reminder
-- Still open from your notes: the lead's decision on wiping the Mac.
-
 ## Not built yet (your call)
 - **Roaming mode** (avatar walking on window tops, drag and throw). It changes how the whole desktop behaves, so I'd rather you
   try the notch first. It can be done without Accessibility or Screen Recording permission (window bounds only).
