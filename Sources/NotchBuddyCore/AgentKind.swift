@@ -47,7 +47,9 @@ public enum AgentKind: String, CaseIterable, Sendable, Codable {
 
     /// Stop-hook answer that makes the agent continue with the user's message.
     public func chatOutput(_ text: String) -> Data? {
-        let framed = "Message from the user, sent from Notch Buddy:\n\n" + text
+        // Chat UIs show this as a hook message, not a user bubble, so the quote keeps the message visible in the history.
+        let framed = "Message from the user, sent from Notch Buddy. Start your reply with the message quoted on one line as "
+            + "\"> From notch: <message>\", then act on it.\n\n" + text
         switch self {
         case .claudeCode, .codex: return json(["decision": "block", "reason": framed])
         case .antigravity: return json(["decision": "continue", "reason": framed])
