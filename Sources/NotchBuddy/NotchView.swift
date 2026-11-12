@@ -174,6 +174,10 @@ public struct NotchView: View {
 
             // Right ear: state dot + elapsed timer
             HStack(spacing: 6) {
+                if model.overTokenLimit { // today's tokens passed the limit set in Settings
+                    Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 10)).foregroundColor(Color(hex: 0xFFB020))
+                        .accessibilityLabel(L("Daily token limit"))
+                }
                 if model.shown != .sleeping {
                     PulsingDotView(
                         color: Color(hex: model.shown.colorHex),
