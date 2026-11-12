@@ -120,7 +120,7 @@ final class RoamPanel: NSPanel {
         else if wasAwake, sleepSince == nil { sleepSince = Date() }
         let visible = shouldShow
         if visible, timer == nil {
-            if let f = screen?.visibleFrame ?? NSScreen.main?.visibleFrame { x = .random(in: f.minX...(f.maxX - side)); setFrameOrigin(NSPoint(x: x, y: f.minY)) }
+            if let span = walkSpan { x = .random(in: span.lowerBound...(span.upperBound - side)); setFrameOrigin(NSPoint(x: x, y: screenFrame(atX: x)?.minY ?? 0)) }
             last = Date()
             orderFrontRegardless()
             timer = Timer.scheduledTimer(withTimeInterval: 1 / 30, repeats: true) { [weak self] _ in MainActor.assumeIsolated { self?.tick() } }
@@ -132,6 +132,18 @@ final class RoamPanel: NSPanel {
 
     /// Publishing re-renders the view; only do it when the angle visibly changes.
     private func setTilt(_ t: Double) { if abs(t - look.tilt) > 0.5 { look.tilt = t } }
+
+    /// The screen a point on the x axis falls on (walkers cross from one screen to the next); the main screen as a fallback.
+    private func screenFrame(atX px: CGFloat) -> NSRect? {
+        (NSScreen.screens.first { $0.frame.minX <= px && px < $0.frame.maxX } ?? NSScreen.main)?.visibleFrame
+    }
+
+    /// Left and right limits over all screens side by side.
+    private var walkSpan: ClosedRange<CGFloat>? {
+        let f = NSScreen.screens.map(\.frame)
+        guard let lo = f.map(\.minX).min(), let hi = f.map(\.maxX).max() else { return nil }
+        return lo...hi
+    }
 
     private var isOnGround: Bool { !dragging && airY == 0 && vy == 0 }
 
@@ -152,7 +164,7 @@ final class RoamPanel: NSPanel {
     /// agent finishes and for attention while one needs you. Can be picked up and dropped (it falls and bounces), and bumps into other walkers.
     private func tick() {
         let now = Date(); let dt = now.timeIntervalSince(last); last = now
-        guard let f = NSScreen.main?.visibleFrame else { return }
+        guard let f = screenFrame(atX: x + side / 2), let span = walkSpan else { return }
         ground = f.minY
         if look.bubble != nil, now > bubbleUntil { look.bubble = nil }
         if shownState == .sleeping, !asleepDone, let s0 = sleepSince, now.timeIntervalSince(s0) > Self.sleepFor { asleepDone = true; sync() }
@@ -172,7 +184,7 @@ final class RoamPanel: NSPanel {
             place(); return
         }
         let mouse = NSEvent.mouseLocation, mid = x + side / 2
-        let curious = walking && abs(mouse.x - mid) < 160 && mouse.y < f.minY + 240
+        let curious = walking && abs(mouse.x - mid) < 160 && mouse.y < f.minY + 240 && mouse.x >= f.minX && mouse.x < f.maxX
         if curious { direction = mouse.x >= mid ? 1 : -1 }
         if walking, !curious, now >= nextPauseAt {
             pauseUntil = now.addingTimeInterval(.random(in: 1...3))
@@ -196,7 +208,7 @@ final class RoamPanel: NSPanel {
             bob = abs(sin(phase)) * 3
             setTilt(sin(phase) * 4)
             x += direction * 70 * CGFloat(dt)
-            if x < f.minX { x = f.minX; direction = 1 } else if x > f.maxX - side { x = f.maxX - side; direction = -1 }
+            if x < span.lowerBound { x = span.lowerBound; direction = 1 } else if x > span.upperBound - side { x = span.upperBound - side; direction = -1 }
             if now >= bumpCooldownUntil,
                let o = peers().first(where: { $0 !== self && $0.isOnGround && $0.alphaValue > 0.5 && abs($0.x - x) < 48 }) {
                 bump(with: o)
@@ -258,8 +270,9 @@ final class RoamPanel: NSPanel {
             say(["Wooaah!", "Put me down!", "Heeelp!", "I can fly?!"], for: 3)
             SoundPlayer.shared.react(.grab)
         }
-        guard dragging, let f = NSScreen.main?.visibleFrame else { return }
-        x = max(f.minX, min(f.maxX - side, m.x - grab.x))
+        guard dragging, let f = screenFrame(atX: m.x), let span = walkSpan else { return }
+        x = max(span.lowerBound, min(span.upperBound - side, m.x - grab.x))
+        ground = f.minY
         airY = max(0, min(f.height - 130, m.y - grab.y - f.minY))
     }
 
