@@ -29,6 +29,7 @@ cp "$BIN_DIR/notchbuddy-hook" "$APP_DIR/Contents/Helpers/notchbuddy-hook"
 
 # Copy SwiftPM resource bundle (Localization.swift looks for it in Contents/Resources)
 cp -R "$BIN_DIR/NotchBuddy_NotchBuddy.bundle" "$APP_DIR/Contents/Resources/"
+cp assets/AppIcon.icns "$APP_DIR/Contents/Resources/AppIcon.icns" # from scripts/make-icon.sh
 
 # Write Info.plist
 echo "Writing Info.plist..."
@@ -43,6 +44,8 @@ cat << EOF > "$APP_DIR/Contents/Info.plist"
     <string>Notchi</string>
     <key>CFBundleExecutable</key>
     <string>NotchBuddy</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>NSAppleEventsUsageDescription</key>

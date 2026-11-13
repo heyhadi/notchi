@@ -69,6 +69,11 @@ enum Snapshot {
             m.mode = .expanded
             add("notch-nextstep", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        // The app icon (scripts/make-icon.sh turns it into Resources/AppIcon.icns): Bolt on the notch's black, on Apple's 824-pt icon grid.
+        add("app-icon", CGSize(width: 512, height: 512),
+            RoundedRectangle(cornerRadius: 92, style: .continuous).fill(Color(hex: 0x111114))
+                .overlay(BoltView(state: .done, size: 300).offset(y: 16)) // its shadow takes the bottom; this centers it by eye
+                .frame(width: 412, height: 412))
         for tab in SettingsView.SettingsTab.allCases {
             add("settings-\(tab.rawValue)", CGSize(width: 640, height: 560), SettingsView(selectedTab: tab))
         }
