@@ -19,13 +19,14 @@ enum Prefs {
     static let greetDay = "greetDay"            // "yyyy-MM-dd" of the last good-morning sound
     static let reactionSounds = "reactionSounds" // Bool, default true: little noises for the roaming avatar and chat (still needs sounds on)
     static let muteWhenBusy = "muteWhenBusy"    // Bool, default true: mute while the mic is in use (calls, meetings)
+    static let hotkeys = "hotkeys"              // Bool, default true: ⌃⌥N / ⌃⌥A / ⌃⌥D global shortcuts
     static let autoUpdate = "autoUpdate"        // Bool, default true: check GitHub Releases and install new versions when no agent is busy
     static let loginItemSet = "loginItemSet"    // Bool: the released app has added itself as a login item once (the user can turn it off after)
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
     static func register() {
         var d: [String: Any] = [language: "en", avatar: "bolt", openOnHover: true, holdForReply: false, glow: true, soundsOn: false,
-                                volume: 0.6, soundPack: "robot", muteWhenBusy: true, dailyTokenLimitM: 0, roam: false, avatarPerAgent: false, reactionSounds: true, autoUpdate: true]
+                                volume: 0.6, soundPack: "robot", muteWhenBusy: true, dailyTokenLimitM: 0, roam: false, avatarPerAgent: false, reactionSounds: true, autoUpdate: true, hotkeys: true]
         for s in AgentState.allCases { d[sound(for: s)] = SoundName.default(for: s).rawValue }
         UserDefaults.standard.register(defaults: d)
     }

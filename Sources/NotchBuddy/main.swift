@@ -32,6 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             MainActor.assumeIsolated { model.desktopActivated(); model.refresh(after: nil) }
         }
 
+        HotKeys.shared.update(model: model)
+        NotificationCenter.default.addObserver(forName: UserDefaults.didChangeNotification, object: nil, queue: .main) { [model] _ in
+            MainActor.assumeIsolated { HotKeys.shared.update(model: model) }
+        }
+
         // The released app adds itself as a login item once (macOS shows its own notice); Settings can turn it off.
         if Updater.shared.canUpdate, !UserDefaults.standard.bool(forKey: Prefs.loginItemSet) {
             try? SMAppService.mainApp.register()
