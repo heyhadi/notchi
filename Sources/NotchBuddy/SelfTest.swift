@@ -60,13 +60,30 @@ enum SelfTest {
         let q = #","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which fruit?","header":"Fruit","options":[{"label":"Apple","description":""},{"label":"Banana","description":""}],"multiSelect":false}]}"#
         send(ev("PermissionRequest", q)) { out in
             check(out.contains(#""answers":{"Which fruit?":"Banana"}"#) && out.contains(#""behavior":"allow""#), "question answered from the card")
-            print(failures == 0 ? "SELFTEST PASSED" : "SELFTEST FAILED (\(failures))")
-            exit(failures == 0 ? 0 : 1)
+            alwaysAndStop()
         }
         after(0.8) {
             check(model.pending.first?.event.questions?.first?.options.count == 2 && model.peekText?.contains("Which fruit?") == true,
                   "question card pending, peek shows the question")
             if let id = model.pending.first?.id { model.answer(id, ["Which fruit?": "Banana"]) }
+        }
+    }
+
+    /// "Always this session" adds the exact command as a session rule; "Stop after this step" stops the next tool call.
+    static func alwaysAndStop() {
+        send(ev("PermissionRequest", #","tool_name":"Bash","tool_input":{"command":"npm test"}"#)) { out in
+            check(out.contains(#""updatedPermissions":[{"behavior":"allow","destination":"session","rules":[{"ruleContent":"npm test","toolName":"Bash"}]"#),
+                  "Always this session → allow plus a session rule")
+            model.stops.toggle("claude-code:selftest")
+            send(ev("PreToolUse", #","tool_name":"Bash","tool_input":{"command":"ls"}"#)) { out in
+                check(out.contains(#""continue":false"#) && !model.stops.contains("claude-code:selftest"), "Stop after this step → next tool call stops, once")
+                check(model.state != .working, "stopped session isn't shown working")
+                print(failures == 0 ? "SELFTEST PASSED" : "SELFTEST FAILED (\(failures))")
+                exit(failures == 0 ? 0 : 1)
+            }
+        }
+        after(0.8) {
+            if let r = model.pending.first, let rules = r.event.sessionRules { model.decide(r.id, .allowInSession(rules)) }
         }
     }
 

@@ -192,3 +192,7 @@
 "GitHub" = "GitHub";
 "Release notes" = "Release notes";
 "MIT License" = "MIT License";
+"Stop after this step" = "Stop after this step";
+"Stops before its next step. Click to keep going." = "Stops before its next step. Click to keep going.";
+"Keep going" = "Keep going";
+"Stopped from Notchi" = "Stopped from Notchi";

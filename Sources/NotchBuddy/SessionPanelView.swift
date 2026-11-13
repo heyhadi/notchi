@@ -12,6 +12,19 @@ struct SessionPanelView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 8) {
                     ClickableRow(model: model, session: session, tokens: model.tokens[session.id])
+                    if session.agent.stopOutput != nil, [.working, .thinking].contains(session.state) || model.stops.contains(session.id) {
+                        let armed = model.stops.contains(session.id)
+                        Button { model.stops.toggle(session.id) } label: {
+                            Image(systemName: armed ? "stop.circle.fill" : "stop.circle")
+                                .font(.system(size: 14))
+                                .foregroundColor(armed ? Color(hex: 0xFF6B6B) : Color(hex: 0xA9A8B0))
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help(armed ? L("Stops before its next step. Click to keep going.") : L("Stop after this step"))
+                        .accessibilityLabel(armed ? L("Keep going") : L("Stop after this step"))
+                    }
                     if session.agent.supportsChat {
                         let open = model.chats[session.id]?.open == true
                         Button { model.setChatOpen(session.id, !open) } label: {

@@ -192,3 +192,7 @@
 "GitHub" = "GitHub";
 "Release notes" = "Catatan rilis";
 "MIT License" = "Lisensi MIT";
+"Stop after this step" = "Berhenti setelah langkah ini";
+"Stops before its next step. Click to keep going." = "Berhenti sebelum langkah berikutnya. Klik untuk lanjut.";
+"Keep going" = "Lanjutkan";
+"Stopped from Notchi" = "Dihentikan dari Notchi";

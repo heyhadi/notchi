@@ -60,6 +60,7 @@ public final class NotchModel: ObservableObject {
     @Published var sessions: [AgentSession] = []
     @Published var pending: [PendingRequest] = []
     @Published var chats: [String: ChatState] = [:]   // by SessionStore key
+    @Published var stops = StopRequests()              // "Stop after this step", by SessionStore key
     var onWantsKeyboard: (() -> Void)?                 // the panel makes itself key so the chat box can take typing
     var store = SessionStore()
     @Published var tokens: [String: Int] = [:]          // by SessionStore key (Claude Code only)

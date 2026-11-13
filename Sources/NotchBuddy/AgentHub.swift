@@ -31,6 +31,13 @@ extension NotchModel {
         if e.name == "SessionEnd", let s = store.sessions[SessionStore.key(e)] { recordHistory(s) }
         if e.name != "Stop" { releaseHold(SessionStore.key(e)) } // the held turn moved on without us: a reply there would be lost
         store.apply(e)
+        if let out = stops.apply(e) {
+            respond(out) // "Stop after this step": the tool doesn't run and the turn ends, which may send no Stop hook
+            var done = e; done.name = "Stop"; done.message = L("Stopped from Notchi")
+            store.apply(done)
+            refresh(after: done)
+            return
+        }
         switch e.name {
         case "PermissionRequest" where e.agent.approvesInNotch:
             let risks = CommandRisk.reasons(for: e)
