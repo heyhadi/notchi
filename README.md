@@ -10,13 +10,14 @@ Notchi is a small native macOS app that turns the MacBook notch into a home for 
 
 - **Live status per agent**: working, thinking, done, needs you or error, with a step count and timer.
 - **Approve from the notch**: see the full command and folder, then Allow once or Deny. Risky commands (pipes into a shell, disk erase, keychain reads, settings edits and so on) can only be answered in the terminal.
-- **Chat mid-turn**: send Claude Code a note while it works; it reads it after its next tool call.
-- **Jump back**: click a session to bring its terminal tab (Terminal.app) or app to the front.
+- **Reply from the notch**: send Claude Code a note while it works; it reads it after its next tool call. Once it's done, your reply is typed straight into its terminal tab (Terminal.app, iTerm2, WezTerm), as if you typed it there.
+- **Answer the Claude desktop app's questions**: when a Code session ends with a question, its choices show in the notch and a click sends your answer. Opening the app instead works as usual.
+- **Jump back**: click a session to open its terminal tab (Terminal.app), its exact chat in the Claude desktop app, or its conversation in VS Code.
 - **Daily token meter** and an optional daily limit, plus session history.
 - **Roaming buddies**: one per agent, walking along your Dock. Drag them, poke them, watch them bump into each other and doze off when things go quiet.
 - **Robot sounds**: a synthesized "bip bup" voice for needs-you, done, greetings and reactions. Mutes during calls.
 - **Opens at login and updates itself**: new releases install automatically when no agent is busy (or use Check for Updates in the menu).
-- **Private**: everything stays on your Mac. No account, no telemetry. The only network request is the update check to GitHub, which you can turn off in Settings → Behavior.
+- **Private**: everything stays on your Mac. No account, no telemetry. The only network request is the update check to GitHub, which you can turn off in Settings → About.
 
 ## Supported agents
 
@@ -36,7 +37,7 @@ Claude Code and OpenCode are tested live; the others follow each agent's documen
 2. Notchi isn't notarized yet, so macOS blocks the first launch. Open it once, then go to **System Settings → Privacy & Security** and click **Open Anyway** next to Notchi. You only do this once.
 3. Click the menu bar icon → **Settings → Agents → Connect** for each agent you use.
 
-Notchi adds itself as a login item on first launch (macOS shows a notice) and keeps itself up to date from GitHub Releases. Both can be turned off in **Settings → Behavior**. Updates are checked against the bundle id, version and code signature before the app replaces itself; until Notchi is notarized there is no Developer ID signature to check, so the update trusts GitHub's HTTPS.
+Notchi adds itself as a login item on first launch (macOS shows a notice) and keeps itself up to date from GitHub Releases. Turn them off in **Settings → Behavior** (login) and **Settings → About** (updates). Updates are checked against the bundle id, version and code signature before the app replaces itself; until Notchi is notarized there is no Developer ID signature to check, so the update trusts GitHub's HTTPS.
 
 Connecting adds a hook to that agent's own config (for Claude Code, `~/.claude/settings.json`) and makes a timestamped backup first. Every entry is marked as managed by Notch Buddy, and Disconnect removes only those. If Notchi isn't running, the hook steps aside and the agent behaves as if it weren't there.
 
@@ -50,7 +51,7 @@ open build/NotchBuddy.app
 swift test
 ```
 
-`UNIVERSAL=1 ./scripts/make-app.sh && ./scripts/make-dmg.sh` builds the universal `build/Notchi.dmg` that releases ship.
+`UNIVERSAL=1 ./scripts/make-app.sh && ./scripts/make-dmg.sh` builds the universal `build/Notchi.dmg` that releases ship. `./scripts/make-icon.sh` redraws the app icon (`assets/AppIcon.icns`) from the Bolt avatar.
 
 ## Releasing
 
