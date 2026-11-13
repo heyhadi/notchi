@@ -28,6 +28,7 @@ extension NotchModel {
     /// Entry point for every hook event. `respond` must be called once (nil = no decision).
     func handle(_ e: HookEvent, respond: @escaping @Sendable (Data?) -> Void) {
         if e.name == "SessionEnd", let s = store.sessions[SessionStore.key(e)] { recordHistory(s) }
+        if e.name != "Stop" { releaseHold(SessionStore.key(e)) } // the held turn moved on without us: a reply there would be lost
         store.apply(e)
         switch e.name {
         case "PermissionRequest" where e.agent.approvesInNotch:
