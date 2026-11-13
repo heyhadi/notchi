@@ -27,6 +27,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [model] _ in
             MainActor.assumeIsolated { model.refresh(after: nil) }
         }
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [model] note in
+            guard (note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.bundleIdentifier == "com.anthropic.claudefordesktop" else { return }
+            MainActor.assumeIsolated { model.desktopActivated(); model.refresh(after: nil) }
+        }
 
         // The released app adds itself as a login item once (macOS shows its own notice); Settings can turn it off.
         if Updater.shared.canUpdate, !UserDefaults.standard.bool(forKey: Prefs.loginItemSet) {

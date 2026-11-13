@@ -181,3 +181,5 @@
 "You have %@. Notchi downloads the update, replaces itself and relaunches." = "Versimu %@. Notchi akan mengunduh update, mengganti dirinya, lalu membuka ulang.";
 "You're up to date." = "Sudah versi terbaru.";
 "Answer in the app" = "Jawab di app-nya";
+"or answer in the app" = "atau jawab di app-nya";
+"Goes straight into its terminal tab" = "Langsung diketik ke tab terminalnya";

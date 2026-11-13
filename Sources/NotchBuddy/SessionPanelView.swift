@@ -11,7 +11,7 @@ struct SessionPanelView: View {
         ForEach(showAll ? model.sessions : Array(model.sessions.prefix(5))) { session in
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 8) {
-                    ClickableRow(session: session, tokens: model.tokens[session.id])
+                    ClickableRow(model: model, session: session, tokens: model.tokens[session.id])
                     if session.agent.supportsChat {
                         let open = model.chats[session.id]?.open == true
                         Button { model.setChatOpen(session.id, !open) } label: {
@@ -71,12 +71,13 @@ struct SessionPanelView: View {
 
 /// Row that jumps to the session's app on click; the highlight, arrow and pointer tell you it is clickable.
 private struct ClickableRow: View {
+    @ObservedObject var model: NotchModel
     let session: AgentSession
     let tokens: Int?
     @State private var hovering = false
 
     var body: some View {
-        SessionRow(session: session, tokens: tokens)
+        SessionRow(session: session, tokens: tokens, held: model.chats[session.id]?.held != nil) { model.sendChat(session.id, $0) }
             .padding(.vertical, 4)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(hovering ? 0.07 : 0)))
             .overlay(alignment: .trailing) {
@@ -92,7 +93,7 @@ private struct ClickableRow: View {
             .onHover { hovering = $0; PointerState.overRow = $0; if $0 { NSCursor.pointingHand.set() } }
             .onContinuousHover { if case .active = $0 { NSCursor.pointingHand.set() } }
             .onDisappear { if hovering { PointerState.overRow = false } }
-            .onTapGesture { TerminalJump.activate(for: session) }
+            .onTapGesture { model.releaseHold(session.id); TerminalJump.activate(for: session) } // you'll answer there; don't make it wait
             .help(L("Open the app this session runs in"))
     }
 }
@@ -100,6 +101,8 @@ private struct ClickableRow: View {
 private struct SessionRow: View {
     let session: AgentSession
     let tokens: Int?
+    let held: Bool                     // its finished turn is held: a chip answers it
+    let choose: (String) -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -115,16 +118,20 @@ private struct SessionRow: View {
                     }
                 }
                 if session.state == .needsYou, let q = session.nextStep {
-                    // The app asks this in its own window; the row's click takes you there to answer.
+                    // The app asks this in its own window; the row's click takes you there. While its turn is held, a chip answers from here.
                     Text(q.ask).font(.system(size: 13, weight: .medium)).foregroundColor(Color(hex: 0xFFC15C))
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 6) {
                         ForEach(q.choices, id: \.self) { c in
-                            Text(c).font(.system(size: 12)).foregroundColor(.white).lineLimit(1)
-                                .padding(.horizontal, 10).padding(.vertical, 4)
-                                .background(Capsule().fill(Color(hex: 0x2A2A30)))
+                            Button { choose(c) } label: {
+                                Text(c).font(.system(size: 12)).foregroundColor(held ? Color(hex: 0x3D2600) : .white).lineLimit(1)
+                                    .padding(.horizontal, 10).padding(.vertical, 4)
+                                    .background(Capsule().fill(Color(hex: held ? 0xFFB020 : 0x2A2A30)))
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!held)
                         }
-                        Text(L("Answer in the app")).font(.system(size: 11)).foregroundColor(Color(hex: 0x8D8C94))
+                        Text(held ? L("or answer in the app") : L("Answer in the app")).font(.system(size: 11)).foregroundColor(Color(hex: 0x8D8C94))
                     }
                 } else if let step = session.state == .error ? session.message : session.lastStep {
                     Text(step).font(.system(size: 12, design: .monospaced)).foregroundColor(Color(hex: 0x8D8C94))
@@ -133,7 +140,7 @@ private struct SessionRow: View {
             }
         }
         .padding(.horizontal, 4)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: held ? .contain : .combine) // live chips stay separate buttons
     }
 
     private var detail: String {
@@ -302,6 +309,7 @@ private struct ChatBox: View {
             return session.agent.midTurnOutput("") != nil ? String(format: L("%@ will see it after its next tool call"), name)
                                                           : String(format: L("Will be sent when %@ finishes this turn"), name)
         }
+        if let raw = model.store.sessions[session.id], TerminalReply.canType(raw) { return L("Goes straight into its terminal tab") }
         let stale = Date().timeIntervalSince(session.updated) > 600 // no event for 10 min: it is not mid-turn any more
         switch session.state {
         case .working, .thinking, .needsYou where !stale: return String(format: L("Your message goes in when %@ finishes this turn"), name)
@@ -432,6 +440,18 @@ enum TerminalJump {
 
         if let tty = validTTY(s.tty), running(["com.apple.Terminal"]) != nil, focusTerminalTab(tty: tty) { return }
         running(ids)?.activate()
+    }
+
+    /// Types `text` plus Return into the Terminal.app or iTerm2 tab on `tty`, without bringing it forward. False if no such tab.
+    static func type(_ text: String, tty: String?) -> Bool {
+        let apps = NSWorkspace.shared.runningApplications
+        // Only a running app: scripting one that isn't installed makes macOS ask where it is.
+        for (id, app) in [("com.apple.Terminal", "Terminal"), ("com.googlecode.iterm2", "iTerm2")] where apps.contains(where: { $0.bundleIdentifier == id }) {
+            var err: NSDictionary?
+            if let src = TerminalReply.script(app: app, tty: tty, text: text),
+               NSAppleScript(source: src)?.executeAndReturnError(&err).booleanValue == true { return true }
+        }
+        return false
     }
 
     /// Selects the Terminal.app tab on `tty` and raises its window. False if no such tab (or Automation isn't allowed).

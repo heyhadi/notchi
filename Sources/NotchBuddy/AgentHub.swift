@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import NotchBuddyCore
 
 /// A permission request shown in the notch. Risky ones were already handed back to the terminal
@@ -18,6 +18,7 @@ struct ChatState {
     var queued: [String] = []                        // typed while the agent was busy; sent when its turn ends
     var held: (@Sendable (Data?) -> Void)?           // a finished turn we're holding until you reply
     var heldSince: Date?
+    var holdLimit: TimeInterval = 585               // hooks give up after 590 s; a desktop question's hold is short (see Stop)
     var lastReply: String?                           // what the agent said when it stopped
     var sentAt: Date?
     var lastSent: String?                            // shown in the chat box so you can see it went through
@@ -52,9 +53,14 @@ extension NotchModel {
                 respond(e.agent.chatOutput(c.queued.joined(separator: "\n\n")))
                 c.queued = []; c.sentAt = Date()
                 store.markThinking(key: key)
-            } else if c.open || UserDefaults.standard.bool(forKey: Prefs.holdForReply) {
+            } else if let s = store.sessions[key],
+                      (s.nextStep != nil && NSWorkspace.shared.frontmostApplication?.bundleIdentifier != "com.anthropic.claudefordesktop") // you're already there
+                        || (c.open && !TerminalReply.canType(s)) || UserDefaults.standard.bool(forKey: Prefs.holdForReply) {
+                // A desktop question is held only briefly, so its chips can answer; bringing the app forward releases it (desktopActivated).
+                // A CLI session at its prompt is never held for an open chat: replies are typed into its tab instead.
                 c.held?(nil) // never two holds for one session
                 c.held = respond; c.heldSince = Date()
+                c.holdLimit = s.nextStep != nil && !c.open && !UserDefaults.standard.bool(forKey: Prefs.holdForReply) ? 180 : 585
             } else {
                 respond(nil)
             }
@@ -88,6 +94,10 @@ extension NotchModel {
             c.held = nil; c.heldSince = nil; c.sentAt = Date()
             store.markThinking(key: key)
             SoundPlayer.shared.react(.delivered)
+        } else if let s = store.sessions[key], TerminalReply.canType(s), TerminalJump.type(text, tty: s.tty) {
+            c.sentAt = Date() // typed into its terminal tab: a real prompt, so UserPromptSubmit follows
+            store.markThinking(key: key)
+            SoundPlayer.shared.react(.delivered)
         } else {
             c.queued.append(text)
             SoundPlayer.shared.react(.queued)
@@ -102,6 +112,18 @@ extension NotchModel {
         if !open { c.held?(nil); c.held = nil; c.heldSince = nil } // closing lets the agent finish normally
         chats[key] = c
         if open { onWantsKeyboard?() }
+    }
+
+    /// Lets a held turn finish with no reply, so typing in the agent's own app is never stuck behind the hook.
+    func releaseHold(_ key: String) {
+        guard let held = chats[key]?.held else { return }
+        held(nil)
+        chats[key]?.held = nil; chats[key]?.heldSince = nil
+    }
+
+    /// The Claude desktop app came forward: release its sessions' holds before you type there.
+    func desktopActivated() {
+        for (k, c) in chats where c.held != nil && store.sessions[k]?.agentLabel.contains("Desktop") == true { releaseHold(k) }
     }
 
     func closeChats() {
@@ -146,7 +168,7 @@ extension NotchModel {
         }
         // Hooks give up after 590 s; drop holds nobody can answer anymore, and chats of ended sessions.
         for (k, c) in chats {
-            if let since = c.heldSince, Date().timeIntervalSince(since) > 585 { chats[k]?.held?(nil); chats[k]?.held = nil; chats[k]?.heldSince = nil }
+            if let since = c.heldSince, Date().timeIntervalSince(since) > c.holdLimit { releaseHold(k) }
             if store.sessions[k] == nil { c.held?(nil); chats[k] = nil }
         }
         sessions = store.current()
