@@ -39,4 +39,11 @@ final class TerminalReplyTests: XCTestCase {
         XCTAssertNil(TerminalReply.wezTermPane(tty: "/dev/ttys004", listJSON: Data("not json".utf8)))
         XCTAssertEqual(TerminalReply.oneLine(" a\nb\u{7}c "), "a b c")
     }
+
+    func testFindOnlyScriptTypesNothing() throws {
+        let s = try XCTUnwrap(TerminalReply.script(app: "Terminal", tty: "/dev/ttys004", text: nil))
+        XCTAssertTrue(s.contains(#"if tty of t is "/dev/ttys004" then"#))
+        XCTAssertFalse(s.contains("do script"))
+        XCTAssertFalse(TerminalReply.script(app: "iTerm2", tty: "/dev/ttys004", text: nil)?.contains("write text") ?? true)
+    }
 }

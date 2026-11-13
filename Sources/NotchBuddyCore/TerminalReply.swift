@@ -24,10 +24,14 @@ public enum TerminalReply {
     }
 
     /// AppleScript that types `text` into the tab on `tty` and presses Return; returns true if it found the tab.
-    /// nil for an invalid tty or empty text. `app` is "Terminal" or "iTerm2".
-    public static func script(app: String, tty: String?, text: String) -> String? {
-        guard let tty = validTTY(tty), let line = oneLine(text) else { return nil }
-        let quoted = "\"" + line.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\""
+    /// With `text` nil it only looks for the tab. nil for an invalid tty or empty text. `app` is "Terminal" or "iTerm2".
+    public static func script(app: String, tty: String?, text: String?) -> String? {
+        guard let tty = validTTY(tty) else { return nil }
+        var quoted: String?
+        if let text {
+            guard let line = oneLine(text) else { return nil }
+            quoted = "\"" + line.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\""
+        }
         switch app {
         case "Terminal":
             return """
@@ -35,7 +39,7 @@ public enum TerminalReply {
                 repeat with w in windows
                     repeat with t in tabs of w
                         if tty of t is "\(tty)" then
-                            do script \(quoted) in t
+                            \(quoted.map { "do script \($0) in t" } ?? "")
                             return true
                         end if
                     end repeat
@@ -50,7 +54,7 @@ public enum TerminalReply {
                     repeat with t in tabs of w
                         repeat with s in sessions of t
                             if tty of s is "\(tty)" then
-                                tell s to write text \(quoted)
+                                \(quoted.map { "tell s to write text \($0)" } ?? "")
                                 return true
                             end if
                         end repeat

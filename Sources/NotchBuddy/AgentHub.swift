@@ -22,6 +22,7 @@ struct ChatState {
     var lastReply: String?                           // what the agent said when it stopped
     var sentAt: Date?
     var lastSent: String?                            // shown in the chat box so you can see it went through
+    var inTerminal = false                           // its tab is in a terminal Notchi can type into (checked when the chat opens)
 }
 
 extension NotchModel {
@@ -56,7 +57,7 @@ extension NotchModel {
                 store.markThinking(key: key)
             } else if let s = store.sessions[key],
                       (s.nextStep != nil && NSWorkspace.shared.frontmostApplication?.bundleIdentifier != "com.anthropic.claudefordesktop") // you're already there
-                        || (c.open && !TerminalReply.canType(s)) || UserDefaults.standard.bool(forKey: Prefs.holdForReply) {
+                        || (c.open && !(TerminalReply.canType(s) && c.inTerminal)) || UserDefaults.standard.bool(forKey: Prefs.holdForReply) {
                 // A desktop question is held only briefly, so its chips can answer; bringing the app forward releases it (desktopActivated).
                 // A CLI session at its prompt is never held for an open chat: replies are typed into its tab instead.
                 c.held?(nil) // never two holds for one session
@@ -90,16 +91,19 @@ extension NotchModel {
         guard !text.isEmpty, let agent = store.sessions[key]?.agent else { return }
         var c = chats[key] ?? ChatState()
         c.lastSent = text
+        let atPrompt = store.sessions[key].map(TerminalReply.canType) == true
         if let held = c.held {
             held(agent.chatOutput(text))
             c.held = nil; c.heldSince = nil; c.sentAt = Date()
             store.markThinking(key: key)
             SoundPlayer.shared.react(.delivered)
-        } else if let s = store.sessions[key], TerminalReply.canType(s), TerminalJump.type(text, tty: s.tty) {
+        } else if atPrompt, TerminalJump.type(text, tty: store.sessions[key]?.tty) {
+            c.inTerminal = true
             c.sentAt = Date() // typed into its terminal tab: a real prompt, so UserPromptSubmit follows
             store.markThinking(key: key)
             SoundPlayer.shared.react(.delivered)
         } else {
+            if atPrompt { c.inTerminal = false } // no tab to type into after all: the status now says it waits
             c.queued.append(text)
             SoundPlayer.shared.react(.queued)
         }
@@ -110,6 +114,7 @@ extension NotchModel {
     func setChatOpen(_ key: String, _ open: Bool) {
         var c = chats[key] ?? ChatState()
         c.open = open
+        if open, let s = store.sessions[key], s.agentLabel == AgentKind.claudeCode.displayName { c.inTerminal = TerminalJump.type(nil, tty: s.tty) }
         if !open { c.held?(nil); c.held = nil; c.heldSince = nil } // closing lets the agent finish normally
         chats[key] = c
         if open { onWantsKeyboard?() }

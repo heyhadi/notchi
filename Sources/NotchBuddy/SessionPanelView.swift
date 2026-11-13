@@ -309,7 +309,7 @@ private struct ChatBox: View {
             return session.agent.midTurnOutput("") != nil ? String(format: L("%@ will see it after its next tool call"), name)
                                                           : String(format: L("Will be sent when %@ finishes this turn"), name)
         }
-        if let raw = model.store.sessions[session.id], TerminalReply.canType(raw) { return L("Goes straight into its terminal tab") }
+        if chat.inTerminal, let raw = model.store.sessions[session.id], TerminalReply.canType(raw) { return L("Goes straight into its terminal tab") }
         let stale = Date().timeIntervalSince(session.updated) > 600 // no event for 10 min: it is not mid-turn any more
         switch session.state {
         case .working, .thinking, .needsYou where !stale: return String(format: L("Your message goes in when %@ finishes this turn"), name)
@@ -443,7 +443,8 @@ enum TerminalJump {
     }
 
     /// Types `text` plus Return into the Terminal.app, iTerm2 or WezTerm tab on `tty`, without bringing it forward. False if no such tab.
-    static func type(_ text: String, tty: String?) -> Bool {
+    /// With `text` nil it only checks that the tab is there.
+    static func type(_ text: String?, tty: String?) -> Bool {
         let apps = NSWorkspace.shared.runningApplications
         // Only a running app: scripting one that isn't installed makes macOS ask where it is.
         for (id, app) in [("com.apple.Terminal", "Terminal"), ("com.googlecode.iterm2", "iTerm2")] where apps.contains(where: { $0.bundleIdentifier == id }) {
@@ -452,8 +453,10 @@ enum TerminalJump {
                NSAppleScript(source: src)?.executeAndReturnError(&err).booleanValue == true { return true }
         }
         // WezTerm: its CLI finds the pane by tty; "--" so a message starting with "-" isn't read as a flag.
-        if let list = wezterm(["list", "--format", "json"]), let pane = TerminalReply.wezTermPane(tty: tty, listJSON: list),
-           let line = TerminalReply.oneLine(text), wezterm(["send-text", "--no-paste", "--pane-id", String(pane), "--", line + "\r"]) != nil { return true }
+        if let list = wezterm(["list", "--format", "json"]), let pane = TerminalReply.wezTermPane(tty: tty, listJSON: list) {
+            guard let text else { return true }
+            if let line = TerminalReply.oneLine(text), wezterm(["send-text", "--no-paste", "--pane-id", String(pane), "--", line + "\r"]) != nil { return true }
+        }
         return false
     }
 
