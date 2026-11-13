@@ -58,7 +58,6 @@
 "Soon" = "Soon";
 
 "Connected agents" = "Connected agents";
-"All data stays on this Mac. Nothing is sent to the internet." = "All data stays on this Mac. Nothing is sent to the internet.";
 
 "Open panel on hover" = "Open panel on hover";
 "Allowed to roam the desktop" = "Allowed to roam the desktop";
@@ -77,7 +76,6 @@
 "Mute during calls and meetings" = "Mute during calls and meetings";
 "At most one sound per minute, so it never gets annoying." = "At most one sound per minute, so it never gets annoying.";
 
-"Everything stays on this Mac. No network, no analytics, no transcript upload." = "Everything stays on this Mac. No network, no analytics, no transcript upload.";
 "Claude Code events arrive through a local socket only you can open." = "Claude Code events arrive through a local socket only you can open.";
 
 "via hooks" = "via hooks";
@@ -156,3 +154,29 @@
 "%@ will see it after its next tool call" = "%@ will see it after its next tool call";
 "%@ is idle. Your message waits until you run it again." = "%@ is idle. Your message waits until you run it again.";
 "Avatar and chat reaction sounds" = "Avatar and chat reaction sounds";
+
+/* Updates and login item */
+"All data stays on this Mac. The only network request is the update check to GitHub, which you can turn off in Behavior." = "All data stays on this Mac. The only network request is the update check to GitHub, which you can turn off in Behavior.";
+"Check for Updates…" = "Check for Updates…";
+"Check now" = "Check now";
+"Checking…" = "Checking…";
+"Checks GitHub every few hours and updates when no agent is busy. This is the only network request Notchi makes." = "Checks GitHub every few hours and updates when no agent is busy. This is the only network request Notchi makes.";
+"Couldn't reach GitHub." = "Couldn't reach GitHub.";
+"Couldn't read the latest release." = "Couldn't read the latest release.";
+"Couldn't replace the app. Download it from GitHub instead." = "Couldn't replace the app. Download it from GitHub instead.";
+"Downloading and installing…" = "Downloading and installing…";
+"Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically)." = "Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically).";
+"Install updates automatically" = "Install updates automatically";
+"Later" = "Later";
+"Not checked yet" = "Not checked yet";
+"Notchi %@ is available" = "Notchi %@ is available";
+"Notchi %@ is the latest version." = "Notchi %@ is the latest version.";
+"Open at login" = "Open at login";
+"Open download page" = "Open download page";
+"The download failed." = "The download failed.";
+"The download isn't the expected Notchi version." = "The download isn't the expected Notchi version.";
+"Update and Relaunch" = "Update and Relaunch";
+"Update to %@ and relaunch" = "Update to %@ and relaunch";
+"Updates are off for development builds." = "Updates are off for development builds.";
+"You have %@. Notchi downloads the update, replaces itself and relaunches." = "You have %@. Notchi downloads the update, replaces itself and relaunches.";
+"You're up to date." = "You're up to date.";

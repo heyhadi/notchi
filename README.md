@@ -15,7 +15,8 @@ Notchi is a small native macOS app that turns the MacBook notch into a home for 
 - **Daily token meter** and an optional daily limit, plus session history.
 - **Roaming buddies**: one per agent, walking along your Dock. Drag them, poke them, watch them bump into each other and doze off when things go quiet.
 - **Robot sounds**: a synthesized "bip bup" voice for needs-you, done, greetings and reactions. Mutes during calls.
-- **Private**: everything stays on your Mac. No account, no network calls, no telemetry.
+- **Opens at login and updates itself**: new releases install automatically when no agent is busy (or use Check for Updates in the menu).
+- **Private**: everything stays on your Mac. No account, no telemetry. The only network request is the update check to GitHub, which you can turn off in Settings → Behavior.
 
 ## Supported agents
 
@@ -34,6 +35,8 @@ Claude Code and OpenCode are tested live; the others follow each agent's documen
 1. [Download Notchi.dmg](https://github.com/heyhadi/notchi/releases/latest/download/Notchi.dmg) and drag **Notchi** into Applications. Needs macOS 14 or later, Apple Silicon or Intel. Notch Macs look best; others get the same panel under the menu bar.
 2. Notchi isn't notarized yet, so macOS blocks the first launch. Open it once, then go to **System Settings → Privacy & Security** and click **Open Anyway** next to Notchi. You only do this once.
 3. Click the menu bar icon → **Settings → Agents → Connect** for each agent you use.
+
+Notchi adds itself as a login item on first launch (macOS shows a notice) and keeps itself up to date from GitHub Releases. Both can be turned off in **Settings → Behavior**. Updates are checked against the bundle id, version and code signature before the app replaces itself; until Notchi is notarized there is no Developer ID signature to check, so the update trusts GitHub's HTTPS.
 
 Connecting adds a hook to that agent's own config (for Claude Code, `~/.claude/settings.json`) and makes a timestamped backup first. Every entry is marked as managed by Notch Buddy, and Disconnect removes only those. If Notchi isn't running, the hook steps aside and the agent behaves as if it weren't there.
 

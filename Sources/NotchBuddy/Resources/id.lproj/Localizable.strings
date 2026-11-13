@@ -58,7 +58,6 @@
 "Soon" = "Segera";
 
 "Connected agents" = "Agen terhubung";
-"All data stays on this Mac. Nothing is sent to the internet." = "Semua data tetap ada di Mac ini. Tidak ada yang dikirim ke internet.";
 
 "Open panel on hover" = "Buka panel saat kursor melintas";
 "Allowed to roam the desktop" = "Boleh jalan-jalan di desktop";
@@ -77,7 +76,6 @@
 "Mute during calls and meetings" = "Senyapkan saat panggilan dan rapat";
 "At most one sound per minute, so it never gets annoying." = "Maksimal satu suara per menit, jadi tidak mengganggu.";
 
-"Everything stays on this Mac. No network, no analytics, no transcript upload." = "Semua tetap ada di Mac ini. Tanpa jaringan, tanpa analitik, tanpa unggah transkrip.";
 "Claude Code events arrive through a local socket only you can open." = "Aktivitas Claude Code masuk lewat soket lokal yang hanya bisa kamu buka.";
 
 "via hooks" = "lewat hook";
@@ -156,3 +154,29 @@
 "%@ will see it after its next tool call" = "%@ akan melihatnya setelah tool call berikutnya";
 "%@ is idle. Your message waits until you run it again." = "%@ sedang idle. Pesanmu menunggu sampai kamu menjalankannya lagi.";
 "Avatar and chat reaction sounds" = "Suara reaksi avatar dan chat";
+
+/* Updates and login item */
+"All data stays on this Mac. The only network request is the update check to GitHub, which you can turn off in Behavior." = "Semua data tetap di Mac ini. Satu-satunya akses jaringan adalah cek update ke GitHub, yang bisa kamu matikan di Perilaku.";
+"Check for Updates…" = "Cek Update…";
+"Check now" = "Cek sekarang";
+"Checking…" = "Mengecek…";
+"Checks GitHub every few hours and updates when no agent is busy. This is the only network request Notchi makes." = "Mengecek GitHub tiap beberapa jam dan memperbarui saat tidak ada agent yang sibuk. Ini satu-satunya akses jaringan yang dilakukan Notchi.";
+"Couldn't reach GitHub." = "Tidak bisa terhubung ke GitHub.";
+"Couldn't read the latest release." = "Tidak bisa membaca rilis terbaru.";
+"Couldn't replace the app. Download it from GitHub instead." = "Tidak bisa mengganti app. Download saja dari GitHub.";
+"Downloading and installing…" = "Mengunduh dan memasang…";
+"Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically)." = "Semuanya tetap di Mac ini. Tanpa analitik, tanpa upload transkrip. Satu-satunya akses jaringan adalah cek update ke GitHub (Perilaku → Pasang update otomatis).";
+"Install updates automatically" = "Pasang update otomatis";
+"Later" = "Nanti";
+"Not checked yet" = "Belum dicek";
+"Notchi %@ is available" = "Notchi %@ sudah tersedia";
+"Notchi %@ is the latest version." = "Notchi %@ sudah versi terbaru.";
+"Open at login" = "Buka saat login";
+"Open download page" = "Buka halaman download";
+"The download failed." = "Download gagal.";
+"The download isn't the expected Notchi version." = "File yang diunduh bukan versi Notchi yang diharapkan.";
+"Update and Relaunch" = "Update dan Buka Ulang";
+"Update to %@ and relaunch" = "Update ke %@ dan buka ulang";
+"Updates are off for development builds." = "Update dimatikan untuk build development.";
+"You have %@. Notchi downloads the update, replaces itself and relaunches." = "Versimu %@. Notchi akan mengunduh update, mengganti dirinya, lalu membuka ulang.";
+"You're up to date." = "Sudah versi terbaru.";

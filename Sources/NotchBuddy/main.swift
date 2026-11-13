@@ -1,5 +1,6 @@
 import AppKit
 import NotchBuddyCore
+import ServiceManagement
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -26,6 +27,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [model] _ in
             MainActor.assumeIsolated { model.refresh(after: nil) }
         }
+
+        // The released app adds itself as a login item once (macOS shows its own notice); Settings can turn it off.
+        if Updater.shared.canUpdate, !UserDefaults.standard.bool(forKey: Prefs.loginItemSet) {
+            try? SMAppService.mainApp.register()
+            UserDefaults.standard.set(true, forKey: Prefs.loginItemSet)
+        }
+        Updater.shared.start(isIdle: { [model] in
+            model.pending.isEmpty && !model.sessions.contains { [.working, .thinking, .needsYou].contains($0.state) }
+        })
     }
 
     /// Accessory apps have no menu bar, but Cmd-C/V/X/A/Z only work through Edit menu key equivalents.
@@ -79,6 +89,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         debugItem.submenu = debugMenu
         self.debugSubmenu = debugMenu
         menu.addItem(debugItem)
+
+        let updateItem = NSMenuItem(title: L("Check for Updates…"), action: #selector(checkForUpdates), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
 
         let settingsItem = NSMenuItem(
             title: L("Settings…"),
@@ -135,6 +149,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func openSettings() {
         SettingsWindow.show()
+    }
+
+    @objc private func checkForUpdates() {
+        let u = Updater.shared
+        guard u.canUpdate else { return alert(L("Updates are off for development builds.")) }
+        Task {
+            await u.check()
+            switch u.status {
+            case .available(let v):
+                let a = NSAlert()
+                a.messageText = String(format: L("Notchi %@ is available"), v)
+                a.informativeText = String(format: L("You have %@. Notchi downloads the update, replaces itself and relaunches."), u.current)
+                a.addButton(withTitle: L("Update and Relaunch"))
+                a.addButton(withTitle: L("Later"))
+                NSApp.activate(ignoringOtherApps: true)
+                if a.runModal() == .alertFirstButtonReturn {
+                    await u.install()
+                    if case .failed(let msg) = u.status { alert(msg) }
+                }
+            case .failed(let msg): alert(msg)
+            default: alert(String(format: L("Notchi %@ is the latest version."), u.current))
+            }
+        }
+    }
+
+    private func alert(_ text: String) {
+        let a = NSAlert()
+        a.messageText = text
+        NSApp.activate(ignoringOtherApps: true)
+        a.runModal()
     }
 
     @objc private func quitApp() {

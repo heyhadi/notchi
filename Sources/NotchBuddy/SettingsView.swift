@@ -1,5 +1,6 @@
 import SwiftUI
 import NotchBuddyCore
+import ServiceManagement
 
 @MainActor
 struct SettingsView: View {
@@ -16,6 +17,10 @@ struct SettingsView: View {
     @AppStorage(Prefs.avatarPerAgent) private var avatarPerAgent = false
     @AppStorage(Prefs.muteWhenBusy) private var muteWhenBusy = true
     @AppStorage(Prefs.reactionSounds) private var reactionSounds = true
+    @AppStorage(Prefs.autoUpdate) private var autoUpdate = true
+    @State private var openAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var loginError: String?
+    @ObservedObject private var updater = Updater.shared
 
     @State var selectedTab: SettingsTab = .avatar
 
@@ -212,7 +217,7 @@ struct SettingsView: View {
             .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
 
-            Text(L("All data stays on this Mac. Nothing is sent to the internet."))
+            Text(L("All data stays on this Mac. The only network request is the update check to GitHub, which you can turn off in Behavior."))
                 .font(.system(size: 12))
                 .foregroundColor(Color(hex: 0x5E5D66))
                 .padding(.horizontal, 4)
@@ -230,6 +235,25 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 16) {
+                Toggle(isOn: $openAtLogin) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("Open at login"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        if let loginError {
+                            Text(loginError)
+                                .font(.system(size: 11))
+                                .foregroundColor(Color(hex: 0xD93636))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
+                .onChange(of: openAtLogin) { _, on in setOpenAtLogin(on) }
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
                 Toggle(isOn: $openOnHover) {
                     Text(L("Open panel on hover"))
                         .font(.system(size: 14, weight: .medium))
@@ -338,6 +362,84 @@ struct SettingsView: View {
             .padding(18)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+
+            updatesCard
+        }
+    }
+
+    private func setOpenAtLogin(_ on: Bool) {
+        let svc = SMAppService.mainApp
+        guard on != (svc.status == .enabled) else { return }
+        do {
+            if on { try svc.register() } else { try svc.unregister() }
+            loginError = nil
+        } catch {
+            loginError = error.localizedDescription
+            openAtLogin = svc.status == .enabled
+        }
+    }
+
+    private var updatesCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if updater.canUpdate {
+                Toggle(isOn: $autoUpdate) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("Install updates automatically"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(L("Checks GitHub every few hours and updates when no agent is busy. This is the only network request Notchi makes."))
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: 0x5E5D66))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .toggleStyle(.switch)
+                .tint(Color(hex: 0x1E8E66))
+
+                Divider().overlay(Color(hex: 0xF0ECE1))
+
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Notchi \(updater.current)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(updateStatusText)
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: { if case .failed = updater.status { 0xD93636 } else { 0x5E5D66 } }()))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer()
+                    switch updater.status {
+                    case .available(let v):
+                        Button(String(format: L("Update to %@ and relaunch"), v)) { Task { await updater.install() } }
+                    case .failed:
+                        Button(L("Open download page")) { NSWorkspace.shared.open(Updater.releasesPage) }
+                        Button(L("Check now")) { Task { await updater.check() } }
+                    case .checking, .installing:
+                        ProgressView().controlSize(.small)
+                    default:
+                        Button(L("Check now")) { Task { await updater.check() } }
+                    }
+                }
+            } else {
+                Text(L("Updates are off for development builds."))
+                    .font(.system(size: 13))
+                    .foregroundColor(Color(hex: 0x5E5D66))
+            }
+        }
+        .padding(18)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+    }
+
+    private var updateStatusText: String {
+        switch updater.status {
+        case .idle: return L("Not checked yet")
+        case .checking: return L("Checking…")
+        case .upToDate: return L("You're up to date.")
+        case .available(let v): return String(format: L("Notchi %@ is available"), v)
+        case .installing: return L("Downloading and installing…")
+        case .failed(let msg): return msg
         }
     }
 
@@ -451,7 +553,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 privacyRow(
                     icon: "lock.shield",
-                    text: L("Everything stays on this Mac. No network, no analytics, no transcript upload.")
+                    text: L("Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically).")
                 )
 
                 Divider().overlay(Color(hex: 0xF0ECE1))
