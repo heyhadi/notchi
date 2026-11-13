@@ -359,8 +359,8 @@ private struct ApprovalCard: View {
                 .font(.system(size: 13)).foregroundColor(Color(hex: 0xA9A8B0))
             // Never truncate: a hidden tail could hide the dangerous part. Long input scrolls instead.
             ViewThatFits(in: .vertical) {
-                commandText
-                ScrollView { commandText }.frame(height: 160)
+                preview
+                ScrollView { preview }.frame(height: 160)
             }
             .frame(maxHeight: 160)
             .padding(.horizontal, 14).padding(.vertical, 12)
@@ -387,6 +387,32 @@ private struct ApprovalCard: View {
         }
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 20).fill(Color(hex: 0x1E1D23)))
+    }
+
+    /// Edits show a red/green diff of what changes (capped, with the count left out); everything else the full command or input.
+    @ViewBuilder private var preview: some View {
+        if let diff = req.event.editDiff, !diff.isEmpty {
+            let (shown, more) = LineDiff.capped(diff)
+            VStack(alignment: .leading, spacing: 1) {
+                if let p = req.event.filePath {
+                    Text(abbreviate(p)).font(.system(size: 12, design: .monospaced)).foregroundColor(Color(hex: 0xA9A8B0)).padding(.bottom, 4)
+                }
+                ForEach(Array(shown.enumerated()), id: \.offset) { _, l in
+                    Text((l.kind == .added ? "+ " : l.kind == .removed ? "- " : "  ") + l.text)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(l.kind == .added ? Color(hex: 0x9BF2D0) : l.kind == .removed ? Color(hex: 0xFF9B9B) : Color(hex: 0x8D8C94))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(l.kind == .added ? Color(hex: 0x1E8E66).opacity(0.18) : l.kind == .removed ? Color(hex: 0xD93636).opacity(0.18) : .clear)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if more > 0 {
+                    Text(String(format: L("+%d more lines"), more)).font(.system(size: 12)).foregroundColor(Color(hex: 0xA9A8B0)).padding(.top, 4)
+                }
+            }
+            .textSelection(.enabled)
+        } else {
+            commandText
+        }
     }
 
     private var commandText: some View {

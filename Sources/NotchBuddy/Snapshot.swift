@@ -46,6 +46,17 @@ enum Snapshot {
             m.mode = .expanded
             add("notch-\(name)", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        do { // diff preview on an Edit approval
+            let m = NotchModel()
+            let input: [String: Any] = ["file_path": NSHomeDirectory() + "/form-keeper/Sources/Form.swift",
+                                        "old_string": "struct Form {\n    var name: String\n    var email: String\n    func save() {\n        store.write(self)\n    }\n}",
+                                        "new_string": "struct Form {\n    var name: String\n    var email: String\n    var phone: String?\n    func save() throws {\n        try store.write(self)\n    }\n}"]
+            let json = String(decoding: try! JSONSerialization.data(withJSONObject: input, options: [.prettyPrinted, .sortedKeys]), as: UTF8.self)
+            m.handle(HookEvent(name: "PermissionRequest", sessionID: "d", cwd: NSHomeDirectory() + "/form-keeper", toolName: "Edit",
+                               filePath: input["file_path"] as? String, toolInputJSON: json)) { _ in }
+            m.mode = .expanded
+            add("notch-diff", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
+        }
         do { // question card
             let m = NotchModel()
             let json = #"{"session_id":"q","cwd":"/Users/me/form-keeper","hook_event_name":"PermissionRequest","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database should I use for the cache?","header":"Cache","options":[{"label":"SQLite","description":"Single file, no server"},{"label":"Redis","description":"Fast, needs a running server"},{"label":"In memory","description":"Simplest, lost on restart"}],"multiSelect":false}]}}"#

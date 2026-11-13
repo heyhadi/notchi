@@ -198,3 +198,4 @@
 "Stopped from Notchi" = "Dihentikan dari Notchi";
 "Keyboard shortcuts" = "Pintasan keyboard";
 "⌃⌥N open or close the panel · ⌃⌥A allow once · ⌃⌥D deny. They act on the top card; risky commands still need the terminal." = "⌃⌥N buka atau tutup panel · ⌃⌥A izinkan sekali · ⌃⌥D tolak. Berlaku untuk kartu teratas; perintah berisiko tetap harus lewat terminal.";
+"+%d more lines" = "+%d baris lagi";
