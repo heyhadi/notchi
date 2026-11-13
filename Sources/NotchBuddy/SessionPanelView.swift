@@ -442,7 +442,7 @@ enum TerminalJump {
         running(ids)?.activate()
     }
 
-    /// Types `text` plus Return into the Terminal.app or iTerm2 tab on `tty`, without bringing it forward. False if no such tab.
+    /// Types `text` plus Return into the Terminal.app, iTerm2 or WezTerm tab on `tty`, without bringing it forward. False if no such tab.
     static func type(_ text: String, tty: String?) -> Bool {
         let apps = NSWorkspace.shared.runningApplications
         // Only a running app: scripting one that isn't installed makes macOS ask where it is.
@@ -451,7 +451,26 @@ enum TerminalJump {
             if let src = TerminalReply.script(app: app, tty: tty, text: text),
                NSAppleScript(source: src)?.executeAndReturnError(&err).booleanValue == true { return true }
         }
+        // WezTerm: its CLI finds the pane by tty; "--" so a message starting with "-" isn't read as a flag.
+        if let list = wezterm(["list", "--format", "json"]), let pane = TerminalReply.wezTermPane(tty: tty, listJSON: list),
+           let line = TerminalReply.oneLine(text), wezterm(["send-text", "--no-paste", "--pane-id", String(pane), "--", line + "\r"]) != nil { return true }
         return false
+    }
+
+    /// Runs the `wezterm cli` bundled with the running WezTerm (no shell); its output, or nil on failure or after 2 s.
+    private static func wezterm(_ args: [String]) -> Data? {
+        guard let app = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == "com.github.wez.wezterm" }),
+              let exe = app.bundleURL?.appendingPathComponent("Contents/MacOS/wezterm") else { return nil }
+        let p = Process(), out = Pipe()
+        p.executableURL = exe
+        p.arguments = ["cli"] + args
+        p.standardOutput = out
+        p.standardError = FileHandle.nullDevice
+        guard (try? p.run()) != nil else { return nil }
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2) { if p.isRunning { p.terminate() } }
+        let data = out.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        return p.terminationStatus == 0 ? data : nil
     }
 
     /// Selects the Terminal.app tab on `tty` and raises its window. False if no such tab (or Automation isn't allowed).

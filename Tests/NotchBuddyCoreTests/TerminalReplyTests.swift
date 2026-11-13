@@ -30,4 +30,13 @@ final class TerminalReplyTests: XCTestCase {
         XCTAssertNil(TerminalReply.script(app: "Terminal", tty: "/dev/ttys004", text: " \n\t "))
         XCTAssertNil(TerminalReply.script(app: "Ghostty", tty: "/dev/ttys004", text: "hi"))
     }
+
+    func testFindsTheWezTermPaneByTTY() {
+        let list = Data(#"[{"pane_id":0,"tty_name":"/dev/ttys001"},{"pane_id":7,"tty_name":"/dev/ttys004"}]"#.utf8)
+        XCTAssertEqual(TerminalReply.wezTermPane(tty: "/dev/ttys004", listJSON: list), 7)
+        XCTAssertNil(TerminalReply.wezTermPane(tty: "/dev/ttys009", listJSON: list))
+        XCTAssertNil(TerminalReply.wezTermPane(tty: "/dev/ttys004\n", listJSON: list), "only a valid tty")
+        XCTAssertNil(TerminalReply.wezTermPane(tty: "/dev/ttys004", listJSON: Data("not json".utf8)))
+        XCTAssertEqual(TerminalReply.oneLine(" a\nb\u{7}c "), "a b c")
+    }
 }
