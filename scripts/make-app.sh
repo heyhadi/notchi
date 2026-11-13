@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-$(git describe --tags --abbrev=0 2>/dev/null | sed "s/^v//")}"; VERSION="${VERSION:-0.1.0}" # dev builds: the latest tag
 # UNIVERSAL=1 builds for Apple Silicon and Intel in one binary (what the release DMG ships).
 ARCH_FLAGS=()
 if [[ "${UNIVERSAL:-0}" == 1 ]]; then ARCH_FLAGS=(--arch arm64 --arch x86_64); fi

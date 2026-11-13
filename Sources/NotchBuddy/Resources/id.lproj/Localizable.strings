@@ -165,7 +165,7 @@
 "Couldn't read the latest release." = "Tidak bisa membaca rilis terbaru.";
 "Couldn't replace the app. Download it from GitHub instead." = "Tidak bisa mengganti app. Download saja dari GitHub.";
 "Downloading and installing…" = "Mengunduh dan memasang…";
-"Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically)." = "Semuanya tetap di Mac ini. Tanpa analitik, tanpa upload transkrip. Satu-satunya akses jaringan adalah cek update ke GitHub (Perilaku → Pasang update otomatis).";
+"Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (About → Install updates automatically)." = "Semuanya tetap di Mac ini. Tanpa analitik, tanpa upload transkrip. Satu-satunya akses jaringan adalah cek update ke GitHub (Tentang → Pasang update otomatis).";
 "Install updates automatically" = "Pasang update otomatis";
 "Later" = "Nanti";
 "Not checked yet" = "Belum dicek";
@@ -183,3 +183,10 @@
 "Answer in the app" = "Jawab di app-nya";
 "or answer in the app" = "atau jawab di app-nya";
 "Goes straight into its terminal tab" = "Langsung diketik ke tab terminalnya";
+"About" = "Tentang";
+"Version %@" = "Versi %@";
+"Version %@ · development build" = "Versi %@ · build pengembangan";
+"Shows your AI coding agents in the MacBook notch." = "Menampilkan agent AI coding kamu di notch MacBook.";
+"GitHub" = "GitHub";
+"Release notes" = "Catatan rilis";
+"MIT License" = "Lisensi MIT";

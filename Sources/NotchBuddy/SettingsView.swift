@@ -31,6 +31,7 @@ struct SettingsView: View {
         case sound
         case history
         case privacy
+        case about
 
         var id: String { rawValue }
 
@@ -42,6 +43,7 @@ struct SettingsView: View {
             case .sound: return L("Sound")
             case .history: return L("History")
             case .privacy: return L("Privacy")
+            case .about: return L("About")
             }
         }
 
@@ -53,6 +55,7 @@ struct SettingsView: View {
             case .sound: return "speaker.wave.2"
             case .history: return "clock.arrow.circlepath"
             case .privacy: return "lock.shield"
+            case .about: return "info.circle"
             }
         }
     }
@@ -83,6 +86,8 @@ struct SettingsView: View {
                         HistoryPane()
                     case .privacy:
                         privacyPane
+                    case .about:
+                        aboutPane
                     }
                 }
                 .padding(24)
@@ -362,8 +367,6 @@ struct SettingsView: View {
             .padding(18)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
-
-            updatesCard
         }
     }
 
@@ -376,6 +379,38 @@ struct SettingsView: View {
         } catch {
             loginError = error.localizedDescription
             openAtLogin = svc.status == .enabled
+        }
+    }
+
+    private var aboutPane: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(L("About"))
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundColor(Color(hex: 0x1B1B1F))
+
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Notchi").font(.system(size: 18, weight: .semibold)).foregroundColor(Color(hex: 0x1B1B1F))
+                    Text(updater.canUpdate ? String(format: L("Version %@"), updater.current)
+                                           : String(format: L("Version %@ · development build"), updater.current))
+                        .font(.system(size: 12)).foregroundColor(Color(hex: 0x5E5D66))
+                        .textSelection(.enabled)
+                }
+                Text(L("Shows your AI coding agents in the MacBook notch."))
+                    .font(.system(size: 13)).foregroundColor(Color(hex: 0x1B1B1F))
+                HStack(spacing: 16) {
+                    Link(L("GitHub"), destination: URL(string: "https://github.com/heyhadi/notchi")!)
+                    Link(L("Release notes"), destination: URL(string: "https://github.com/heyhadi/notchi/releases")!)
+                    Text(L("MIT License")).foregroundColor(Color(hex: 0x5E5D66))
+                }
+                .font(.system(size: 12))
+            }
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
+
+            updatesCard
         }
     }
 
@@ -428,6 +463,7 @@ struct SettingsView: View {
             }
         }
         .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(hex: 0xEAE7E0), lineWidth: 1))
     }
@@ -553,7 +589,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 privacyRow(
                     icon: "lock.shield",
-                    text: L("Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically).")
+                    text: L("Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (About → Install updates automatically).")
                 )
 
                 Divider().overlay(Color(hex: 0xF0ECE1))

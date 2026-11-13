@@ -165,7 +165,7 @@
 "Couldn't read the latest release." = "Couldn't read the latest release.";
 "Couldn't replace the app. Download it from GitHub instead." = "Couldn't replace the app. Download it from GitHub instead.";
 "Downloading and installing…" = "Downloading and installing…";
-"Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically)." = "Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (Behavior → Install updates automatically).";
+"Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (About → Install updates automatically)." = "Everything stays on this Mac. No analytics, no transcript upload. The only network request is the update check to GitHub (About → Install updates automatically).";
 "Install updates automatically" = "Install updates automatically";
 "Later" = "Later";
 "Not checked yet" = "Not checked yet";
@@ -183,3 +183,10 @@
 "Answer in the app" = "Answer in the app";
 "or answer in the app" = "or answer in the app";
 "Goes straight into its terminal tab" = "Goes straight into its terminal tab";
+"About" = "About";
+"Version %@" = "Version %@";
+"Version %@ · development build" = "Version %@ · development build";
+"Shows your AI coding agents in the MacBook notch." = "Shows your AI coding agents in the MacBook notch.";
+"GitHub" = "GitHub";
+"Release notes" = "Release notes";
+"MIT License" = "MIT License";
