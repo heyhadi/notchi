@@ -676,9 +676,9 @@ for (const a of $$('a[href^="#"]')) a.addEventListener("click", e => { const t =
 const STEPS = [
   { t: "09:02", h: "It wakes up with you.", p: "You give Claude Code a prompt. The notch wakes, says good morning in robot, and the light starts to run.", state: "thinking", sound: "hello" },
   { t: "09:03", h: "It works where you can see it.", p: "Tool calls tick by, a step counter climbs, and today's tokens add up in the footer. Your buddy walks along the Dock.", state: "working", sound: "tick" },
-  { t: "09:11", h: "It asks, you answer.", p: "A permission request opens right in the notch. Allow or deny without hunting for the terminal.", state: "needsYou", sound: "ask" },
+  { t: "09:11", h: "It asks, you answer.", p: "A permission request opens right in the notch, with a red/green diff for file edits. Allow once, always for this session, or deny, from the card or with ⌃⌥A / ⌃⌥D.", state: "needsYou", sound: "ask" },
   { t: "09:12", h: "Risky? It won't even offer.", p: "Something like piping a download into a shell is never approvable here. The agent asks in its own terminal.", state: "needsYou", risky: true, sound: "ask" },
-  { t: "09:20", h: "Reply from the notch.", p: "Type in the notch. Mid-turn, Claude Code reads it after its next tool call. Once it's done, your reply is typed straight into its terminal tab.", state: "working", chat: true },
+  { t: "09:20", h: "Reply from the notch.", p: "Type in the notch. Mid-turn, Claude Code reads it after its next tool call. Once it's done, your reply is typed straight into its terminal tab. Going the wrong way? Stop it after this step.", state: "working", chat: true },
   { t: "09:24", h: "Done, with a little trill.", p: "The turn ends, the notch peeks out to tell you, and the buddy hops. If the Claude desktop app ends on a question, its choices show up here too: one click answers.", state: "done", sound: "done" },
   { t: "09:40", h: "Then it gets out of the way.", p: "Nothing running? The notch fades and your buddy curls up for a nap.", state: "sleeping" }
 ];

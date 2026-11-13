@@ -9,7 +9,9 @@ Notchi is a small native macOS app that turns the MacBook notch into a home for 
 ## What it does
 
 - **Live status per agent**: working, thinking, done, needs you or error, with a step count and timer.
-- **Approve from the notch**: see the full command and folder, then Allow once or Deny. Risky commands (pipes into a shell, disk erase, keychain reads, settings edits and so on) can only be answered in the terminal.
+- **Approve from the notch**: see the full command and folder, or a red/green diff for file edits, then Allow once, Deny, or (Claude Code) Always this session, which adds a session-only rule (for Bash, only that exact command). Risky commands (pipes into a shell, disk erase, keychain reads, settings edits and so on) can only be answered in the terminal.
+- **Keyboard shortcuts**: ⌃⌥N opens the panel, ⌃⌥A allows the top card once, ⌃⌥D denies it. No Accessibility permission needed; turn them off in Settings → Behavior.
+- **Stop after this step**: the stop button on a working Claude Code session ends its turn before its next tool runs.
 - **Reply from the notch**: send Claude Code a note while it works; it reads it after its next tool call. Once it's done, your reply is typed straight into its terminal tab (Terminal.app, iTerm2, WezTerm), as if you typed it there.
 - **Answer the Claude desktop app's questions**: when a Code session ends with a question, its choices show in the notch and a click sends your answer. Opening the app instead works as usual.
 - **Jump back**: click a session to open its terminal tab (Terminal.app), its exact chat in the Claude desktop app, or its conversation in VS Code.
