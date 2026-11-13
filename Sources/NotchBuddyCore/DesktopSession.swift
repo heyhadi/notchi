@@ -32,5 +32,13 @@ public enum DesktopSession {
         return c.url
     }
 
+    /// VS Code: the Claude Code extension's own link, vscode://anthropic.claude-code/open?session=<CLI session id>.
+    public static func vsCodeURL(cliSessionID id: String) -> URL? {
+        guard id.range(of: #"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"#, options: .regularExpression) != nil else { return nil }
+        var c = URLComponents(string: "vscode://anthropic.claude-code/open")!
+        c.queryItems = [URLQueryItem(name: "session", value: id)]
+        return c.url
+    }
+
     static func isValid(_ id: String) -> Bool { id.range(of: #"^local_[0-9a-fA-F-]{8,64}$"#, options: .regularExpression) != nil }
 }

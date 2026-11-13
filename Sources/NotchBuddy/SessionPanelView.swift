@@ -413,7 +413,12 @@ enum TerminalJump {
 
         // Where it runs, most specific first: the editor named in its label, then the agent's own desktop app, then a terminal.
         var ids: [String]
-        if s.agentLabel.contains("VS Code") { ids = ["com.microsoft.VSCode"] }
+        if s.agentLabel.contains("VS Code") {
+            // The Claude Code extension opens a conversation by its CLI session id.
+            let cli = String(s.id.drop { $0 != ":" }.dropFirst())
+            if s.agent == .claudeCode, let url = DesktopSession.vsCodeURL(cliSessionID: cli), NSWorkspace.shared.open(url) { return }
+            ids = ["com.microsoft.VSCode"]
+        }
         else if s.agentLabel.contains("Desktop") {
             // Straight to that chat when the app's session file names it; otherwise just the app.
             let cli = String(s.id.drop { $0 != ":" }.dropFirst())

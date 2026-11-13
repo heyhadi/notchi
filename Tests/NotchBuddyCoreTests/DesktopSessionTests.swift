@@ -23,5 +23,8 @@ final class DesktopSessionTests: XCTestCase {
         XCTAssertEqual(DesktopSession.url(appSessionID: "local_aaaa1111-0000-0000-0000-000000000000")?.absoluteString,
                        "claude://code/continue?session=local_aaaa1111-0000-0000-0000-000000000000&source=notchi")
         XCTAssertNil(DesktopSession.url(appSessionID: "local_../x"))
+        XCTAssertEqual(DesktopSession.vsCodeURL(cliSessionID: "703d4dcd-cbb1-4788-94dc-786b4f157e06")?.absoluteString,
+                       "vscode://anthropic.claude-code/open?session=703d4dcd-cbb1-4788-94dc-786b4f157e06")
+        XCTAssertNil(DesktopSession.vsCodeURL(cliSessionID: "x&prompt=rm"))
     }
 }
