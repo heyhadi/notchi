@@ -24,6 +24,8 @@
 "%d steps" = "%d langkah";
 "1 agent running" = "1 agen berjalan";
 "All quiet" = "Semua tenang";
+"Always this session" = "Selalu di sesi ini";
+"Allow, and don't ask again for this in this session" = "Izinkan, dan jangan tanya lagi untuk ini di sesi ini";
 "Allow once" = "Izinkan sekali";
 "Answer in terminal" = "Jawab di terminal";
 "Denied from Notchi" = "Ditolak dari Notchi";

@@ -28,10 +28,16 @@ public enum AgentKind: String, CaseIterable, Sendable, Codable {
     /// their own approval prompt stays in charge, and Notch Buddy never approves on their behalf.
     public var approvesInNotch: Bool { [.claudeCode, .codex, .openCode].contains(self) }
 
+    /// Agents whose approval answer can add a rule for the rest of the session (Codex rejects `updatedPermissions`).
+    public var allowsInSession: Bool { self == .claudeCode }
+
     /// Answer to an approval made in the notch, in the agent's own hook format.
     public func output(for d: PermissionDecision) -> Data? {
         switch self {
-        case .claudeCode, .codex:
+        case .claudeCode:
+            return d.hookOutput
+        case .codex:
+            if case .allowInSession = d { return PermissionDecision.allow.hookOutput } // Codex fails closed on updatedPermissions
             return d.hookOutput
         case .openCode:
             if case .deny = d { return json(["status": "deny"]) }

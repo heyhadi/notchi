@@ -362,6 +362,10 @@ private struct ApprovalCard: View {
             } else {
                 HStack(spacing: 8) {
                     button(L("Allow once"), primary: true) { decide(.allow) }
+                    if req.event.agent.allowsInSession, let rules = req.event.sessionRules {
+                        button(L("Always this session"), primary: false) { decide(.allowInSession(rules)) }
+                            .help(L("Allow, and don't ask again for this in this session"))
+                    }
                     button(L("Deny"), primary: false) { decide(.deny(L("Denied from Notchi"))) }
                     Spacer()
                     button(L("Answer in terminal"), primary: false, quiet: true) { decide(nil) }

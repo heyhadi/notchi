@@ -24,6 +24,8 @@
 "%d steps" = "%d steps";
 "1 agent running" = "1 agent running";
 "All quiet" = "All quiet";
+"Always this session" = "Always this session";
+"Allow, and don't ask again for this in this session" = "Allow, and don't ask again for this in this session";
 "Allow once" = "Allow once";
 "Answer in terminal" = "Answer in terminal";
 "Denied from Notchi" = "Denied from Notchi";
