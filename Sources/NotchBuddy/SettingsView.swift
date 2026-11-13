@@ -389,12 +389,16 @@ struct SettingsView: View {
                 .foregroundColor(Color(hex: 0x1B1B1F))
 
             VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Notchi").font(.system(size: 18, weight: .semibold)).foregroundColor(Color(hex: 0x1B1B1F))
-                    Text(updater.canUpdate ? String(format: L("Version %@"), updater.current)
-                                           : String(format: L("Version %@ · development build"), updater.current))
-                        .font(.system(size: 12)).foregroundColor(Color(hex: 0x5E5D66))
-                        .textSelection(.enabled)
+                HStack(spacing: 12) {
+                    Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 56, height: 56)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Notchi").font(.system(size: 18, weight: .semibold)).foregroundColor(Color(hex: 0x1B1B1F))
+                        Text(updater.canUpdate ? String(format: L("Version %@"), updater.current)
+                                               : String(format: L("Version %@ · development build"), updater.current))
+                            .font(.system(size: 12)).foregroundColor(Color(hex: 0x5E5D66))
+                            .textSelection(.enabled)
+                    }
                 }
                 Text(L("Shows your AI coding agents in the MacBook notch."))
                     .font(.system(size: 13)).foregroundColor(Color(hex: 0x1B1B1F))
