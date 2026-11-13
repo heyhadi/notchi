@@ -152,7 +152,7 @@ extension NotchModel {
         sessions = store.current()
         saveSessions()
         state = pending.isEmpty ? store.topState() : .needsYou
-        if let e { peekText = peek(for: e) }
+        if let e, !(state == .needsYou && e.name == "PreToolUse") { peekText = peek(for: e) } // another agent's step must not hide what needs you
         if Date().timeIntervalSince(tokensRead) > 5 { // hooks fire many times a second during a turn
             tokensRead = Date()
             tokenMeter.update { [weak self] bySession, today in self?.tokens = bySession; self?.tokensToday = today; self?.alertIfOverLimit() }
@@ -193,6 +193,10 @@ extension NotchModel {
             return String(format: L("%@ asks: %@"), e.agentLabel, e.questions?.first?.question ?? "")
         case "PermissionRequest", "Notification":
             return String(format: L("%@ needs approval"), "\(e.agentLabel) · \(e.project)")
+        case "Stop" where store.sessions[SessionStore.key(e)]?.nextStep != nil:
+            return store.sessions[SessionStore.key(e)]?.nextStep?.ask // the peek is narrow: the question alone
+        case "PreToolUse" where NextStep(toolName: e.toolName, toolInputJSON: e.toolInputJSON) != nil:
+            return nil // the desktop app's wrap-up; the question shows when the turn ends
         case "Stop":
             let steps = store.sessions[SessionStore.key(e)]?.steps ?? 0
             return String(format: L("Done · %d steps"), steps)

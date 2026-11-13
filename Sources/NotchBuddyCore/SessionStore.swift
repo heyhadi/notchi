@@ -14,6 +14,7 @@ public struct AgentSession: Identifiable, Sendable, Equatable, Codable {
     public var updated: Date
     public var tty: String?        // terminal the agent runs in, when its hook could tell
     public var started: Date?      // first event we saw for it (nil for sessions saved before this existed)
+    public var nextStep: NextStep? // a question with choices the agent's app showed at the end of its turn, until the user answers there
 }
 
 /// Pure reducer from hook events to sessions; the app owns one and publishes its output.
@@ -28,7 +29,7 @@ public struct SessionStore: Sendable {
     public static func restored(from data: Data, maxAge: TimeInterval = 12 * 3600, at now: Date = Date()) -> [String: AgentSession] {
         guard let list = try? JSONDecoder().decode([AgentSession].self, from: data) else { return [:] }
         return Dictionary(list.filter { now.timeIntervalSince($0.updated) <= maxAge }.map { s -> (String, AgentSession) in
-            var s = s; s.state = .sleeping; s.message = nil; return (s.id, s)
+            var s = s; s.state = .sleeping; s.message = nil; s.nextStep = nil; return (s.id, s)
         }, uniquingKeysWith: { a, _ in a })
     }
 
@@ -46,9 +47,12 @@ public struct SessionStore: Sendable {
         s.started = s.started ?? now
         if let t = e.tty { s.tty = t }
         switch e.name {
-        case "SessionStart": s.state = .sleeping
-        case "UserPromptSubmit": s.state = .thinking; s.steps = 0; s.message = nil
-        case "PreToolUse": s.state = .working; s.lastStep = e.stepSummary ?? s.lastStep
+        case "SessionStart": s.state = .sleeping; s.nextStep = nil
+        case "UserPromptSubmit": s.state = .thinking; s.steps = 0; s.message = nil; s.nextStep = nil
+        case "PreToolUse":
+            s.state = .working
+            if let q = NextStep(toolName: e.toolName, toolInputJSON: e.toolInputJSON) { s.nextStep = q } // shown once the turn ends
+            else { s.nextStep = nil; s.lastStep = e.stepSummary ?? s.lastStep }
         case "PostToolUse": s.state = .working; s.steps += 1
         case "PostToolUseFailure", "StopFailure": s.state = .error; s.message = e.message
         case "PermissionRequest": s.state = .needsYou; s.lastStep = e.stepSummary ?? s.lastStep
@@ -56,6 +60,7 @@ public struct SessionStore: Sendable {
             // Only prompts that block on the user; idle reminders would nag.
             guard ["permission_prompt", "elicitation_dialog"].contains(e.notificationType ?? "") else { break }
             s.state = .needsYou; s.message = e.message
+        case "Stop" where s.nextStep != nil: s.state = .needsYou; s.message = s.nextStep?.ask // waits on the user's answer in the app
         case "Stop" where s.state != .error: s.state = .done; s.message = e.message // an idle right after a failure keeps the error
         default: break
         }
@@ -75,7 +80,7 @@ public struct SessionStore: Sendable {
     /// The user replied from the notch; the agent is about to continue.
     public mutating func markThinking(key: String, at now: Date = Date()) {
         guard var s = sessions[key] else { return }
-        s.state = .thinking; s.steps = 0; s.message = nil; s.updated = now
+        s.state = .thinking; s.steps = 0; s.message = nil; s.nextStep = nil; s.updated = now
         sessions[key] = s
     }
 

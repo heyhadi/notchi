@@ -114,7 +114,19 @@ private struct SessionRow: View {
                             .font(.system(size: 12, design: .monospaced)).foregroundColor(Color(hex: 0x8D8C94))
                     }
                 }
-                if let step = session.state == .error ? session.message : session.lastStep {
+                if session.state == .needsYou, let q = session.nextStep {
+                    // The app asks this in its own window; the row's click takes you there to answer.
+                    Text(q.ask).font(.system(size: 13, weight: .medium)).foregroundColor(Color(hex: 0xFFC15C))
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 6) {
+                        ForEach(q.choices, id: \.self) { c in
+                            Text(c).font(.system(size: 12)).foregroundColor(.white).lineLimit(1)
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(Capsule().fill(Color(hex: 0x2A2A30)))
+                        }
+                        Text(L("Answer in the app")).font(.system(size: 11)).foregroundColor(Color(hex: 0x8D8C94))
+                    }
+                } else if let step = session.state == .error ? session.message : session.lastStep {
                     Text(step).font(.system(size: 12, design: .monospaced)).foregroundColor(Color(hex: 0x8D8C94))
                         .lineLimit(1).truncationMode(.tail)
                 }

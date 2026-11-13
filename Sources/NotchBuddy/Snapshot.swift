@@ -61,6 +61,14 @@ enum Snapshot {
             m.mode = .expanded
             add("notch-chat", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
         }
+        do { // the desktop app's end-of-turn question, waiting on the user
+            let m = NotchModel(), cwd = NSHomeDirectory() + "/form-keeper"
+            let ask = #"{"recap":"Done.","ask":"Cut v0.3.0 so users get it?","actions":[{"label":"Yes, release"},{"label":"Not yet"}]}"#
+            m.handle(HookEvent(name: "PreToolUse", sessionID: "n", cwd: cwd, toolName: "mcp__ccd_turn__wrap_up", toolInputJSON: ask)) { _ in }
+            m.handle(HookEvent(name: "Stop", sessionID: "n", cwd: cwd)) { _ in }
+            m.mode = .expanded
+            add("notch-nextstep", CGSize(width: 640, height: 520), NotchView(model: m).background(Color(white: 0.85)))
+        }
         for tab in SettingsView.SettingsTab.allCases {
             add("settings-\(tab.rawValue)", CGSize(width: 640, height: 560), SettingsView(selectedTab: tab))
         }
