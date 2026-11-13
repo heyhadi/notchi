@@ -21,6 +21,7 @@ enum SettingsWindow {
         )
         newWindow.title = L("Notchi Settings")
         newWindow.isReleasedWhenClosed = false
+        newWindow.hidesOnDeactivate = true // a menu-bar app has no Dock icon to bring it back, so it shouldn't linger over other apps; the gear reopens it
         newWindow.contentView = NSHostingView(rootView: SettingsView())
         newWindow.center()
         self.window = newWindow
