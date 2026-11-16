@@ -389,6 +389,7 @@ struct SettingsView: View {
 
     private func setOpenAtLogin(_ on: Bool) {
         let svc = SMAppService.mainApp
+        UserDefaults.standard.set(on, forKey: Prefs.openAtLogin)
         guard on != (svc.status == .enabled) else { return }
         do {
             if on { try svc.register() } else { try svc.unregister() }

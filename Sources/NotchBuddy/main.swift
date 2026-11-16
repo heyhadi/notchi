@@ -37,10 +37,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             MainActor.assumeIsolated { HotKeys.shared.update(model: model) }
         }
 
-        // The released app adds itself as a login item once (macOS shows its own notice); Settings can turn it off.
-        if Updater.shared.canUpdate, !UserDefaults.standard.bool(forKey: Prefs.loginItemSet) {
-            try? SMAppService.mainApp.register()
-            UserDefaults.standard.set(true, forKey: Prefs.loginItemSet)
+        // Re-register every launch: an update replaces the ad-hoc-signed app and macOS can drop the old login item.
+        // .requiresApproval is left alone so we don't nag; Settings turns this off.
+        let login = SMAppService.mainApp
+        if Updater.shared.canUpdate, UserDefaults.standard.bool(forKey: Prefs.openAtLogin),
+           [.notRegistered, .notFound].contains(login.status) {
+            do { try login.register() } catch { NSLog("Notchi: login item register failed: \(error)") }
         }
         Updater.shared.start(isIdle: { [model] in
             model.pending.isEmpty && !model.sessions.contains { [.working, .thinking, .needsYou].contains($0.state) }
