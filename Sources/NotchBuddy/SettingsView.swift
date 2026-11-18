@@ -392,7 +392,7 @@ struct SettingsView: View {
         UserDefaults.standard.set(on, forKey: Prefs.openAtLogin)
         guard on != (svc.status == .enabled) else { return }
         do {
-            if on { try svc.register() } else { try svc.unregister() }
+            if on { try svc.register(); UserDefaults.standard.set(Updater.shared.current, forKey: Prefs.loginItemVersion) } else { try svc.unregister() }
             loginError = nil
         } catch {
             loginError = error.localizedDescription

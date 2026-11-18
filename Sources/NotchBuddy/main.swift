@@ -37,12 +37,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             MainActor.assumeIsolated { HotKeys.shared.update(model: model) }
         }
 
-        // Re-register every launch: an update replaces the ad-hoc-signed app and macOS can drop the old login item.
+        // An update replaces the ad-hoc-signed app, and macOS keeps an .enabled login item that no longer matches it
+        // and so never opens it at login. Register again whenever it's missing or the version changed.
         // .requiresApproval is left alone so we don't nag; Settings turns this off.
-        let login = SMAppService.mainApp
-        if Updater.shared.canUpdate, UserDefaults.standard.bool(forKey: Prefs.openAtLogin),
-           [.notRegistered, .notFound].contains(login.status) {
-            do { try login.register() } catch { NSLog("Notchi: login item register failed: \(error)") }
+        let login = SMAppService.mainApp, d = UserDefaults.standard, version = Updater.shared.current
+        if Updater.shared.canUpdate, d.bool(forKey: Prefs.openAtLogin),
+           [.notRegistered, .notFound].contains(login.status) || (login.status == .enabled && d.string(forKey: Prefs.loginItemVersion) != version) {
+            do {
+                if login.status == .enabled { try login.unregister() }
+                try login.register()
+                d.set(version, forKey: Prefs.loginItemVersion)
+            } catch { NSLog("Notchi: login item register failed: \(error)") }
         }
         Updater.shared.start(isIdle: { [model] in
             model.pending.isEmpty && !model.sessions.contains { [.working, .thinking, .needsYou].contains($0.state) }

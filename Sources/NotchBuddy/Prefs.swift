@@ -22,6 +22,7 @@ enum Prefs {
     static let hotkeys = "hotkeys"              // Bool, default true: ⌃⌥N / ⌃⌥A / ⌃⌥D global shortcuts
     static let autoUpdate = "autoUpdate"        // Bool, default true: check GitHub Releases and install new versions when no agent is busy
     static let openAtLogin = "openAtLogin"      // Bool, default true: the released app re-adds itself as a login item at launch until the user turns it off
+    static let loginItemVersion = "loginItemVersion" // String: app version that last registered the login item (re-register when it changes)
     static func sound(for s: AgentState) -> String { "sound.\(s.rawValue)" } // SoundName raw value
 
     static func register() {
